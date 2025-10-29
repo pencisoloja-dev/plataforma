@@ -6,11 +6,88 @@
     <title>Panel de Administrador - Envíos</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --border-color: #334155;
+            --text-light: #e2e8f0;
+            --text-muted: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-purple: #a78bfa;
+            --danger-bg: #450a0a;
+            --danger-border: #991b1b;
+            --danger-text: #fca5a5;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #1a202c;
-            color: #e2e8f0;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
         }
+
+        /* --- Estilos del Login --- */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        #login-box {
+            background: var(--bg-card);
+            padding: 40px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 0 40px rgba(56, 189, 248, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        #login-box h2 {
+            color: var(--text-light);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        #login-box p {
+            color: var(--text-muted);
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        #login-error {
+            color: var(--danger-text);
+            font-size: 14px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .password-wrapper {
+            position: relative;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .password-wrapper input {
+            padding-right: 50px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* --- Contenido principal (oculto hasta login) --- */
+        #app-content {
+            display: none;
+        }
+
         th {
             background-color: #2d3748;
             color: #cbd5e0;
@@ -53,65 +130,155 @@
             border-color: #718096;
             color: #E2E8F0;
             border-radius: 0.375rem;
-            width: 100%;
             padding: 0.5rem 1rem;
             border-width: 1px;
             border-style: solid;
+            width: 100%;
         }
         .form-input:focus {
             outline: none;
             border-color: #4299E1;
             box-shadow: 0 0 0 2px #4299E1;
         }
-    </style>
-    
-    <script>
-        const N8N_LOGIN_URL = 'https://zynk.ezsystems.cloud/login';
-        let authToken = localStorage.getItem('authToken');
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlToken = urlParams.get('token');
 
-        if (urlToken) {
-            localStorage.setItem('authToken', urlToken);
-            window.location.replace(window.location.pathname);
-        } else if (!authToken) {
-            window.location.href = N8N_LOGIN_URL;
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 16px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text-muted);
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
         }
-    </script>
+        
+        .toggle-password:hover {
+            color: var(--text-light);
+        }
+
+        .toggle-password svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        #login-box input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            background: var(--bg-dark);
+            color: var(--text-light);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            box-sizing: border-box;
+        }
+
+        #login-box input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+        }
+
+        .btn {
+            background: #0ea5e9;
+            color: white;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+
+        .btn:hover {
+            background: #0284c7;
+            box-shadow: 0 5px 20px rgba(14, 165, 233, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: translateY(0);
+            box-shadow: none;
+        }
+    </style>
 </head>
 
-<body class="p-4 md:p-8">
-    <div class="container mx-auto max-w-7xl">
-        <h1 class="text-4xl font-bold text-white mb-8">Panel de Administrador</h1>
-
-        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-            <div class="w-full md:w-1/2 lg:w-1/3">
-                <input type="text" id="searchInput" class="form-input" placeholder="Buscar por nombre o email...">
-            </div>
-            <button id="reloadButton" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded transition duration-200">
-                Recargar Datos
-            </button>
+<body>
+    <!-- --- SECCIÓN DE LOGIN --- -->
+    <div id="login-overlay">
+        <div id="login-box">
+            <form id="loginForm">
+                <h2>Acceso Admin</h2>
+                <p>Ingrese la clave para continuar</p>
+                <div class="password-wrapper">
+                    <input 
+                        type="password" 
+                        id="password" 
+                        placeholder="Clave de acceso"
+                        required
+                    >
+                    <span class="toggle-password" id="togglePassword">
+                        <svg id="eye-open" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 10.166 7.36 6 12 6s8.577 4.166 9.964 5.683c.266.32.266.75 0 1.07C20.577 13.834 16.64 18 12 18s-8.577-4.166-9.964-5.683a1.012 1.012 0 0 1 0-.639Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        </svg>
+                        <svg id="eye-closed" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="display: none;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.234 19.5 12 19.5c.996 0 1.953-.138 2.863-.404M16.5 15.5l-1.414-1.414M19.07 10.93A10.473 10.473 0 0 0 12 4.5c-2.31 0-4.438.78-6.077 2.074M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m2.75 2.75 18.5 18.5" />
+                        </svg>
+                    </span>
+                </div>
+                <button type="submit" class="btn" id="loginBtn">
+                    Acceder
+                </button>
+                <p id="login-error">Clave incorrecta. Intente de nuevo.</p>
+            </form>
         </div>
+    </div>
 
-        <div id="messageContainer" class="hidden mb-6 p-4 rounded-md"></div>
+    <!-- --- CONTENIDO PRINCIPAL --- -->
+    <div id="app-content" class="p-4 md:p-8">
+        <div class="container mx-auto max-w-7xl">
+            <h1 class="text-4xl font-bold text-white mb-8">Panel de Administrador</h1>
 
-        <div class="overflow-x-auto bg-gray-800 rounded-lg shadow-lg">
-            <table class="w-full table-auto">
-                <thead>
-                    <tr>
-                        <th class="rounded-tl-lg">Nombre</th>
-                        <th>Email</th>
-                        <th>Teléfono</th>
-                        <th>Fecha de Envío</th>
-                        <th class="rounded-tr-lg">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="submissionsTbody">
-                    <tr id="loadingRow">
-                        <td colspan="5" class="text-center py-8 text-gray-400">Cargando envíos...</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                <div class="w-full md:w-1/2 lg:w-1/3">
+                    <input type="text" id="searchInput" class="form-input" placeholder="Buscar por nombre o email...">
+                </div>
+                <button id="reloadButton" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded transition duration-200">
+                    Recargar Datos
+                </button>
+            </div>
+
+            <div id="messageContainer" class="hidden mb-6 p-4 rounded-md"></div>
+
+            <div class="overflow-x-auto bg-gray-800 rounded-lg shadow-lg">
+                <table class="w-full table-auto">
+                    <thead>
+                        <tr>
+                            <th class="rounded-tl-lg">Nombre</th>
+                            <th>Email</th>
+                            <th>Teléfono</th>
+                            <th>Fecha de Envío</th>
+                            <th class="rounded-tr-lg">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="submissionsTbody">
+                        <tr id="loadingRow">
+                            <td colspan="5" class="text-center py-8 text-gray-400">Cargando envíos...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -126,13 +293,92 @@
     </div>
 
     <script>
-        const authToken = localStorage.getItem('authToken');
+        // URL del webhook de autenticación (EL MISMO QUE ZYNK)
+        const AUTH_WEBHOOK_URL = 'https://automation-n8n.ctqwrv.easypanel.host/webhook/zynk-auth';
+
+        // Selectores de DOM
+        const loginOverlay = document.getElementById('login-overlay');
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginError = document.getElementById('login-error');
+        const appContent = document.getElementById('app-content');
+        
+        const passwordInput = document.getElementById('password');
+        const togglePassword = document.getElementById('togglePassword');
+        const eyeOpen = document.getElementById('eye-open');
+        const eyeClosed = document.getElementById('eye-closed');
+
         let allSubmissions = [];
         const tbody = document.getElementById('submissionsTbody');
         const loadingRow = document.getElementById('loadingRow');
         const reloadButton = document.getElementById('reloadButton');
         const searchInput = document.getElementById('searchInput');
         const messageContainer = document.getElementById('messageContainer');
+
+        // Verificar autenticación al cargar
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+        });
+
+        function checkAuth() {
+            const token = sessionStorage.getItem('admin_token');
+            if (token) {
+                appContent.style.display = 'block';
+                loginOverlay.style.display = 'none';
+                fetchSubmissions();
+            } else {
+                appContent.style.display = 'none';
+                loginOverlay.style.display = 'flex';
+            }
+        }
+
+        // Toggle password visibility
+        togglePassword.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            if (type === 'password') {
+                eyeOpen.style.display = 'block';
+                eyeClosed.style.display = 'none';
+            } else {
+                eyeOpen.style.display = 'none';
+                eyeClosed.style.display = 'block';
+            }
+        });
+
+        // Manejador del login
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = passwordInput.value;
+            loginError.style.display = 'none';
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Verificando...';
+
+            try {
+                const response = await fetch(AUTH_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success && data.token) {
+                    sessionStorage.setItem('admin_token', data.token);
+                    checkAuth();
+                } else {
+                    throw new Error(data.message || 'Clave incorrecta');
+                }
+
+            } catch (error) {
+                loginError.textContent = 'Error de conexión o clave incorrecta.';
+                loginError.style.display = 'block';
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Acceder';
+                passwordInput.value = '';
+            }
+        });
 
         function showMessage(message, isError = false) {
             messageContainer.textContent = message;
@@ -179,6 +425,7 @@
         }
 
         async function fetchSubmissions() {
+            const authToken = sessionStorage.getItem('admin_token');
             loadingRow.style.display = 'table-row';
             tbody.innerHTML = '';
             tbody.appendChild(loadingRow);
@@ -192,8 +439,8 @@
                 });
                 
                 if (response.status === 401) {
-                    localStorage.removeItem('authToken');
-                    window.location.href = N8N_LOGIN_URL;
+                    sessionStorage.removeItem('admin_token');
+                    checkAuth();
                     return;
                 }
                 
@@ -330,10 +577,6 @@
         });
 
         reloadButton.addEventListener('click', fetchSubmissions);
-
-        if (authToken) {
-            fetchSubmissions();
-        }
     </script>
 </body>
 </html>
