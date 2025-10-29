@@ -1,5 +1,8 @@
 FROM node:18-alpine
 
+# Instalar curl para health checks (más ligero que wget)
+RUN apk add --no-cache curl
+
 WORKDIR /app
 
 # Copiar package.json
@@ -17,8 +20,9 @@ RUN mkdir -p /app/uploads && chmod 755 /app/uploads
 # Exponer el puerto 80
 EXPOSE 80
 
-# SIN HEALTH CHECK - Easypanel lo manejará
-# HEALTHCHECK removido temporalmente para debugging
+# Health check mejorado - espera más tiempo al inicio y usa curl
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:80/health || exit 1
 
 # Iniciar la app
 CMD ["node", "index.js"]
