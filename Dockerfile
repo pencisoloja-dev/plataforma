@@ -1,24 +1,28 @@
 # Usar la imagen oficial de Node.js 18
 FROM node:18-alpine
 
-# Establecer el directorio de trabajo dentro del contenedor
+# Establecer el directorio de trabajo
 WORKDIR /app
 
-# Copiar los archivos de configuración de la aplicación
-COPY package.json ./
-COPY package-lock.json ./
+# Copiar archivos de dependencias primero (para cache de Docker)
+COPY package*.json ./
 
-# Instalar las dependencias de la aplicación
-RUN npm install
+# Instalar dependencias
+RUN npm ci --only=production
 
-# Copiar el resto del código de la aplicación
+# Copiar el resto del código
 COPY . .
 
-# Crear el directorio de subidas
-RUN mkdir -p /app/uploads
+# Crear directorio de uploads con permisos
+RUN mkdir -p /app/uploads && \
+    chmod 755 /app/uploads
 
-# Exponer el puerto en el que la aplicación se ejecutará
+# Exponer el puerto
 EXPOSE 3000
 
-# El comando para iniciar la aplicación
+# Health check para Docker/Easypanel
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+
+# Comando para iniciar la aplicación
 CMD ["node", "index.js"]
