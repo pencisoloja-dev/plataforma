@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 80;
 
 // Configuración de CORS
 app.use(cors());
@@ -42,15 +42,52 @@ console.log('Configuración DB:', {
 // Crear un pool de conexiones
 const pool = mysql.createPool(dbConfig);
 
-// Verificar conexión a la base de datos
-pool.getConnection()
-    .then(connection => {
-        console.log('✅ Conexión a MySQL exitosa');
+// Verificar conexión y crear base de datos/tabla si no existen
+async function initDatabase() {
+    try {
+        // Primero conectar sin especificar base de datos
+        const initPool = mysql.createPool({
+            host: dbConfig.host,
+            user: dbConfig.user,
+            password: dbConfig.password,
+            port: dbConfig.port
+        });
+
+        const connection = await initPool.getConnection();
+        
+        // Crear base de datos si no existe
+        await connection.query(`CREATE DATABASE IF NOT EXISTS ${dbConfig.database}`);
+        console.log(`✅ Base de datos '${dbConfig.database}' verificada/creada`);
+        
+        // Usar la base de datos
+        await connection.query(`USE ${dbConfig.database}`);
+        
+        // Crear tabla si no existe
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS submissions (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                data JSON NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('✅ Tabla submissions verificada/creada');
+        
         connection.release();
-    })
-    .catch(err => {
-        console.error('❌ Error conectando a MySQL:', err.message);
-    });
+        await initPool.end();
+        
+        // Ahora verificar la conexión con el pool principal
+        const testConnection = await pool.getConnection();
+        console.log('✅ Conexión a MySQL exitosa');
+        testConnection.release();
+        
+    } catch (err) {
+        console.error('❌ Error inicializando base de datos:', err.message);
+        process.exit(1); // Salir si no se puede conectar
+    }
+}
+
+// Inicializar base de datos al arrancar
+initDatabase();
 
 // --- Configuración de Subida de Archivos (Multer) ---
 const storage = multer.diskStorage({
@@ -101,6 +138,29 @@ app.use('/uploads', express.static(uploadsDir));
 // --- Health Check (importante para Easypanel) ---
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// --- RUTA DE LOGIN TEMPORAL (para testing) ---
+// ¡ELIMINA ESTO EN PRODUCCIÓN y usa n8n!
+app.post('/api/login', (req, res) => {
+    const { username, password } = req.body;
+    
+    // CAMBIA estas credenciales hardcodeadas
+    if (username === 'admin' && password === 'tu_password_seguro_aqui') {
+        const token = jwt.sign(
+            { userId: username },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+        
+        res.json({ 
+            success: true, 
+            token,
+            redirectUrl: `/admin?token=${token}`
+        });
+    } else {
+        res.status(401).json({ success: false, message: 'Credenciales inválidas' });
+    }
 });
 
 // --- Rutas de Páginas HTML ---
