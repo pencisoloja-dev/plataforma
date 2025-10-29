@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Impuestos - Trabajador Independiente</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c; /* bg-gray-900 */
+        }
+
+        .form-section {
+            display: none;
+        }
+
+        #section-1 {
+            display: block;
+        }
+
+        /* Estilo para los inputs */
+        .form-input,
+        .form-select {
+            background-color: #4A5568; /* bg-gray-700 */
+            border-color: #718096; /* bg-gray-600 */
+            color: #E2E8F0; /* text-gray-200 */
+            border-radius: 0.375rem; /* rounded-md */
+            width: 100%;
+            padding: 0.75rem;
+            border-width: 1px;
+            border-style: solid;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #4299E1; /* border-blue-500 */
+            box-shadow: 0 0 0 2px #4299E1;
+        }
+
+        /* Estilo para los labels de checkboxes */
+        .checkbox-label {
+            background-color: #4A5568; /* bg-gray-700 */
+            color: #E2E8F0; /* text-gray-200 */
+            padding: 1rem;
+            border-radius: 0.375rem; /* rounded-md */
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .checkbox-label:hover {
+            background-color: #2D3748; /* bg-gray-800 */
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 1.25rem;
+            height: 1.25rem;
+            margin-right: 0.75rem;
+        }
+        
+        .label-required::after {
+            content: ' *';
+            color: #E53E3E; /* text-red-600 */
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body class="text-gray-200">
+
+    <div class="container mx-auto max-w-4xl p-4 md:p-8">
+
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-bold text-white mb-2">Declaración de Impuestos</h1>
+            <p class="text-xl text-gray-400">Trabajador Independiente</p>
+        </header>
+
+        <!-- Barra de Progreso -->
+        <div class="w-full bg-gray-700 rounded-full h-2.5 mb-8">
+            <div id="progressBar" class="bg-blue-600 h-2.5 rounded-full" style="width: 20%"></div>
+        </div>
+
+        <form id="taxForm" class="bg-gray-800 shadow-xl rounded-lg p-6 md:p-10">
+            
+            <div id="form-container">
+                <!-- SECCIÓN 1: INFORMACIÓN PERSONAL -->
+                <div id="section-1" class="form-section">
+                    <h2 class="text-2xl font-semibold mb-2 text-white">🔹 Sección 1: Datos personales del contribuyente</h2>
+                    <p class="text-gray-400 mb-6">Por favor completa esta información tal como aparece en tus documentos oficiales.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="nombre_completo" class="block text-sm font-medium mb-2 label-required">Nombre completo</label>
+                            <input type="text" id="nombre_completo" name="nombre_completo" class="form-input" required>
+                        </div>
+                        <div>
+                            <label for="ssn_itin" class="block text-sm font-medium mb-2 label-required">SSN o ITIN</label>
+                            <input type="text" id="ssn_itin" name="ssn_itin" class="form-input" required>
+                        </div>
+                        <div>
+                            <label for="fecha_nacimiento" class="block text-sm font-medium mb-2 label-required">Fecha de nacimiento</label>
+                            <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" class="form-input" required>
+                        </div>
+                        <div>
+                            <label for="estado_civil" class="block text-sm font-medium mb-2 label-required">Estado civil actual</label>
+                            <select id="estado_civil" name="estado_civil" class="form-select" required>
+                                <option value="">Selecciona...</option>
+                                <option value="soltero">Soltero(a)</option>
+                                <option value="casado">Casado(a)</option>
+                                <option value="separado">Separado(a)</option>
+                                <option value="viudo">Viudo(a)</option>
+                                <option value="cabeza_familia">Cabeza de familia</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 border-t border-gray-700 pt-6">
+                        <label class="block text-sm font-medium mb-2 label-required">Dirección</label>
+                        <input type="text" id="direccion_calle" name="direccion_calle" class="form-input mb-4" placeholder="Dirección (Calle y número)" required>
+                        <input type="text" id="direccion_apto" name="direccion_apto" class="form-input mb-4" placeholder="Apto, suite, etc. (Opcional)">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <input type="text" id="direccion_ciudad" name="direccion_ciudad" class="form-input" placeholder="Ciudad" required>
+                            <input type="text" id="direccion_estado" name="direccion_estado" class="form-input" placeholder="Estado" required>
+                            <input type="text" id="direccion_zip" name="direccion_zip" class="form-input" placeholder="Código Postal (ZIP)" required>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        <div>
+                            <label for="telefono" class="block text-sm font-medium mb-2 label-required">Teléfono de contacto</label>
+                            <input type="tel" id="telefono" name="telefono" class="form-input" required>
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium mb-2 label-required">Correo electrónico</label>
+                            <input type="email" id="email" name="email" class="form-input" required>
+                        </div>
+                    </div>
+
+                    <div classs="mt-6 border-t border-gray-700 pt-6">
+                        <label class="block text-sm font-medium mb-2 mt-6 label-required">¿Tienes dependientes que desees incluir?</label>
+                        <div class="flex gap-4">
+                            <label class="flex items-center"><input type="radio" name="tiene_dependientes" value="si" class="mr-2"> Sí</label>
+                            <label class="flex items-center"><input type="radio" name="tiene_dependientes" value="no" class="mr-2" checked> No</label>
+                        </div>
+                    </div>
+
+                    <div id="dependientesContainer" class="hidden mt-6 bg-gray-900 p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold mb-4 text-white">Información de Dependientes</h3>
+                        <div id="dependientesWrapper">
+                            <!-- Campos de dependiente 1 (base) -->
+                            <div class="dependiente-group mb-6 border-b border-gray-700 pb-6">
+                                <h4 class="font-medium text-white mb-2">Dependiente 1</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1 label-required">Nombre completo</label>
+                                        <input type="text" name="dependiente_nombre[]" class="form-input">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1 label-required">Fecha de nacimiento</label>
+                                        <input type="date" name="dependiente_fecha_nac[]" class="form-input">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1 label-required">SSN o ITIN</label>
+                                        <input type="text" name="dependiente_ssn[]" class="form-input">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1 label-required">Relación contigo</label>
+                                        <input type="text" name="dependiente_relacion[]" class="form-input">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" id="addDependienteBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-200">
+                            + Añadir otro dependiente
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 2: ACTIVIDAD INDEPENDIENTE -->
+                <div id="section-2" class="form-section">
+                    <h2 class="text-2xl font-semibold mb-2 text-white">💼 Sección 2: Detalles del trabajo o negocio</h2>
+                    <p class="text-gray-400 mb-6">Indica la información sobre tu trabajo independiente durante el año fiscal.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="ocupacion" class="block text-sm font-medium mb-2 label-required">1. Ocupación o tipo de negocio</label>
+                            <input type="text" id="ocupacion" name="ocupacion" class="form-input" placeholder="ej. limpieza, construcción..." required>
+                        </div>
+                        <div>
+                            <label for="nombre_comercial" class="block text-sm font-medium mb-2">2. Nombre comercial (o tu nombre personal)</label>
+                            <input type="text" id="nombre_comercial" name="nombre_comercial" class="form-input">
+                        </div>
+                        <div>
+                            <label for="ein" class="block text-sm font-medium mb-2">3. ¿Tienes EIN?</label>
+                            <select id="ein" name="ein" class="form-select">
+                                <option value="no">No</option>
+                                <option value="si">Sí</option>
+                                <option value="no_seguro">No estoy seguro</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="fecha_inicio_actividad" class="block text-sm font-medium mb-2">4. Fecha de inicio de tu actividad (aprox.)</label>
+                            <input type="date" id="fecha_inicio_actividad" name="fecha_inicio_actividad" class="form-input">
+                        </div>
+                        <div>
+                            <label for="estados_actividad" class="block text-sm font-medium mb-2 label-required">5. ¿En qué estado(s) realizaste tu actividad?</label>
+                            <input type="text" id="estados_actividad" name="estados_actividad" class="form-input" required>
+                        </div>
+                        <div>
+                            <label for="ingreso_total" class="block text-sm font-medium mb-2 label-required">8. Ingreso total aproximado del año</label>
+                            <input type="number" id="ingreso_total" name="ingreso_total" class="form-input" placeholder="$" required>
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <label class="block text-sm font-medium mb-2">6. ¿Qué tipo de ingresos recibiste?</label>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 bg-gray-700 p-4 rounded-lg">
+                            <label class="checkbox-label"><input type="checkbox" name="tipo_ingreso" value="1099-NEC"> 1099-NEC</label>
+                            <label class="checkbox-label"><input type="checkbox" name="tipo_ingreso" value="1099-K"> 1099-K</label>
+                            <label class="checkbox-label"><input type="checkbox" name="tipo_ingreso" value="efectivo"> Efectivo</label>
+                            <label class="checkbox-label"><input type="checkbox" name="tipo_ingreso" value="cheques"> Cheques</label>
+                            <label class="checkbox-label"><input type="checkbox" name="tipo_ingreso" value="transferencias"> Transferencias</label>
+                            <label class="checkbox-label"><input type="checkbox" name="tipo_ingreso" value="otro"> Otro</label>
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <label for="files_ingresos" class="block text-sm font-medium mb-2">7. Sube aquí tus 1099, etc. (Opcional)</label>
+                        <input type="file" id="files_ingresos" name="files_ingresos" class="form-input" multiple>
+                    </div>
+                </div>
+                
+                <!-- SECCIÓN 3: GASTOS DEDUCIBLES -->
+                <div id="section-3" class="form-section">
+                    <h2 class="text-2xl font-semibold mb-2 text-white">💳 Sección 3: Gastos deducibles</h2>
+                    <p class="text-gray-400 mb-6">Marca los tipos de gastos que tuviste y proporciona montos aproximados si los conoces.</p>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 bg-gray-700 p-4 rounded-lg">
+                        <label class="checkbox-label"><input type="checkbox" name="gastos" value="combustible"> Combustible / Millas</label>
+                        <label class="checkbox-label"><input type="checkbox" name="gastos" value="mantenimiento_vehiculo"> Mantenimiento vehículo</label>
+                        <label class="checkbox-label"><input type="checkbox" name="gastos" value="herramientas"> Herramientas / Materiales</label>
+                        <label class="checkbox-label"><input type="checkbox" name="gastos" value="telefono"> Teléfono / Plan de datos</label>
+                        <label class="checkbox-label"><input type="checkbox" name="gastos" value="internet"> Internet / Software</label>
+                        <label class="checkbox-label"><input type="checkbox" name="gastos" value="publicidad"> Publicidad</label>
+                        <label class="checkbox-label"><input type="checkbox" name="gastos" value="home_office"> Oficina en casa</label>
+                        <label class="checkbox-label"><input type="checkbox" name="gastos" value="uniformes"> Uniformes / Ropa trabajo</label>
+                        <label class="checkbox-label"><input type="checkbox" name="gastos" value="comidas"> Comidas de trabajo</label>
+                        <label class="checkbox-label"><input type="checkbox" name="gastos" value="capacitacion"> Capacitación / Cursos</label>
+                        <label class="checkbox-label"><input type="checkbox" name="gastos" value="seguros"> Seguros del negocio</label>
+                        <label class="checkbox-label"><input type="checkbox" name="gastos" value="otros"> Otros</label>
+                    </div>
+                    <div class="mt-6">
+                        <label for="gastos_descripcion" class="block text-sm font-medium mb-2">Describe tus principales gastos y montos (Opcional)</label>
+                        <textarea id="gastos_descripcion" name="gastos_descripcion" rows="4" class="form-input" placeholder="ej. Gasolina: $3000, Teléfono: $600..."></textarea>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 4: DOCUMENTOS ADICIONALES -->
+                <div id="section-4" class="form-section">
+                    <h2 class="text-2xl font-semibold mb-2 text-white">🏠 Sección 4: Documentos adicionales</h2>
+                    
+                    <div class="mt-6">
+                        <label class="block text-sm font-medium mb-2 label-required">1. ¿Tienes cuenta bancaria para depósito directo?</label>
+                        <div class="flex gap-4">
+                            <label class="flex items-center"><input type="radio" name="tiene_cuenta_bancaria" value="si" class="mr-2"> Sí</label>
+                            <label class="flex items-center"><input type="radio" name="tiene_cuenta_bancaria" value="no" class="mr-2" checked> No</label>
+                        </div>
+                    </div>
+
+                    <div id="cuentaBancariaContainer" class="hidden mt-6 bg-gray-900 p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold mb-4 text-white">Datos de la Cuenta Bancaria</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1 label-required">Nombre del banco</label>
+                                <input type="text" name="banco_nombre" class="form-input">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1 label-required">Routing number</label>
+                                <input type="text" name="banco_routing" class="form-input">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1 label-required">Account number</label>
+                                <input type="text" name="banco_cuenta" class="form-input">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 border-t border-gray-700 pt-6">
+                        <label class="block text-sm font-medium mb-2">2. ¿Recibiste alguno de estos formularios?</label>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 bg-gray-700 p-4 rounded-lg">
+                            <label class="checkbox-label"><input type="checkbox" name="otros_formularios" value="1095-A"> 1095-A (Marketplace)</label>
+                            <label class="checkbox-label"><input type="checkbox" name="otros_formularios" value="1098-T"> 1098-T (Estudios)</label>
+                            <label class="checkbox-label"><input type="checkbox" name="otros_formularios" value="1098-E"> 1098-E (Préstamos Est.)</label>
+                            <label class="checkbox-label"><input type="checkbox" name="otros_formularios" value="1098"> 1098 (Hipoteca)</label>
+                            <label class="checkbox-label"><input type="checkbox" name="otros_formularios" value="otro"> Otro</label>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <label for="otros_formularios_especifica" class="block text-sm font-medium mb-2">Si marcaste "Otro", especifica:</label>
+                        <input type="text" id="otros_formularios_especifica" name="otros_formularios_especifica" class="form-input">
+                    </div>
+
+                    <div class="mt-6">
+                        <label for="files_adicionales" class="block text-sm font-medium mb-2">3. Adjunta tus documentos si los tienes (Opcional)</label>
+                        <input type="file" id="files_adicionales" name="files_adicionales" class="form-input" multiple>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 5: INFORMACIÓN ADICIONAL -->
+                <div id="section-5" class="form-section">
+                    <h2 class="text-2xl font-semibold mb-2 text-white">💬 Sección 5: Información adicional</h2>
+                    <p class="text-gray-400 mb-6">Situación personal y comentarios.</p>
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">1. ¿Trabajaste en más de un estado durante el año?</label>
+                            <select name="trabajo_varios_estados" class="form-select">
+                                <option value="no">No</option>
+                                <option value="si">Sí</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">2. ¿Pagaste impuestos estimados al IRS (trimestrales)?</label>
+                            <select name="pago_impuestos_estimados" class="form-select">
+                                <option value="no">No</option>
+                                <option value="si">Sí</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">3. ¿Tuviste otros ingresos además de tu trabajo independiente?</label>
+                            <select name="otros_ingresos" class="form-select">
+                                <option value="no">No</option>
+                                <option value="si">Sí</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">4. ¿Tuviste cambios importantes este año (nuevo hijo, matrimonio, mudanza, etc.)?</label>
+                            <input type="text" name="cambios_importantes" class="form-input">
+                        </div>
+                        <div>
+                            <label for="comentarios_adicionales" class="block text-sm font-medium mb-2">5. Comentarios o aclaraciones adicionales:</label>
+                            <textarea id="comentarios_adicionales" name="comentarios_adicionales" rows="5" class="form-input"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenedor de Mensajes -->
+            <div id="messageContainer" class="hidden mt-6 p-4 rounded-md"></div>
+
+            <!-- Botones de Navegación -->
+            <div class="flex justify-between mt-10">
+                <button type="button" id="prevBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded transition duration-200" style="display: none;">
+                    Anterior
+                </button>
+                <button type="button" id="nextBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded transition duration-200 ml-auto">
+                    Siguiente
+                </button>
+                <button type="submit" id="submitBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded transition duration-200 ml-auto" style="display: none;">
+                    Enviar Formulario
+                </button>
+            </div>
+            
+            <!-- Sección de Confirmación (Oculta) -->
+            <div id="confirmationSection" class="form-section text-center p-8">
+                <h2 class="text-3xl font-bold text-green-400 mb-4">✅ ¡Formulario Enviado!</h2>
+                <p class="text-lg text-gray-300 mb-6">Gracias por completar este formulario. Esto nos ayudará a preparar tu declaración de forma más rápida y precisa.</p>
+                <p class="text-gray-400">Nos pondremos en contacto contigo si necesitamos información adicional.</p>
+            </div>
+
+        </form>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = 5;
+        const form = document.getElementById('taxForm');
+        const formContainer = document.getElementById('form-container');
+        const confirmationSection = document.getElementById('confirmationSection');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const progressBar = document.getElementById('progressBar');
+        const messageContainer = document.getElementById('messageContainer');
+
+        function showStep(step) {
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(`section-${step}`).style.display = 'block';
+
+            // Actualizar barra de progreso
+            progressBar.style.width = `${(step / totalSteps) * 100}%`;
+
+            // Control de botones
+            prevBtn.style.display = (step === 1) ? 'none' : 'inline-block';
+            nextBtn.style.display = (step === totalSteps) ? 'none' : 'inline-block';
+            submitBtn.style.display = (step === totalSteps) ? 'inline-block' : 'none';
+        }
+
+        function validateStep(step) {
+            const currentSection = document.getElementById(`section-${step}`);
+            const inputs = currentSection.querySelectorAll('input[required], select[required], textarea[required]');
+            let isValid = true;
+            
+            inputs.forEach(input => {
+                // Si el input está en un contenedor oculto, no lo valides
+                if (input.closest('.hidden')) {
+                    return;
+                }
+                
+                if (!input.value.trim()) {
+                    isValid = false;
+                    // Forzar el popup de validación del navegador
+                    input.reportValidity();
+                }
+            });
+            return isValid;
+        }
+
+        nextBtn.addEventListener('click', () => {
+            if (validateStep(currentStep)) {
+                currentStep++;
+                showStep(currentStep);
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            currentStep--;
+            showStep(currentStep);
+        });
+
+        // --- Lógica de campos condicionales ---
+
+        // 1. Dependientes
+        const tieneDependientesRadios = document.querySelectorAll('input[name="tiene_dependientes"]');
+        const dependientesContainer = document.getElementById('dependientesContainer');
+        const dependienteInputs = dependientesContainer.querySelectorAll('input');
+
+        tieneDependientesRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.value === 'si') {
+                    dependientesContainer.classList.remove('hidden');
+                    // Hacer que los campos del primer dependiente sean obligatorios
+                    dependienteInputs.forEach(input => input.setAttribute('required', 'required'));
+                } else {
+                    dependientesContainer.classList.add('hidden');
+                    // Quitar 'required' si se selecciona 'no'
+                    dependienteInputs.forEach(input => input.removeAttribute('required'));
+                }
+            });
+        });
+
+        // 2. Añadir más dependientes
+        let dependienteCount = 1;
+        const addDependienteBtn = document.getElementById('addDependienteBtn');
+        const dependientesWrapper = document.getElementById('dependientesWrapper');
+
+        addDependienteBtn.addEventListener('click', () => {
+            dependienteCount++;
+            const newDependienteGroup = document.createElement('div');
+            newDependienteGroup.className = 'dependiente-group mb-6 border-b border-gray-700 pb-6';
+            newDependienteGroup.innerHTML = `
+                <h4 class="font-medium text-white mb-2">Dependiente ${dependienteCount}</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1 label-required">Nombre completo</label>
+                        <input type="text" name="dependiente_nombre[]" class="form-input" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1 label-required">Fecha de nacimiento</label>
+                        <input type="date" name="dependiente_fecha_nac[]" class="form-input" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1 label-required">SSN o ITIN</label>
+                        <input type="text" name="dependiente_ssn[]" class="form-input" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1 label-required">Relación contigo</label>
+                        <input type="text" name="dependiente_relacion[]" class="form-input" required>
+                    </div>
+                </div>
+            `;
+            dependientesWrapper.appendChild(newDependienteGroup);
+        });
+
+        // 3. Cuenta Bancaria
+        const tieneCuentaRadios = document.querySelectorAll('input[name="tiene_cuenta_bancaria"]');
+        const cuentaBancariaContainer = document.getElementById('cuentaBancariaContainer');
+        const cuentaInputs = cuentaBancariaContainer.querySelectorAll('input');
+
+        tieneCuentaRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.value === 'si') {
+                    cuentaBancariaContainer.classList.remove('hidden');
+                    cuentaInputs.forEach(input => input.setAttribute('required', 'required'));
+                } else {
+                    cuentaBancariaContainer.classList.add('hidden');
+                    cuentaInputs.forEach(input => input.removeAttribute('required'));
+                }
+            });
+        });
+
+
+        // --- Lógica de Envío del Formulario (a VPS Backend) ---
+
+        function showMessage(message, isError = false) {
+            messageContainer.textContent = message;
+            messageContainer.className = isError 
+                ? 'mt-6 p-4 rounded-md bg-red-800 text-red-200' 
+                : 'mt-6 p-4 rounded-md bg-green-800 text-green-200';
+            messageContainer.classList.remove('hidden');
+        }
+
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            if (!validateStep(currentStep)) {
+                showMessage('Por favor, completa todos los campos obligatorios.', true);
+                return;
+            }
+
+            showMessage('Enviando formulario, por favor espera...', false);
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Enviando...';
+            
+            try {
+                // 1. Recopilar datos del formulario
+                const rawFormData = new FormData(form);
+                const formDataObject = {};
+                
+                // Procesar campos normales
+                rawFormData.forEach((value, key) => {
+                    if (!key.endsWith('[]')) {
+                        formDataObject[key] = value;
+                    }
+                });
+
+                // Procesar campos de array (checkboxes)
+                formDataObject.tipo_ingreso = rawFormData.getAll('tipo_ingreso');
+                formDataObject.gastos = rawFormData.getAll('gastos');
+                formDataObject.otros_formularios = rawFormData.getAll('otros_formularios');
+
+                // Procesar dependientes (campos de array)
+                formDataObject.dependientes = [];
+                const depNombres = rawFormData.getAll('dependiente_nombre[]');
+                const depFechas = rawFormData.getAll('dependiente_fecha_nac[]');
+                const depSSNs = rawFormData.getAll('dependiente_ssn[]');
+                const depRelaciones = rawFormData.getAll('dependiente_relacion[]');
+
+                for (let i = 0; i < depNombres.length; i++) {
+                    if (depNombres[i]) { // Asegurarse de que el dependiente tiene nombre
+                        formDataObject.dependientes.push({
+                            nombre: depNombres[i],
+                            fecha_nac: depFechas[i],
+                            ssn: depSSNs[i],
+                            relacion: depRelaciones[i]
+                        });
+                    }
+                }
+
+                // Eliminar los campos de dependiente individuales del objeto principal
+                delete formDataObject['dependiente_nombre[]'];
+                delete formDataObject['dependiente_fecha_nac[]'];
+                delete formDataObject['dependiente_ssn[]'];
+                delete formDataObject['dependiente_relacion[]'];
+
+                // 2. Preparar FormData para el envío (incluyendo archivos)
+                const submissionFormData = new FormData();
+                
+                // Añadir el objeto JSON de datos como un string
+                submissionFormData.append('formData', JSON.stringify(formDataObject));
+                
+                // Añadir un ID de usuario simple (para nombrar archivos en el backend)
+                submissionFormData.append('userId', formDataObject.ssn_itin || 'user-' + Date.now());
+
+                // Añadir los archivos de ingresos
+                const filesIngresos = document.getElementById('files_ingresos').files;
+                for (let i = 0; i < filesIngresos.length; i++) {
+                    submissionFormData.append('files', filesIngresos[i], filesIngresos[i].name);
+                }
+
+                // Añadir los archivos adicionales
+                const filesAdicionales = document.getElementById('files_adicionales').files;
+                for (let i = 0; i < filesAdicionales.length; i++) {
+                    submissionFormData.append('files', filesAdicionales[i], filesAdicionales[i].name);
+                }
+
+                // 3. Enviar al backend
+                // Reemplaza '/api/submit-form' con la URL completa si es necesario
+                const response = await fetch('/api/submit-form', {
+                    method: 'POST',
+                    body: submissionFormData,
+                    // No establecer 'Content-Type' manualmente, el navegador lo hará
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Error en el servidor');
+                }
+
+                // 4. Éxito
+                showMessage('Formulario enviado con éxito.', false);
+                // Ocultar el formulario y mostrar la confirmación
+                formContainer.style.display = 'none';
+                document.getElementById('prevBtn').style.display = 'none';
+                document.getElementById('nextBtn').style.display = 'none';
+                document.getElementById('submitBtn').style.display = 'none';
+                document.getElementById('progressBar').style.display = 'none';
+                confirmationSection.style.display = 'block';
+
+            } catch (error) {
+                console.error('Error al enviar el formulario:', error);
+                showMessage(`Error: ${error.message}. Por favor, inténtalo de nuevo.`, true);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Enviar Formulario';
+            }
+        }
+
+        form.addEventListener('submit', handleFormSubmit);
+
+        // Inicializar
+        showStep(currentStep);
+    </script>
+</body>
+
+</html>
+
