@@ -1,182 +1,89 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Administrador - Envíos</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-/* ... (código existente) */
-/* ... (código existente) */
-/* ... (código existente) */
         body {
-/* ... (código existente) */
             font-family: 'Inter', sans-serif;
-/* ... (código existente) */
-            background-color: #1a202c; /* bg-gray-900 */
-/* ... (código existente) */
-            color: #e2e8f0; /* text-gray-200 */
-/* ... (código existente) */
+            background-color: #1a202c;
+            color: #e2e8f0;
         }
-/* ... (código existente) */
-/* ... (código existente) */
-        /* Estilos de la tabla */
-/* ... (código existente) */
         th {
-/* ... (código existente) */
-            background-color: #2d3748; /* bg-gray-800 */
-/* ... (código existente) */
-            color: #cbd5e0; /* text-gray-400 */
-/* ... (código existente) */
+            background-color: #2d3748;
+            color: #cbd5e0;
             padding: 0.75rem 1rem;
-/* ... (código existente) */
             text-align: left;
-/* ... (código existente) */
             font-weight: 600;
-/* ... (código existente) */
         }
-/* ... (código existente) */
-/* ... (código existente) */
         td {
-/* ... (código existente) */
-            background-color: #4a5568; /* bg-gray-700 */
-/* ... (código existente) */
-            border-bottom: 1px solid #2d3748; /* border-gray-800 */
-/* ... (código existente) */
+            background-color: #4a5568;
+            border-bottom: 1px solid #2d3748;
             padding: 0.75rem 1rem;
-/* ... (código existente) */
         }
-/* ... (código existente) */
-/* ... (código existente) */
         tr:hover td {
-/* ... (código existente) */
-            background-color: #2d3748; /* bg-gray-800 */
-/* ... (código existente) */
+            background-color: #2d3748;
         }
-/* ... (código existente) */
-/* ... (código existente) */
-        /* Estilos del Modal */
-/* ... (código existente) */
         .modal-backdrop {
-/* ... (código existente) */
             position: fixed;
-/* ... (código existente) */
             top: 0;
-/* ... (código existente) */
             left: 0;
-/* ... (código existente) */
             width: 100%;
-/* ... (código existente) */
             height: 100%;
-/* ... (código existente) */
             background-color: rgba(0, 0, 0, 0.75);
-/* ... (código existente) */
             display: flex;
-/* ... (código existente) */
             justify-content: center;
-/* ... (código existente) */
             align-items: center;
-/* ... (código existente) */
             z-index: 50;
-/* ... (código existente) */
         }
-/* ... (código existente) */
-/* ... (código existente) */
         .modal-content {
-/* ... (código existente) */
-            background-color: #2d3748; /* bg-gray-800 */
-/* ... (código existente) */
-            color: #e2e8f0; /* text-gray-200 */
-/* ... (código existente) */
-            border-radius: 0.5rem; /* rounded-lg */
-/* ... (código existente) */
+            background-color: #2d3748;
+            color: #e2e8f0;
+            border-radius: 0.5rem;
             width: 90%;
-/* ... (código existente) */
             max-width: 800px;
-/* ... (código existente) */
             max-height: 90vh;
-/* ... (código existente) */
             overflow-y: auto;
-/* ... (código existente) */
             z-index: 100;
-/* ... (código existente) */
         }
-/* ... (código existente) */
-        
-/* ... (código existente) */
-        /* Estilo para el input de búsqueda */
-/* ... (código existente) */
         .form-input {
-/* ... (código existente) */
-            background-color: #4A5568; /* bg-gray-700 */
-/* ... (código existente) */
-            border-color: #718096; /* bg-gray-600 */
-/* ... (código existente) */
-            color: #E2E8F0; /* text-gray-200 */
-/* ... (código existente) */
-            border-radius: 0.375rem; /* rounded-md */
-/* ... (código existente) */
+            background-color: #4A5568;
+            border-color: #718096;
+            color: #E2E8F0;
+            border-radius: 0.375rem;
             width: 100%;
-/* ... (código existente) */
             padding: 0.5rem 1rem;
-/* ... (código existente) */
             border-width: 1px;
-/* ... (código existente) */
             border-style: solid;
-/* ... (código existente) */
         }
-/* ... (código existente) */
         .form-input:focus {
-/* ... (código existente) */
             outline: none;
-/* ... (código existente) */
-            border-color: #4299E1; /* border-blue-500 */
-/* ... (código existente) */
+            border-color: #4299E1;
             box-shadow: 0 0 0 2px #4299E1;
-/* ... (código existente) */
         }
-/* ... (código existente) */
     </style>
     
-    <!-- SCRIPT DE AUTENTICACIÓN (NUEVO) -->
-    <!-- Debe ir en el <head> para ejecutarse antes de que se muestre nada -->
     <script>
-        // ¡¡IMPORTANTE!! Ajusta esta URL a tu página de login de n8n
-        const N8N_LOGIN_URL = 'https://zynk.ezsystems.cloud/login'; // <- ¡CAMBIA ESTO!
-
-        // 1. Buscar token en localStorage
+        const N8N_LOGIN_URL = 'https://zynk.ezsystems.cloud/login';
         let authToken = localStorage.getItem('authToken');
-
-        // 2. Buscar token en la URL (enviado por n8n)
         const urlParams = new URLSearchParams(window.location.search);
         const urlToken = urlParams.get('token');
 
         if (urlToken) {
-            // Si hay token en la URL, guardarlo y recargar
             localStorage.setItem('authToken', urlToken);
-            // Limpiar la URL para que el token no quede visible
             window.location.replace(window.location.pathname);
         } else if (!authToken) {
-            // Si no hay token en ningún lado, redirigir al login
             window.location.href = N8N_LOGIN_URL;
         }
-        
-        // Si el script llega aquí, significa que hay un authToken y podemos cargar la página.
     </script>
 </head>
 
 <body class="p-4 md:p-8">
-
     <div class="container mx-auto max-w-7xl">
         <h1 class="text-4xl font-bold text-white mb-8">Panel de Administrador</h1>
-<!-- ... (código existente) -->
-<!-- ... (código existente) -->
-<!-- ... (código existente) -->
-        <!-- Controles y Búsqueda -->
-<!-- ... (código existente) */
-/* ... (código existente) */
-/* ... (código existente) */
+
         <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
             <div class="w-full md:w-1/2 lg:w-1/3">
                 <input type="text" id="searchInput" class="form-input" placeholder="Buscar por nombre o email...">
@@ -185,21 +92,9 @@
                 Recargar Datos
             </button>
         </div>
-<!-- ... (código existente) -->
-<!-- ... (código existente) -->
-<!-- ... (código existente) -->
-        <!-- Contenedor de Mensajes -->
-<!-- ... (código existente) */
-/* ... (código existente) */
-/* ... (código existente) */
+
         <div id="messageContainer" class="hidden mb-6 p-4 rounded-md"></div>
-<!-- ... (código existente) -->
-<!-- ... (código existente) -->
-<!-- ... (código existente) -->
-        <!-- Tabla de Envíos -->
-<!-- ... (código existente) */
-/* ... (código existente) */
-/* ... (código existente) */
+
         <div class="overflow-x-auto bg-gray-800 rounded-lg shadow-lg">
             <table class="w-full table-auto">
                 <thead>
@@ -212,7 +107,6 @@
                     </tr>
                 </thead>
                 <tbody id="submissionsTbody">
-                    <!-- Las filas se cargarán aquí -->
                     <tr id="loadingRow">
                         <td colspan="5" class="text-center py-8 text-gray-400">Cargando envíos...</td>
                     </tr>
@@ -220,445 +114,226 @@
             </table>
         </div>
     </div>
-<!-- ... (código existente) -->
-<!-- ... (código existente) -->
-<!-- ... (código existente) -->
-    <!-- Modal para ver detalles -->
-<!-- ... (código existente) */
-/* ... (código existente) */
-/* ... (código existente) */
+
     <div id="detailsModal" class="modal-backdrop hidden">
         <div class="modal-content">
-            <!-- Header del Modal -->
             <div class="flex justify-between items-center p-6 border-b border-gray-600">
                 <h2 class="text-2xl font-semibold text-white">Detalles del Envío</h2>
                 <button id="closeModalBtn" class="text-gray-400 hover:text-white text-3xl">&times;</button>
             </div>
-            <!-- Cuerpo del Modal -->
-            <div id="modalBody" class="p-6 md:p-8">
-                <!-- El contenido se cargará aquí -->
-            </div>
+            <div id="modalBody" class="p-6 md:p-8"></div>
         </div>
     </div>
-<!-- ... (código existente) -->
-<!-- ... (código existente) -->
-<!-- ... (código existente) -->
+
     <script>
-        // El script de autenticación ya se ejecutó en el <head>
-        // Obtenemos el token guardado para usarlo en la API
         const authToken = localStorage.getItem('authToken');
-        
-        let allSubmissions = []; // Almacenará todos los datos para filtrar
-/* ... (código existente) */
-/* ... (código existente) */
-/* ... (código existente)
+        let allSubmissions = [];
         const tbody = document.getElementById('submissionsTbody');
-/* ... (código existente) */
         const loadingRow = document.getElementById('loadingRow');
-/* ... (código existente) */
         const reloadButton = document.getElementById('reloadButton');
-/* ... (código existente) */
         const searchInput = document.getElementById('searchInput');
-/* ... (código existente) */
         const messageContainer = document.getElementById('messageContainer');
-/* ... (código existente) */
-/* ... (código existente) */
+
         function showMessage(message, isError = false) {
-/* ... (código existente) */
             messageContainer.textContent = message;
-/* ... (código existente) */
             messageContainer.className = isError 
-/* ... (código existente) */
                 ? 'mb-6 p-4 rounded-md bg-red-800 text-red-200' 
-/* ... (código existente) */
                 : 'mb-6 p-4 rounded-md bg-green-800 text-green-200';
-/* ... (código existente) */
             messageContainer.classList.remove('hidden');
-/* ... (código existente) */
         }
-/* ... (código existente) */
-/* ... (código existente) */
-        // Función para renderizar la tabla
-/* ... (código existente) */
+
         function renderTable(data) {
-/* ... (código existente) */
-            tbody.innerHTML = ''; // Limpiar tabla
-/* ... (código existente) */
+            tbody.innerHTML = '';
             if (data.length === 0) {
-/* ... (código existente) */
                 tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-400">No se encontraron envíos.</td></tr>';
-/* ... (código existente) */
                 return;
-/* ... (código existente) */
             }
-/* ... (código existente) */
-/* ... (código existente) */
+
             data.forEach(submission => {
-/* ... (código existente) */
                 const tr = document.createElement('tr');
-/* ... (código existente) */
                 tr.className = 'cursor-pointer';
-/* ... (código existente) */
                 
-/* ... (código existente) */
                 tr.innerHTML = `
-/* ... (código existente) */
                     <td>${submission.nombre_completo || 'N/A'}</td>
-/* ... (código existente) */
                     <td>${submission.email || 'N/A'}</td>
-/* ... (código existente) */
                     <td>${submission.telefono || 'N/A'}</td>
-/* ... (código existente) */
                     <td>${submission.submission_date ? new Date(submission.submission_date).toLocaleString('es-EC') : 'N/A'}</td>
-/* ... (código existente) */
                     <td>
-/* ... (código existente) */
                         <button class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-bold py-1 px-3 rounded" data-id="${submission.id}">
-/* ... (código existente) */
                             Ver Detalles
-/* ... (código existente) */
                         </button>
-/* ... (código existente) */
                     </td>
-/* ... (código existente) */
                 `;
-/* ... (código existente) */
                 
-/* ... (código existente) */
-                // Añadir evento al botón
-/* ... (código existente) */
                 tr.querySelector('button').addEventListener('click', (e) => {
-/* ... (código existente) */
-                    e.stopPropagation(); // Evitar que el clic se propague a la fila
-/* ... (código existente) */
+                    e.stopPropagation();
                     showModal(submission.id);
-/* ... (código existente) */
                 });
-/* ... (código existente) */
-/* ... (código existente) */
-                // Añadir evento a la fila
-/* ... (código existente) */
+
                 tr.addEventListener('click', () => {
-/* ... (código existente) */
                     showModal(submission.id);
-/* ... (código existente) */
                 });
-/* ... (código existente) */
-/* ... (código existente) */
+
                 tbody.appendChild(tr);
-/* ... (código existente) */
             });
-/* ... (código existente) */
         }
-/* ... (código existente) */
-/* ... (código existente) */
-        // Función para Cargar los Datos (ACTUALIZADA con Auth)
+
         async function fetchSubmissions() {
-/* ... (código existente) */
             loadingRow.style.display = 'table-row';
-/* ... (código existente) */
-            tbody.innerHTML = ''; // Limpiar
-/* ... (código existente) */
+            tbody.innerHTML = '';
             tbody.appendChild(loadingRow);
-/* ... (código existente) */
             showMessage('Cargando datos del servidor...', false);
-/* ... (código existente) */
-/* ... (código existente) */
+
             try {
-/* ... (código existente) */
-                // Esta es la llamada real a tu backend
                 const response = await fetch('/api/get-submissions', {
                     headers: {
-                        'Authorization': `Bearer ${authToken}` // <-- AÑADIDO: Enviar el token
+                        'Authorization': `Bearer ${authToken}`
                     }
                 });
                 
                 if (response.status === 401) {
-                    // Token inválido o expirado
-                    localStorage.removeItem('authToken'); // Limpiar token
-                    window.location.href = N8N_LOGIN_URL; // Re-loguear
+                    localStorage.removeItem('authToken');
+                    window.location.href = N8N_LOGIN_URL;
                     return;
                 }
                 
                 if (!response.ok) {
                     throw new Error(`Error del servidor: ${response.statusText}`);
                 }
-/* ... (código existente) */
-/* ... (código existente) */
+
                 const data = await response.json();
-/* ... (código existente) */
-                allSubmissions = data; // Guardar datos originales
-/* ... (código existente) */
-                renderTable(allSubmissions); // Renderizar la tabla
-/* ... (código existente) */
+                allSubmissions = data;
+                renderTable(allSubmissions);
                 showMessage(`Datos cargados. ${data.length} envíos encontrados.`, false);
-/* ... (código existente) */
-/* ... (código existente) */
+
             } catch (error) {
-/* ... (código existente) */
                 console.error('Error al cargar los datos:', error);
-/* ... (código existente) */
                 showMessage(`Error al cargar datos: ${error.message}. ¿Está el servidor funcionando?`, true);
-/* ... (código existente) */
                 tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-red-400">Error al cargar datos.</td></tr>`;
-/* ... (código existente) */
             } finally {
-/* ... (código existente) */
                 loadingRow.style.display = 'none';
-/* ... (código existente) */
             }
-/* ... (código existente) */
         }
-/* ... (código existente) */
-/* ... (código existente) */
-        // --- Lógica de Búsqueda y Filtrado ---
-/* ... (código existente) */
+
         searchInput.addEventListener('input', (e) => {
-/* ... (código existente) */
             const searchTerm = e.target.value.toLowerCase().trim();
-/* ... (código existente) */
             if (!searchTerm) {
-/* ... (código existente) */
-                renderTable(allSubmissions); // Mostrar todos si la búsqueda está vacía
-/* ... (código existente) */
+                renderTable(allSubmissions);
                 return;
-/* ... (código existente) */
             }
-/* ... (código existente) */
-/* ... (código existente) */
+
             const filteredData = allSubmissions.filter(submission => {
-/* ... (código existente) */
                 const nombre = (submission.nombre_completo || '').toLowerCase();
-/* ... (código existente) */
                 const email = (submission.email || '').toLowerCase();
-/* ... (código existente) */
                 return nombre.includes(searchTerm) || email.includes(searchTerm);
-/* ... (código existente) */
             });
-/* ... (código existente) */
-/* ... (código existente) */
+
             renderTable(filteredData);
-/* ... (código existente) */
         });
-/* ... (código existente) */
-/* ... (código existente) */
-        // --- Lógica del Modal ---
-/* ... (código existente) */
+
         const modal = document.getElementById('detailsModal');
-/* ... (código existente) */
         const modalBody = document.getElementById('modalBody');
-/* ... (código existente) */
         const closeModalBtn = document.getElementById('closeModalBtn');
-/* ... (código existente) */
-/* ... (código existente) */
+
         function formatField(key) {
-/* ... (código existente) */
             return (key.charAt(0).toUpperCase() + key.slice(1)).replace(/_/g, ' ');
-/* ... (código existente) */
         }
-/* ... (código existente) */
         
-/* ... (código existente) */
         function renderSection(title, data, keys) {
-/* ... (código existente) */
             let html = `<h3 class="text-xl font-semibold text-blue-300 mb-4">${title}</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 mb-6">`;
-/* ... (código existente) */
             keys.forEach(key => {
-/* ... (código existente) */
                 if (data[key]) {
-/* ... (código existente) */
                     html += `
-/* ... (código existente) */
                         <div>
-/* ... (código existente) */
                             <strong class="text-gray-400">${formatField(key)}:</strong>
-/* ... (código existente) */
                             <span class="text-white">${data[key]}</span>
-/* ... (código existente) */
                         </div>
-/* ... (código existente) */
                     `;
-/* ... (código existente) */
                 }
-/* ... (código existente) */
             });
-/* ... (código existente) */
             return html + '</div>';
-/* ... (código existente) */
         }
-/* ... (código existente) */
-/* ... (código existente) */
+
         function showModal(submissionId) {
-/* ... (código existente) */
             const submission = allSubmissions.find(s => s.id === submissionId);
-/* ... (código existente) */
             if (!submission) return;
-/* ... (código existente) */
-/* ... (código existente) */
-            modalBody.innerHTML = ''; // Limpiar modal
-/* ... (código existente) */
-/* ... (código existente) */
-            // Sección 1: Personal
-/* ... (código existente) */
-            modalBody.innerHTML += renderSection('🔹 Información Personal', submission, [
-/* ... (código existente) */
+
+            modalBody.innerHTML = '';
+
+            modalBody.innerHTML += renderSection('📋 Información Personal', submission, [
                 'nombre_completo', 'ssn_itin', 'fecha_nacimiento', 'estado_civil', 'telefono', 'email', 'direccion_calle', 'direccion_apto', 'direccion_ciudad', 'direccion_estado', 'direccion_zip'
-/* ... (código existente) */
             ]);
-/* ... (código existente) */
-/* ... (código existente) */
-            // Dependientes
-/* ... (código existente) */
+
             if (submission.dependientes && submission.dependientes.length > 0) {
-/* ... (código existente) */
                 let depHtml = '<h3 class="text-xl font-semibold text-blue-300 mb-4">Dependientes</h3>';
-/* ... (código existente) */
                 submission.dependientes.forEach((dep, index) => {
-/* ... (código existente) */
                     depHtml += `<div class="mb-4 p-4 bg-gray-700 rounded-lg">
-/* ... (código existente) */
                         <strong class="text-white">Dependiente ${index + 1}</strong>
-/* ... (código existente) */
                         <div class="grid grid-cols-2 gap-2 mt-2">
-/* ... (código existente) */
                             <div><span class="text-gray-400">Nombre:</span> ${dep.nombre}</div>
-/* ... (código existente) */
                             <div><span class="text-gray-400">SSN:</span> ${dep.ssn}</div>
-/* ... (código existente) */
                             <div><span class="text-gray-400">Fecha Nac:</span> ${dep.fecha_nac}</div>
-/* ... (código existente) */
                             <div><span class="text-gray-400">Relación:</span> ${dep.relacion}</div>
-/* ... (código existente) */
                         </div>
-/* ... (código existente) */
                     </div>`;
-/* ... (código existente) */
                 });
-/* ... (código existente) */
                 modalBody.innerHTML += depHtml;
-/* ... (código existente) */
             }
-/* ... (código existente) */
-/* ... (código existente) */
-            // Sección 2: Negocio
-/* ... (código existente) */
+
             modalBody.innerHTML += renderSection('💼 Actividad Independiente', submission, [
-/* ... (código existente) */
                 'ocupacion', 'nombre_comercial', 'ein', 'fecha_inicio_actividad', 'estados_actividad', 'ingreso_total'
-/* ... (código existente) */
             ]);
-/* ... (código existente) */
+            
             if (submission.tipo_ingreso && submission.tipo_ingreso.length > 0) {
-/* ... (código existente) */
                 modalBody.innerHTML += `<div class="mb-6"><strong class="text-gray-400">Tipos de Ingreso:</strong> <span class="text-white">${submission.tipo_ingreso.join(', ')}</span></div>`;
-/* ... (código existente) */
             }
-/* ... (código existente) */
             
-/* ... (código existente) */
-            // Sección 3: Gastos
-/* ... (código existente) */
             if (submission.gastos && submission.gastos.length > 0) {
-/* ... (código existente) */
                 modalBody.innerHTML += `<div class="mb-6"><strong class="text-gray-400">Tipos de Gastos:</strong> <span class="text-white">${submission.gastos.join(', ')}</span></div>`;
-/* ... (código existente) */
             }
-/* ... (código existente) */
             if (submission.gastos_descripcion) {
-/* ... (código existente) */
                 modalBody.innerHTML += `<div class="mb-6"><strong class="text-gray-400">Descripción Gastos:</strong> <p class="text-white p-2 bg-gray-700 rounded">${submission.gastos_descripcion}</p></div>`;
-/* ... (código existente) */
             }
-/* ... (código existente) */
             
-/* ... (código existente) */
-            // Sección 4: Adicional
-/* ... (código existente) */
             if (submission.banco_nombre) {
-/* ... (código existente) */
                 modalBody.innerHTML += renderSection('🏠 Cuenta Bancaria', submission, ['banco_nombre', 'banco_routing', 'banco_cuenta']);
-/* ... (código existente) */
             }
-/* ... (código existente) */
             if (submission.otros_formularios && submission.otros_formularios.length > 0) {
-/* ... (código existente) */
                 modalBody.innerHTML += `<div class="mb-6"><strong class="text-gray-400">Otros Formularios:</strong> <span class="text-white">${submission.otros_formularios.join(', ')}</span></div>`;
-/* ... (código existente) */
             }
-/* ... (código existente) */
             
-/* ... (código existente) */
-            // Sección 5: Comentarios
-/* ... (código existente) */
             modalBody.innerHTML += renderSection('💬 Información Adicional', submission, [
-/* ... (código existente) */
                 'trabajo_varios_estados', 'pago_impuestos_estimados', 'otros_ingresos', 'cambios_importantes', 'comentarios_adicionales'
-/* ... (código existente) */
             ]);
-/* ... (código existente) */
             
-/* ... (código existente) */
-            // Archivos Subidos
-/* ... (código existente) */
             const files = JSON.parse(submission.files || '[]');
-/* ... (código existente) */
             if (files.length > 0) {
-/* ... (código existente) */
                 let filesHtml = '<h3 class="text-xl font-semibold text-blue-300 mb-4">Archivos Adjuntos</h3><ul class="list-disc pl-5 mb-6">';
-/* ... (código existente) */
                 files.forEach(file => {
-/* ... (código existente) */
-                    // Importante: El 'file.url' debe ser la ruta correcta en tu servidor
-/* ... (código existente) */
                     filesHtml += `<li class="mb-2"><a href="${file.url}" target="_blank" class="text-blue-400 hover:text-blue-300 underline">${file.originalName || 'Archivo'}</a></li>`;
-/* ... (código existente) */
                 });
-/* ... (código existente) */
                 filesHtml += '</ul>';
-/* ... (código existente) */
                 modalBody.innerHTML += filesHtml;
-/* ... (código existente) */
             }
-/* ... (código existente) */
-/* ... (código existente) */
+
             modal.classList.remove('hidden');
-/* ... (código existente) */
         }
-/* ... (código existente) */
-/* ... (código existente) */
+
         closeModalBtn.addEventListener('click', () => {
-/* ... (código existente) */
             modal.classList.add('hidden');
-/* ... (código existente) */
         });
-/* ... (código existente) */
         
-/* ... (código existente) */
         modal.addEventListener('click', (e) => {
-/* ... (código existente) */
             if (e.target === modal) {
-/* ... (código existente) */
                 modal.classList.add('hidden');
-CSS
-/* ... (código existente) */
             }
-/* ... (código existente) */
         });
-/* ... (código existente) */
-/* ... (código existente) */
-/* ... (código existente) */
-        // Event Listener del botón de recarga
-/* ... (código existente) */
+
         reloadButton.addEventListener('click', fetchSubmissions);
-/* ... (código existente) */
-/* ... (código existente) */
-        // Carga inicial de datos
-        // Se ejecuta solo si el script de autenticación fue exitoso
+
         if (authToken) {
             fetchSubmissions();
         }
     </script>
 </body>
-
 </html>
-
