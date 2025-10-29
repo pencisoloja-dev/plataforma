@@ -426,6 +426,11 @@
 
         async function fetchSubmissions() {
             const authToken = sessionStorage.getItem('admin_token');
+            if (!authToken) {
+                checkAuth();
+                return;
+            }
+
             loadingRow.style.display = 'table-row';
             tbody.innerHTML = '';
             tbody.appendChild(loadingRow);
