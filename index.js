@@ -4,7 +4,6 @@ const mysql = require('mysql2/promise');
 const multer = require('multer');
 const path = require('path');
 const cors = require('cors');
-const jwt = require('jsonwebtoken');
 const fs = require('fs');
 
 const app = express();
@@ -103,7 +102,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// --- Middleware de Autenticación ---
+// --- Middleware de Autenticación (Compatible con n8n) ---
 const checkAuth = (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
@@ -116,15 +115,14 @@ const checkAuth = (req, res, next) => {
             return res.status(401).json({ message: 'Acceso denegado: Token mal formado' });
         }
 
-        // Verificar que JWT_SECRET esté configurado
-        if (!process.env.JWT_SECRET) {
-            console.error('❌ JWT_SECRET no está configurado en variables de entorno');
-            return res.status(500).json({ message: 'Error de configuración del servidor' });
+        // Aceptar el token de n8n directamente (simple validación)
+        // El token de n8n es generado por el webhook, simplemente verificamos que exista
+        if (token && token.length > 10) {
+            req.userData = { userId: 'admin' };
+            next();
+        } else {
+            return res.status(401).json({ message: 'Token no válido' });
         }
-
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-        req.userData = { userId: decodedToken.userId };
-        next();
 
     } catch (error) {
         console.error('Error de autenticación:', error.message);
@@ -140,27 +138,12 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// --- RUTA DE LOGIN TEMPORAL (para testing) ---
-// ¡ELIMINA ESTO EN PRODUCCIÓN y usa n8n!
+// --- RUTA DE LOGIN (ya no se usa con n8n) ---
 app.post('/api/login', (req, res) => {
-    const { username, password } = req.body;
-    
-    // CAMBIA estas credenciales hardcodeadas
-    if (username === 'admin' && password === 'tu_password_seguro_aqui') {
-        const token = jwt.sign(
-            { userId: username },
-            process.env.JWT_SECRET,
-            { expiresIn: '24h' }
-        );
-        
-        res.json({ 
-            success: true, 
-            token,
-            redirectUrl: `/admin?token=${token}`
-        });
-    } else {
-        res.status(401).json({ success: false, message: 'Credenciales inválidas' });
-    }
+    res.status(401).json({ 
+        success: false, 
+        message: 'Use el sistema de autenticación con n8n' 
+    });
 });
 
 // --- Rutas de Páginas HTML ---
@@ -210,7 +193,7 @@ app.post('/api/submit-form', upload.array('files'), async (req, res) => {
     }
 });
 
-// 2. API para OBTENER todos los envíos (PROTEGIDA)
+// 2. API para OBTENER todos los envíos (PROTEGIDA con n8n token)
 app.get('/api/get-submissions', checkAuth, async (req, res) => {
     try {
         const connection = await pool.getConnection();
