@@ -201,11 +201,20 @@ app.get('/api/get-submissions', checkAuth, async (req, res) => {
         connection.release();
 
         const submissions = rows.map(row => {
-            const data = JSON.parse(row.data);
-            return {
-                id: row.id,
-                ...data 
-            };
+            try {
+                // row.data ya es un objeto si MySQL lo parseó automáticamente
+                const data = typeof row.data === 'string' ? JSON.parse(row.data) : row.data;
+                return {
+                    id: row.id,
+                    ...data 
+                };
+            } catch (parseError) {
+                console.error('Error parseando row:', parseError, row);
+                return {
+                    id: row.id,
+                    error: 'Error al parsear datos'
+                };
+            }
         });
         
         res.status(200).json(submissions);
