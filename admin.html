@@ -291,7 +291,12 @@
         <div class="modal-content">
             <div class="flex justify-between items-center p-6 border-b border-gray-600">
                 <h2 class="text-2xl font-semibold text-white">Detalles del Envío</h2>
-                <button id="closeModalBtn" class="text-gray-400 hover:text-white text-3xl">&times;</button>
+                <div class="flex gap-3">
+                    <button id="printBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-200">
+                        🖨️ Imprimir
+                    </button>
+                    <button id="closeModalBtn" class="text-gray-400 hover:text-white text-3xl">&times;</button>
+                </div>
             </div>
             <div id="modalBody" class="p-6 md:p-8"></div>
         </div>
@@ -491,6 +496,7 @@
         const modal = document.getElementById('detailsModal');
         const modalBody = document.getElementById('modalBody');
         const closeModalBtn = document.getElementById('closeModalBtn');
+        const printBtn = document.getElementById('printBtn');
 
         function formatField(key) {
             return (key.charAt(0).toUpperCase() + key.slice(1)).replace(/_/g, ' ');
@@ -584,6 +590,69 @@
             if (e.target === modal) {
                 modal.classList.add('hidden');
             }
+        });
+
+        printBtn.addEventListener('click', () => {
+            // Crear una ventana de impresión con solo el contenido del modal
+            const printWindow = window.open('', '', 'width=800,height=600');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Detalles del Envío</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            padding: 20px;
+                            color: #333;
+                        }
+                        h3 {
+                            color: #2563eb;
+                            border-bottom: 2px solid #2563eb;
+                            padding-bottom: 5px;
+                            margin-top: 20px;
+                        }
+                        .grid {
+                            display: grid;
+                            grid-template-columns: repeat(2, 1fr);
+                            gap: 10px;
+                            margin-bottom: 20px;
+                        }
+                        .field {
+                            padding: 5px 0;
+                        }
+                        .field strong {
+                            display: inline-block;
+                            width: 150px;
+                            color: #666;
+                        }
+                        .dependiente {
+                            background: #f3f4f6;
+                            padding: 15px;
+                            margin: 10px 0;
+                            border-radius: 5px;
+                        }
+                        ul {
+                            list-style-type: disc;
+                            padding-left: 20px;
+                        }
+                        @media print {
+                            body { padding: 10px; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${modalBody.innerHTML}
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.focus();
+            
+            // Esperar a que se cargue el contenido antes de imprimir
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 250);
         });
 
         reloadButton.addEventListener('click', fetchSubmissions);
