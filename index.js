@@ -160,6 +160,31 @@ app.get('/admin', (req, res) => {
 });
 
 // --- Rutas de API ---
+// --- Función para enviar contacto a App SMS ---
+async function sendContactToSMS(name, phone) {
+  try {
+    const SMS_API_URL = process.env.SMS_API_URL || 'http://localhost:3000/contacts/add';
+    
+    const response = await fetch(SMS_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, phone })
+    });
+
+    const data = await response.json();
+    
+    if (data.success) {
+      console.log(`✅ Contacto enviado a SMS: ${name} - ${phone}`);
+      return { success: true, data };
+    } else {
+      console.warn(`⚠️ No se pudo enviar contacto a SMS: ${data.error}`);
+      return { success: false, error: data.error };
+    }
+  } catch (error) {
+    console.error(`❌ Error enviando contacto a SMS:`, error.message);
+    return { success: false, error: error.message };
+  }
+}
 
 // 1. API para ENVIAR el formulario
 app.post('/api/submit-form', upload.array('files'), async (req, res) => {
@@ -185,7 +210,20 @@ app.post('/api/submit-form', upload.array('files'), async (req, res) => {
         connection.release();
 
         console.log('✅ Formulario guardado exitosamente');
-        res.status(200).json({ message: 'Formulario enviado con éxito' });
+
+// 🚀 INTEGRACIÓN: Enviar contacto a App SMS
+if (formData.nombre_completo && formData.telefono) {
+  const smsResult = await sendContactToSMS(
+    formData.nombre_completo, 
+    formData.telefono
+  );
+  
+  if (smsResult.success) {
+    console.log('📱 Contacto sincronizado con SMS app');
+  }
+}
+
+res.status(200).json({ message: 'Formulario enviado con éxito' });
 
     } catch (error) {
         console.error('❌ Error al guardar en la base de datos:', error);
@@ -236,3 +274,4 @@ app.listen(port, '0.0.0.0', () => {
     console.log(`📝 Formulario: http://0.0.0.0:${port}/formulario`);
     console.log(`👤 Admin: http://0.0.0.0:${port}/admin`);
 });
+
