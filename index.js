@@ -102,34 +102,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// --- Middleware de Autenticación (Compatible con n8n) ---
-const checkAuth = (req, res, next) => {
-    try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader) {
-            return res.status(401).json({ message: 'Acceso denegado: No hay token' });
-        }
-        
-        const token = authHeader.split(' ')[1];
-        if (!token) {
-            return res.status(401).json({ message: 'Acceso denegado: Token mal formado' });
-        }
-
-        // Aceptar el token de n8n directamente (simple validación)
-        // El token de n8n es generado por el webhook, simplemente verificamos que exista
-        if (token && token.length > 10) {
-            req.userData = { userId: 'admin' };
-            next();
-        } else {
-            return res.status(401).json({ message: 'Token no válido' });
-        }
-
-    } catch (error) {
-        console.error('Error de autenticación:', error.message);
-        return res.status(401).json({ message: 'Token no válido o expirado' });
-    }
-};
-
 // --- Rutas Estáticas ---
 app.use('/uploads', express.static(uploadsDir));
 
@@ -138,29 +110,16 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// --- RUTA DE LOGIN (ya no se usa con n8n) ---
-app.post('/api/login', (req, res) => {
-    res.status(401).json({ 
-        success: false, 
-        message: 'Use el sistema de autenticación con n8n' 
-    });
-});
-
 // --- Rutas de Páginas HTML ---
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'inicio.html'));
+    res.sendFile(path.join(__dirname, 'formulario_vps.html'));
 });
 
 app.get('/formulario', (req, res) => {
     res.sendFile(path.join(__dirname, 'formulario_vps.html'));
 });
 
-app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, 'admin.html'));
-});
-
-// --- Rutas de API ---
-// --- Función para enviar contacto a App SMS ---
+// --- RUTA DE ENVÍO DEL FORMULARIO ---
 async function sendContactToSMS(name, phone) {
   try {
     const SMS_API_URL = process.env.SMS_API_URL || 'http://localhost:3000/contacts/add';
@@ -186,7 +145,7 @@ async function sendContactToSMS(name, phone) {
   }
 }
 
-// 1. API para ENVIAR el formulario
+// API para ENVIAR el formulario
 app.post('/api/submit-form', upload.array('files'), async (req, res) => {
     try {
         const formData = JSON.parse(req.body.formData);
@@ -211,54 +170,22 @@ app.post('/api/submit-form', upload.array('files'), async (req, res) => {
 
         console.log('✅ Formulario guardado exitosamente');
 
-// 🚀 INTEGRACIÓN: Enviar contacto a App SMS
-if (formData.nombre_completo && formData.telefono) {
-  const smsResult = await sendContactToSMS(
-    formData.nombre_completo, 
-    formData.telefono
-  );
-  
-  if (smsResult.success) {
-    console.log('📱 Contacto sincronizado con SMS app');
-  }
-}
+        // 🚀 INTEGRACIÓN: Enviar contacto a App SMS
+        if (formData.nombre_completo && formData.telefono) {
+          const smsResult = await sendContactToSMS(
+            formData.nombre_completo, 
+            formData.telefono
+          );
+          
+          if (smsResult.success) {
+            console.log('📱 Contacto sincronizado con SMS app');
+          }
+        }
 
-res.status(200).json({ message: 'Formulario enviado con éxito' });
+        res.status(200).json({ message: 'Formulario enviado con éxito' });
 
     } catch (error) {
         console.error('❌ Error al guardar en la base de datos:', error);
-        res.status(500).json({ message: 'Error interno del servidor', error: error.message });
-    }
-});
-
-// 2. API para OBTENER todos los envíos (PROTEGIDA con n8n token)
-app.get('/api/get-submissions', checkAuth, async (req, res) => {
-    try {
-        const connection = await pool.getConnection();
-        const [rows] = await connection.query('SELECT * FROM submissions ORDER BY id DESC');
-        connection.release();
-
-        const submissions = rows.map(row => {
-            try {
-                // row.data ya es un objeto si MySQL lo parseó automáticamente
-                const data = typeof row.data === 'string' ? JSON.parse(row.data) : row.data;
-                return {
-                    id: row.id,
-                    ...data 
-                };
-            } catch (parseError) {
-                console.error('Error parseando row:', parseError, row);
-                return {
-                    id: row.id,
-                    error: 'Error al parsear datos'
-                };
-            }
-        });
-        
-        res.status(200).json(submissions);
-
-    } catch (error) {
-        console.error('❌ Error al obtener los envíos:', error);
         res.status(500).json({ message: 'Error interno del servidor', error: error.message });
     }
 });
@@ -272,6 +199,4 @@ app.use((req, res) => {
 app.listen(port, '0.0.0.0', () => {
     console.log(`🚀 Servidor iniciado en http://0.0.0.0:${port}`);
     console.log(`📝 Formulario: http://0.0.0.0:${port}/formulario`);
-    console.log(`👤 Admin: http://0.0.0.0:${port}/admin`);
 });
-
