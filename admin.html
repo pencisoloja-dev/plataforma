@@ -235,14 +235,12 @@
                 <div class="flex items-center gap-3">
                     <!-- 
                         ¡IMPORTANTE! 
-                        Ajusta este enlace a la URL de tu portal principal.
+                        Este es el único botón de navegación
                     -->
                     <a href="https://login.ezsystems.cloud/#panel/" class="btn btn-secondary">
                         Volver al Dashboard
                     </a>
-                    <button id="logoutBtn" class="btn btn-danger">
-                        Salir
-                    </button>
+                    <!-- Botón Salir ELIMINADO -->
                 </div>
             </div>
 
@@ -322,7 +320,7 @@
         const reloadButton = document.getElementById('reloadButton');
         const searchInput = document.getElementById('searchInput');
         const messageContainer = document.getElementById('messageContainer');
-        const logoutBtn = document.getElementById('logoutBtn');
+        // logoutBtn ELIMINADO
         
         const modal = document.getElementById('detailsModal');
         const modalBody = document.getElementById('modalBody');
@@ -332,9 +330,7 @@
         let allSubmissions = []; // Caché local de datos
 
         // --- Navegación ---
-        logoutBtn.addEventListener('click', () => {
-            window.close();
-        });
+        // Event listener de logoutBtn ELIMINADO
         
         reloadButton.addEventListener('click', fetchSubmissions);
 
@@ -578,8 +574,4 @@
     </script>
 </body>
 </html>
-
-
-
-
 
