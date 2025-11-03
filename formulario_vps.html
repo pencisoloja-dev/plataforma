@@ -6,16 +6,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formulario para Declaración de Impuestos</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fuente Inter de Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Fuente Inter de Google Fonts */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        
+        :root {
+            --bg-dark: #0f172a; /* slate-900 */
+            --bg-card: #1e293b; /* slate-800 */
+            --border-color: #334155; /* slate-700 */
+            --text-light: #e2e8f0; /* slate-200 */
+            --text-muted: #94a3b8; /* slate-400 */
+            --accent-blue: #3b82f6; /* blue-500 */
+            --accent-blue-dark: #2563eb; /* blue-600 */
+            --accent-red: #ef4444; /* red-500 */
+            --accent-green: #22c55e; /* green-500 */
+        }
+
         body {
             font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
             /* FONDO ÉPICO: Gradiente radial sutil desde arriba */
-            background-color: #0f172a; /* slate-900 */
-            background-image: radial-gradient(circle at 50% 0, #1e293b, #0f172a 60%);
-            color: #cbd5e1; /* slate-300 */
+            background-image: radial-gradient(circle at 50% 0, var(--bg-card), var(--bg-dark) 60%);
+            color: var(--text-light);
+            min-height: 100vh;
         }
 
         .form-section {
@@ -26,12 +40,12 @@
             display: block;
         }
 
-        /* Estilo para los inputs */
+        /* --- Estilos de Inputs (Tema Épico) --- */
         .form-input,
         .form-select {
             background-color: #334155; /* slate-700 */
             border-color: #475569; /* slate-600 */
-            color: #e2e8f0; /* slate-200 */
+            color: var(--text-light);
             border-radius: 0.5rem; /* rounded-lg */
             width: 100%;
             padding: 0.75rem 1rem;
@@ -43,15 +57,68 @@
         .form-input:focus,
         .form-select:focus {
             outline: none;
-            border-color: #3b82f6; /* blue-500 */
-            /* Efecto de anillo "glow" */
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3); /* glow */
+        }
+        
+        /* --- Estilos de Botones (Tema Épico) --- */
+        .btn {
+            background-image: linear-gradient(to right, var(--accent-blue), var(--accent-blue-dark));
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem; /* rounded-lg */
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+            text-decoration: none; /* Para los <a> */
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background-image: linear-gradient(to right, var(--accent-blue-dark), #1d4ed8); /* blue-700 */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-secondary {
+            background-image: none;
+            background-color: var(--border-color); /* slate-700 */
+            color: var(--text-light);
+            box-shadow: none;
+        }
+
+        .btn-secondary:hover {
+            background-image: none;
+            background-color: #475569; /* slate-600 */
+            transform: translateY(-1px);
+            box-shadow: none;
+        }
+        
+        .btn-green {
+            background-image: linear-gradient(to right, var(--accent-green), #16a34a); /* green-600 */
+            box-shadow: 0 4px 10px rgba(34, 197, 94, 0.2);
+        }
+        .btn-green:hover {
+            background-image: linear-gradient(to right, #16a34a, #15803d); /* green-700 */
+            box-shadow: 0 6px 14px rgba(34, 197, 94, 0.3);
+        }
+
+        /* --- Tarjeta Principal --- */
+        .epic-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem; /* rounded-xl */
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
         }
 
         /* Estilo para los labels de checkboxes */
         .checkbox-label {
             background-color: #334155; /* slate-700 */
-            color: #e2e8f0; /* text-gray-200 */
+            color: var(--text-light);
             padding: 1rem;
             border-radius: 0.5rem; /* rounded-lg */
             display: flex;
@@ -63,66 +130,32 @@
 
         .checkbox-label:hover {
             background-color: #475569; /* slate-600 */
-            border-color: #64748b; /* slate-500 */
+            border-color: var(--accent-blue);
+        }
+        
+        .checkbox-label input[type="checkbox"]:checked {
+             accent-color: var(--accent-blue);
         }
 
         .checkbox-label input[type="checkbox"] {
             width: 1.25rem;
             height: 1.25rem;
             margin-right: 0.75rem;
-            /* Estilo de checkbox moderno */
-            accent-color: #3b82f6; /* blue-500 */
         }
         
         .label-required::after {
             content: ' *';
-            color: #E53E3E; /* text-red-600 */
+            color: var(--accent-red);
             font-weight: bold;
         }
-
-        /* Estilos de Botones (Tema Épico) */
-        .btn {
-            /* Degradado sutil para el botón principal */
-            background-image: linear-gradient(to right, #3b82f6, #2563eb); /* blue-500 a blue-600 */
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 0.5rem; /* rounded-lg */
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-            /* Sombra sutil para dar profundidad */
-            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
-        }
-
-        .btn:hover {
-            background-image: linear-gradient(to right, #2563eb, #1d4ed8); /* blue-600 a blue-700 */
-            transform: translateY(-2px);
-            box-shadow: 0 6px 14px rgba(59, 130, 246, 0.3);
-        }
         
-        .btn-secondary {
-            background-color: #475569; /* slate-600 */
-            color: #e2e8f0; /* slate-200 */
-            background-image: none; /* Sobrescribir gradiente */
-            box-shadow: none;
+        /* Barra de Progreso */
+        .progress-bar-bg {
+            background-color: #334155; /* slate-700 */
         }
-
-        .btn-secondary:hover {
-            background-color: #64748b; /* slate-500 */
-            transform: translateY(-1px);
-            box-shadow: none;
-        }
-        
-        .btn-green {
-            background-image: linear-gradient(to right, #10b981, #059669); /* green-500 a green-600 */
-            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
-        }
-        
-        .btn-green:hover {
-            background-image: linear-gradient(to right, #059669, #047857); /* green-600 a green-700 */
-            box-shadow: 0 6px 14px rgba(16, 185, 129, 0.3);
+        .progress-bar-fill {
+            background-image: linear-gradient(to right, var(--accent-blue), var(--accent-blue-dark));
+            transition: width 0.3s ease-in-out;
         }
     </style>
 </head>
@@ -131,29 +164,34 @@
 
     <div class="container mx-auto max-w-4xl p-4 md:p-8">
 
-        <header class="text-center mb-10">
-            <h1 class="text-4xl font-bold text-white mb-2">
-                <svg class="inline w-10 h-10 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" 
-                          stroke="#3b82f6" stroke-width="2" fill="none"/>
+        <!-- ***** HEADER ACTUALIZADO ***** -->
+        <header class="flex justify-between items-center mb-10 flex-wrap gap-4">
+            <h1 class="text-4xl font-bold text-white mb-2 flex items-center gap-3">
+                <svg class="w-10 h-10 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                 </svg>
-                Formulario para Declaración de Impuestos
+                Formulario de Impuestos
             </h1>
-            <p class="text-xl text-gray-400">Trabajador Independiente</p>
+            <!-- ¡BOTÓN CORREGIDO! -->
+            <a href="https://login.ezsystems.cloud/#panel" class="btn btn-secondary">
+                Volver al Dashboard
+            </a>
         </header>
+        <!-- ***** FIN HEADER ACTUALIZADO ***** -->
+
 
         <!-- Barra de Progreso -->
-        <div class="w-full bg-slate-700 rounded-full h-2.5 mb-8">
-            <div id="progressBar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style="width: 20%"></div>
+        <div class="w-full progress-bar-bg rounded-full h-2.5 mb-8">
+            <div id="progressBar" class="progress-bar-fill h-2.5 rounded-full" style="width: 20%"></div>
         </div>
 
-        <form id="taxForm" class="bg-slate-800 shadow-2xl shadow-slate-900/50 rounded-lg p-6 md:p-10">
+        <form id="taxForm" class="epic-card p-6 md:p-10">
             
             <div id="form-container">
                 <!-- SECCIÓN 1: INFORMACIÓN PERSONAL -->
                 <div id="section-1" class="form-section">
-                    <h2 class="text-2xl font-semibold mb-2 text-white">🔹 Sección 1: Datos personales del contribuyente</h2>
-                    <p class="text-gray-400 mb-6">Por favor completa esta información tal como aparece en tus documentos oficiales.</p>
+                    <h2 class="text-2xl font-semibold mb-2 text-white">🔹 Sección 1: Datos personales</h2>
+                    <p class="text-slate-400 mb-6">Completa esta información tal como aparece en tus documentos oficiales.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label for="nombre_completo" class="block text-sm font-medium mb-2 label-required">Nombre completo</label>
@@ -202,7 +240,7 @@
                         </div>
                     </div>
 
-                    <div classs="mt-6 border-t border-slate-700 pt-6">
+                    <div class="mt-6 border-t border-slate-700 pt-6">
                         <label class="block text-sm font-medium mb-2 mt-6 label-required">¿Tienes dependientes que desees incluir?</label>
                         <div class="flex gap-4">
                             <label class="flex items-center"><input type="radio" name="tiene_dependientes" value="si" class="mr-2"> Sí</label>
@@ -210,7 +248,7 @@
                         </div>
                     </div>
 
-                    <div id="dependientesContainer" class="hidden mt-6 bg-slate-900 p-6 rounded-lg">
+                    <div id="dependientesContainer" class="hidden mt-6 bg-slate-900 p-6 rounded-lg border border-slate-700">
                         <h3 class="text-lg font-semibold mb-4 text-white">Información de Dependientes</h3>
                         <div id="dependientesWrapper">
                             <!-- Campos de dependiente 1 (base) -->
@@ -236,7 +274,7 @@
                                 </div>
                             </div>
                         </div>
-                        <button type="button" id="addDependienteBtn" class="btn text-sm py-2 px-4">
+                        <button type="button" id="addDependienteBtn" class="btn btn-secondary">
                             + Añadir otro dependiente
                         </button>
                     </div>
@@ -244,15 +282,15 @@
 
                 <!-- SECCIÓN 2: ACTIVIDAD INDEPENDIENTE -->
                 <div id="section-2" class="form-section">
-                    <h2 class="text-2xl font-semibold mb-2 text-white">💼 Sección 2: Detalles del trabajo o negocio</h2>
-                    <p class="text-gray-400 mb-6">Indica la información sobre tu trabajo independiente durante el año fiscal.</p>
+                    <h2 class="text-2xl font-semibold mb-2 text-white">💼 Sección 2: Detalles del negocio</h2>
+                    <p class="text-slate-400 mb-6">Información sobre tu trabajo independiente durante el año fiscal.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label for="ocupacion" class="block text-sm font-medium mb-2 label-required">1. Ocupación o tipo de negocio</label>
                             <input type="text" id="ocupacion" name="ocupacion" class="form-input" placeholder="ej. limpieza, construcción..." required>
                         </div>
                         <div>
-                            <label for="nombre_comercial" class="block text-sm font-medium mb-2">2. Nombre comercial (o tu nombre personal)</label>
+                            <label for="nombre_comercial" class="block text-sm font-medium mb-2">2. Nombre comercial (o tu nombre)</label>
                             <input type="text" id="nombre_comercial" name="nombre_comercial" class="form-input">
                         </div>
                         <div>
@@ -264,7 +302,7 @@
                             </select>
                         </div>
                         <div>
-                            <label for="fecha_inicio_actividad" class="block text-sm font-medium mb-2">4. Fecha de inicio de tu actividad (aprox.)</label>
+                            <label for="fecha_inicio_actividad" class="block text-sm font-medium mb-2">4. Fecha de inicio de actividad (aprox.)</label>
                             <input type="date" id="fecha_inicio_actividad" name="fecha_inicio_actividad" class="form-input">
                         </div>
                         <div>
@@ -296,7 +334,7 @@
                 <!-- SECCIÓN 3: GASTOS DEDUCIBLES -->
                 <div id="section-3" class="form-section">
                     <h2 class="text-2xl font-semibold mb-2 text-white">💳 Sección 3: Gastos deducibles</h2>
-                    <p class="text-gray-400 mb-6">Marca los tipos de gastos que tuviste y proporciona montos aproximados si los conoces.</p>
+                    <p class="text-slate-400 mb-6">Marca los tipos de gastos que tuviste y proporciona montos aproximados.</p>
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4 bg-slate-700 p-4 rounded-lg">
                         <label class="checkbox-label"><input type="checkbox" name="gastos" value="combustible"> Combustible / Millas</label>
                         <label class="checkbox-label"><input type="checkbox" name="gastos" value="mantenimiento_vehiculo"> Mantenimiento vehículo</label>
@@ -329,7 +367,7 @@
                         </div>
                     </div>
 
-                    <div id="cuentaBancariaContainer" class="hidden mt-6 bg-slate-900 p-6 rounded-lg">
+                    <div id="cuentaBancariaContainer" class="hidden mt-6 bg-slate-900 p-6 rounded-lg border border-slate-700">
                         <h3 class="text-lg font-semibold mb-4 text-white">Datos de la Cuenta Bancaria</h3>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
@@ -364,7 +402,7 @@
                     </div>
 
                     <div class="mt-6">
-                        <label for="files_adicionales" class="block text-sm font-medium mb-2">3. Adjunta tus documentos si los tienes (Opcional)</albel>
+                        <label for="files_adicionales" class="block text-sm font-medium mb-2">3. Adjunta tus documentos si los tienes (Opcional)</label>
                         <input type="file" id="files_adicionales" name="files_adicionales" class="form-input" multiple>
                     </div>
                 </div>
@@ -372,7 +410,7 @@
                 <!-- SECCIÓN 5: INFORMACIÓN ADICIONAL -->
                 <div id="section-5" class="form-section">
                     <h2 class="text-2xl font-semibold mb-2 text-white">💬 Sección 5: Información adicional</h2>
-                    <p class="text-gray-400 mb-6">Situación personal y comentarios.</p>
+                    <p class="text-slate-400 mb-6">Situación personal y comentarios.</p>
                     <div class="space-y-6">
                         <div>
                             <label class="block text-sm font-medium mb-2">1. ¿Trabajaste en más de un estado durante el año?</label>
@@ -426,22 +464,11 @@
             <!-- Sección de Confirmación (Oculta) -->
             <div id="confirmationSection" class="form-section text-center p-8">
                 <h2 class="text-3xl font-bold text-green-400 mb-4">✅ ¡Formulario Enviado!</h2>
-                <p class="text-lg text-gray-300 mb-6">Gracias por completar este formulario. Esto nos ayudará a preparar tu declaración de forma más rápida y precisa.</p>
-                <p class="text-gray-400">Nos pondremos en contacto contigo si necesitamos información adicional.</p>
-                <!-- Botón para volver al admin -->
-                <a href="/" class="btn mt-8">
-                    &larr; Volver al Panel de Admin
-                </a>
+                <p class="text-lg text-slate-300 mb-6">Gracias por completar este formulario. Esto nos ayudará a preparar tu declaración de forma más rápida y precisa.</p>
+                <p class="text-slate-400">Nos pondremos en contacto contigo si necesitamos información adicional.</p>
             </div>
 
         </form>
-        
-        <!-- Botón Volver a Admin (fuera del form) -->
-        <div class="text-center mt-8">
-            <a href="/" class="text-blue-400 hover:text-blue-300 transition-colors duration-200">
-                &larr; Volver al Panel de Admin
-            </a>
-        </div>
     </div>
 
     <script>
@@ -455,7 +482,6 @@
         const submitBtn = document.getElementById('submitBtn');
         const progressBar = document.getElementById('progressBar');
         const messageContainer = document.getElementById('messageContainer');
-        const bottomAdminLink = document.querySelector('.text-center.mt-8 a');
 
         function showStep(step) {
             document.querySelectorAll('.form-section').forEach(section => {
@@ -496,12 +522,14 @@
             if (validateStep(currentStep)) {
                 currentStep++;
                 showStep(currentStep);
+                window.scrollTo(0, 0); // Scroll al inicio de la nueva sección
             }
         });
 
         prevBtn.addEventListener('click', () => {
             currentStep--;
             showStep(currentStep);
+            window.scrollTo(0, 0); // Scroll al inicio de la nueva sección
         });
 
         // --- Lógica de campos condicionales ---
@@ -581,8 +609,8 @@
         function showMessage(message, isError = false) {
             messageContainer.textContent = message;
             messageContainer.className = isError 
-                ? 'mt-6 p-4 rounded-md bg-red-800 text-red-200' 
-                : 'mt-6 p-4 rounded-md bg-green-800 text-green-200';
+                ? 'mt-6 p-4 rounded-md bg-red-800 text-red-200 border border-red-600' 
+                : 'mt-6 p-4 rounded-md bg-green-800 text-green-200 border border-green-600';
             messageContainer.classList.remove('hidden');
         }
 
@@ -681,7 +709,6 @@
                 document.getElementById('nextBtn').style.display = 'none';
                 document.getElementById('submitBtn').style.display = 'none';
                 document.getElementById('progressBar').style.display = 'none';
-                bottomAdminLink.style.display = 'none'; // Ocultar el link de abajo
                 confirmationSection.style.display = 'block';
 
             } catch (error) {
