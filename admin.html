@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administrador - Envíos</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Fuente Inter de Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        :root {
+            --bg-dark: #0f172a; /* slate-900 */
+            --bg-card: #1e293b; /* slate-800 */
+            --border-color: #334155; /* slate-700 */
+            --text-light: #e2e8f0;
+            --text-muted: #94a3b8;
+            --accent-blue: #3b82f6; /* blue-500 */
+            --danger-bg: #450a0a;
+            --danger-border: #991b1b;
+            --danger-text: #fca5a5;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            /* FONDO ÉPICO: Gradiente radial sutil desde arriba */
+            background-image: radial-gradient(circle at 50% 0, #1e293b, #0f172a 60%);
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+
+        /* --- Estilos del Login (ELIMINADOS) --- */
+
+        /* --- Contenido principal (siempre visible) --- */
+        #app-content {
+            display: block; /* Siempre visible */
+        }
+
+        th {
+            background-color: var(--border-color); /* slate-700 */
+            color: var(--text-light);
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            background-color: var(--bg-card); /* slate-800 */
+            border-bottom: 1px solid var(--border-color); /* slate-700 */
+            padding: 0.75rem 1rem;
+        }
+        tr:hover td {
+            background-color: #293548; /* Un tono más claro de slate-800 */
+        }
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            backdrop-filter: blur(8px); /* desenfoque de fondo */
+        }
+        .modal-content {
+            background-color: var(--bg-card); /* slate-800 */
+            color: var(--text-light);
+            border-radius: 0.75rem; /* rounded-xl */
+            border: 1px solid var(--border-color); /* slate-700 */
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        .form-input {
+            background-color: var(--border-color); /* slate-700 */
+            border-color: #475569; /* slate-600 */
+            color: var(--text-light);
+            border-radius: 0.5rem; /* rounded-lg */
+            padding: 0.75rem 1rem;
+            border-width: 1px;
+            border-style: solid;
+            width: 100%;
+            transition: all 0.2s ease-in-out;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            /* Efecto de anillo "glow" */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+
+        /* --- Estilos de Botones (Tema Épico) --- */
+        .btn {
+            /* Degradado sutil para el botón principal */
+            background-image: linear-gradient(to right, #3b82f6, #2563eb); /* blue-500 a blue-600 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem; /* rounded-lg */
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            /* Sombra sutil para dar profundidad */
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn:hover {
+            background-image: linear-gradient(to right, #2563eb, #1d4ed8); /* blue-600 a blue-700 */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: #475569; /* slate-600 */
+            background-image: none; /* Quitar gradiente */
+            color: #e2e8f0; /* slate-200 */
+            box-shadow: none;
+        }
+
+        .btn-secondary:hover {
+            background: #64748b; /* slate-500 */
+            background-image: none;
+            transform: translateY(-1px);
+            box-shadow: none;
+        }
+        
+        .btn-danger {
+            background-image: linear-gradient(to right, #ef4444, #dc2626); /* red-500 a red-600 */
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-danger:hover {
+            background-image: linear-gradient(to right, #dc2626, #b91c1c); /* red-600 a red-700 */
+            box-shadow: 0 6px 14px rgba(239, 68, 68, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- --- SECCIÓN DE LOGIN (ELIMINADA) --- -->
+    <!-- El div #login-overlay ha sido removido -->
+
+    <!-- --- CONTENIDO PRINCIPAL --- -->
+    <div id="app-content" class="p-4 md:p-8">
+        <div class="container mx-auto max-w-7xl">
+            <div class="flex justify-between items-center mb-8 flex-wrap gap-4">
+                <h1 class="text-4xl font-bold text-white">Panel de Administrador</h1>
+                <!-- Botón de logout (simulado) -->
+                <button id="logoutBtn" class="btn btn-danger">
+                    Salir
+                </button>
+            </div>
+
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                <div class="w-full md:w-1/2 lg:w-1/3">
+                    <input type="text" id="searchInput" class="form-input" placeholder="Buscar por nombre o email...">
+                </div>
+                <div class="flex gap-4 w-full md:w-auto">
+                    <!-- NUEVO BOTÓN: Ir al Formulario -->
+                    <a href="/formulario" id="formButton" class="btn btn-secondary w-full md:w-auto text-center">
+                        Ir al Formulario
+                    </a>
+                    <button id="reloadButton" class="btn w-full md:w-auto">
+                        Recargar Datos
+                    </button>
+                </div>
+            </div>
+
+            <div id="messageContainer" class="hidden mb-6 p-4 rounded-md"></div>
+
+            <div class="overflow-x-auto bg-gray-800 rounded-lg shadow-lg">
+                <table class="w-full table-auto">
+                    <thead>
+                        <tr>
+                            <th class="rounded-tl-lg">Nombre</th>
+                            <th>Email</th>
+                            <th>Teléfono</th>
+                            <th>Fecha de Envío</th>
+                            <th class="rounded-tr-lg">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="submissionsTbody">
+                        <tr id="loadingRow">
+                            <td colspan="5" class="text-center py-8 text-gray-400">Cargando envíos...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalles -->
+    <div id="detailsModal" class="modal-backdrop hidden">
+        <div class="modal-content">
+            <div class="flex justify-between items-center p-6 border-b border-gray-600">
+                <h2 class="text-2xl font-semibold text-white">Detalles del Envío</h2>
+                <div class="flex gap-3">
+                    <button id="printBtn" class="btn btn-secondary">
+                        🖨️ Imprimir
+                    </button>
+                    <button id="closeModalBtn" class="text-gray-400 hover:text-white text-3xl font-bold">&times;</button>
+                </div>
+            </div>
+            <div id="modalBody" class="p-6 md:p-8"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- Lógica de Login (ELIMINADA) ---
+        // const AUTH_WEBHOOK_URL... (eliminado)
+        // const loginOverlay... (eliminado)
+        // const loginForm... (eliminado)
+
+        // Selectores de DOM
+        const appContent = document.getElementById('app-content');
+        
+        let allSubmissions = [];
+        const tbody = document.getElementById('submissionsTbody');
+        const loadingRow = document.getElementById('loadingRow');
+        const reloadButton = document.getElementById('reloadButton');
+        const searchInput = document.getElementById('searchInput');
+        const messageContainer = document.getElementById('messageContainer');
+
+        // Cargar datos directamente al iniciar
+        document.addEventListener('DOMContentLoaded', () => {
+            // ELIMINADO: checkAuth();
+            appContent.style.display = 'block'; // Asegurarse de que sea visible
+            fetchSubmissions();
+        });
+
+        // --- Funciones de Login (ELIMINADAS) ---
+        // checkAuth() (eliminado)
+        // togglePassword() (eliminado)
+        // loginForm.addEventListener() (eliminado)
+
+        function showMessage(message, isError = false) {
+            messageContainer.textContent = message;
+            messageContainer.className = isError 
+                ? 'mb-6 p-4 rounded-md bg-red-800 text-red-200' 
+                : 'mb-6 p-4 rounded-md bg-green-800 text-green-200';
+            messageContainer.classList.remove('hidden');
+        }
+
+        function renderTable(data) {
+            tbody.innerHTML = '';
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-400">No se encontraron envíos.</td></tr>';
+                return;
+            }
+
+            data.forEach(submission => {
+                const tr = document.createElement('tr');
+                tr.className = 'cursor-pointer';
+                
+                tr.innerHTML = `
+                    <td>${submission.nombre_completo || 'N/A'}</td>
+                    <td>${submission.email || 'N/A'}</td>
+                    <td>${submission.telefono || 'N/A'}</td>
+                    <td>${submission.submission_date ? new Date(submission.submission_date).toLocaleString('es-EC') : 'N/A'}</td>
+                    <td>
+                        <button class="btn text-sm py-1 px-3" data-id="${submission.id}">
+                            Ver Detalles
+                        </button>
+                    </td>
+                `;
+                
+                tr.querySelector('button').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showModal(submission.id);
+                });
+
+                tr.addEventListener('click', () => {
+                    showModal(submission.id);
+                });
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function fetchSubmissions() {
+            // --- Lógica de AuthToken (ELIMINADA) ---
+            
+            loadingRow.style.display = 'table-row';
+            tbody.innerHTML = '';
+            tbody.appendChild(loadingRow);
+            showMessage('Cargando datos del servidor...', false);
+
+            try {
+                // Fetch directo sin token
+                const response = await fetch('/api/get-submissions');
+                
+                // --- Verificación de 401 (ELIMINADA) ---
+                
+                if (!response.ok) {
+                    throw new Error(`Error del servidor: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                allSubmissions = data;
+                renderTable(allSubmissions);
+                showMessage(`Datos cargados. ${data.length} envíos encontrados.`, false);
+
+            } catch (error) {
+                console.error('Error al cargar los datos:', error);
+                showMessage(`Error al cargar datos: ${error.message}. ¿Está el servidor funcionando?`, true);
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-red-400">Error al cargar datos.</td></tr>`;
+            } finally {
+                loadingRow.style.display = 'none';
+            }
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            if (!searchTerm) {
+                renderTable(allSubmissions);
+                return;
+            }
+
+            const filteredData = allSubmissions.filter(submission => {
+                const nombre = (submission.nombre_completo || '').toLowerCase();
+                const email = (submission.email || '').toLowerCase();
+                return nombre.includes(searchTerm) || email.includes(searchTerm);
+            });
+
+            renderTable(filteredData);
+        });
+
+        const modal = document.getElementById('detailsModal');
+        const modalBody = document.getElementById('modalBody');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const printBtn = document.getElementById('printBtn');
+
+        function formatField(key) {
+            return (key.charAt(0).toUpperCase() + key.slice(1)).replace(/_/g, ' ');
+        }
+        
+        function renderSection(title, data, keys) {
+            let html = `<h3 class="text-xl font-semibold text-blue-300 mb-4">${title}</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 mb-6">`;
+            keys.forEach(key => {
+                // Evitar mostrar claves vacías
+                const value = data[key];
+                if (value) {
+                    // Hacer que los campos largos ocupen dos columnas
+                    const colspanClass = (key === 'gastos_descripcion' || key === 'comentarios_adicionales' || key === 'direccion_calle') ? 'md:col-span-2' : '';
+                    html += `
+                        <div class="${colspanClass}">
+                            <strong class="text-gray-400">${formatField(key)}:</strong>
+                            <span class="text-white whitespace-pre-wrap">${value}</span>
+                        </div>
+                    `;
+                }
+            });
+            return html + '</div>';
+        }
+
+        function showModal(submissionId) {
+            const submission = allSubmissions.find(s => s.id === submissionId);
+            if (!submission) return;
+
+            modalBody.innerHTML = '';
+
+            modalBody.innerHTML += renderSection('📋 Información Personal', submission, [
+                'nombre_completo', 'ssn_itin', 'fecha_nacimiento', 'estado_civil', 'telefono', 'email', 'direccion_calle', 'direccion_apto', 'direccion_ciudad', 'direccion_estado', 'direccion_zip'
+            ]);
+
+            if (submission.dependientes && submission.dependientes.length > 0) {
+                let depHtml = '<h3 class="text-xl font-semibold text-blue-300 mb-4">Dependientes</h3>';
+                submission.dependientes.forEach((dep, index) => {
+                    depHtml += `<div class="mb-4 p-4 bg-gray-700 rounded-lg">
+                        <strong class="text-white">Dependiente ${index + 1}</strong>
+                        <div class="grid grid-cols-2 gap-2 mt-2">
+                            <div><span class="text-gray-400">Nombre:</span> ${dep.nombre || 'N/A'}</div>
+                            <div><span class="text-gray-400">SSN:</span> ${dep.ssn || 'N/A'}</div>
+                            <div><span class="text-gray-400">Fecha Nac:</span> ${dep.fecha_nac || 'N/A'}</div>
+                            <div><span class="text-gray-400">Relación:</span> ${dep.relacion || 'N/A'}</div>
+                        </div>
+                    </div>`;
+                });
+                modalBody.innerHTML += depHtml;
+            }
+
+            modalBody.innerHTML += renderSection('💼 Actividad Independiente', submission, [
+                'ocupacion', 'nombre_comercial', 'ein', 'fecha_inicio_actividad', 'estados_actividad', 'ingreso_total'
+            ]);
+            
+            if (submission.tipo_ingreso && Array.isArray(submission.tipo_ingreso) && submission.tipo_ingreso.length > 0) {
+                modalBody.innerHTML += `<div class="mb-6"><strong class="text-gray-400">Tipos de Ingreso:</strong> <span class="text-white">${submission.tipo_ingreso.join(', ')}</span></div>`;
+            }
+            
+            if (submission.gastos && Array.isArray(submission.gastos) && submission.gastos.length > 0) {
+                modalBody.innerHTML += `<div class="mb-6"><strong class="text-gray-400">Tipos de Gastos:</strong> <span class="text-white">${submission.gastos.join(', ')}</span></div>`;
+            }
+            if (submission.gastos_descripcion) {
+                modalBody.innerHTML += `<div class="mb-6"><strong class="text-gray-400">Descripción Gastos:</strong> <p class="text-white p-2 bg-gray-700 rounded whitespace-pre-wrap">${submission.gastos_descripcion}</p></div>`;
+            }
+            
+            if (submission.banco_nombre) {
+                modalBody.innerHTML += renderSection('🏦 Cuenta Bancaria', submission, ['banco_nombre', 'banco_routing', 'banco_cuenta']);
+            }
+            if (submission.otros_formularios && Array.isArray(submission.otros_formularios) && submission.otros_formularios.length > 0) {
+                modalBody.innerHTML += `<div class="mb-6"><strong class="text-gray-400">Otros Formularios:</strong> <span class="text-white">${submission.otros_formularios.join(', ')}</span></div>`;
+            }
+            
+            modalBody.innerHTML += renderSection('💬 Información Adicional', submission, [
+                'trabajo_varios_estados', 'pago_impuestos_estimados', 'otros_ingresos', 'cambios_importantes'
+            ]);
+            
+            if (submission.comentarios_adicionales) {
+                modalBody.innerHTML += `<div class="mb-6"><strong class="text-gray-400">Comentarios Adicionales:</strong> <p class="text-white p-2 bg-gray-700 rounded whitespace-pre-wrap">${submission.comentarios_adicionales}</p></div>`;
+            }
+            
+            // Parsear files si es un string
+            let files = [];
+            if (typeof submission.files === 'string') {
+                try {
+                    files = JSON.parse(submission.files);
+                } catch (e) {
+                    console.error("Error parseando files:", e);
+                    files = [];
+                }
+            } else if (Array.isArray(submission.files)) {
+                files = submission.files;
+            }
+
+            if (files.length > 0) {
+                let filesHtml = '<h3 class="text-xl font-semibold text-blue-300 mb-4">Archivos Adjuntos</h3><ul class="list-disc pl-5 mb-6">';
+                files.forEach(file => {
+                    // Asegurarse de que file.url existe
+                    if(file.url) {
+                        filesHtml += `<li class="mb-2"><a href="${file.url}" target="_blank" class="text-blue-400 hover:text-blue-300 underline">${file.originalName || 'Archivo'}</a></li>`;
+                    }
+                });
+                filesHtml += '</ul>';
+                modalBody.innerHTML += filesHtml;
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        closeModalBtn.addEventListener('click', () => {
+            modal.classList.add('hidden');
+        });
+        
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+
+        printBtn.addEventListener('click', () => {
+            // Crear una ventana de impresión con solo el contenido del modal
+            const printWindow = window.open('', '', 'width=800,height=600');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Detalles del Envío</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            padding: 20px;
+                            color: #333;
+                        }
+                        h3 {
+                            color: #2563eb;
+                            border-bottom: 2px solid #2563eb;
+                            padding-bottom: 5px;
+                            margin-top: 20px;
+                        }
+                        .grid {
+                            display: grid;
+                            grid-template-columns: repeat(2, 1fr);
+                            gap: 10px;
+                            margin-bottom: 20px;
+                        }
+                        .field {
+                            padding: 5px 0;
+                        }
+                        .field strong {
+                            display: inline-block;
+                            width: 150px;
+                            color: #666;
+                        }
+                        .dependiente {
+                            background: #f3f4f6;
+                            padding: 15px;
+                            margin: 10px 0;
+                            border-radius: 5px;
+                        }
+                        ul {
+                            list-style-type: disc;
+                            padding-left: 20px;
+                        }
+                        @media print {
+                            body { padding: 10px; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${modalBody.innerHTML}
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.focus();
+            
+            // Esperar a que se cargue el contenido antes de imprimir
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 250);
+        });
+
+        reloadButton.addEventListener('click', fetchSubmissions);
+
+        // Botón de logout (simulado)
+        const logoutBtn = document.getElementById('logoutBtn');
+        logoutBtn.addEventListener('click', () => {
+            // No hay sesión de sessionStorage que limpiar
+            // showMessage('Has salido (simulado). Recargando...', false);
+            // setTimeout(() => location.reload(), 1000);
+            
+            // CAMBIO: Cerrar la ventana de la aplicación
+            showMessage('Cerrando aplicación...', false);
+            window.close();
+        });
+    </script>
+</body>
+</html>
+
+
