@@ -4,187 +4,276 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Administrador - Envíos</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fuente Inter de Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Fuente Inter de Google Fonts */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        
         :root {
             --bg-dark: #0f172a; /* slate-900 */
             --bg-card: #1e293b; /* slate-800 */
             --border-color: #334155; /* slate-700 */
-            --text-light: #e2e8f0;
-            --text-muted: #94a3b8;
+            --text-light: #e2e8f0; /* slate-200 */
+            --text-muted: #94a3b8; /* slate-400 */
             --accent-blue: #3b82f6; /* blue-500 */
-            --danger-bg: #450a0a;
-            --danger-border: #991b1b;
-            --danger-text: #fca5a5;
+            --accent-blue-dark: #2563eb; /* blue-600 */
+            --accent-red: #ef4444; /* red-500 */
+            --accent-red-dark: #dc2626; /* red-600 */
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark);
             /* FONDO ÉPICO: Gradiente radial sutil desde arriba */
-            background-image: radial-gradient(circle at 50% 0, #1e293b, #0f172a 60%);
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at 50% 0, var(--bg-card), var(--bg-dark) 60%);
             color: var(--text-light);
             min-height: 100vh;
         }
 
-        /* --- Estilos del Login (ELIMINADOS) --- */
-
-        /* --- Contenido principal (siempre visible) --- */
-        #app-content {
-            display: block; /* Siempre visible */
-        }
-
-        th {
-            background-color: var(--border-color); /* slate-700 */
-            color: var(--text-light);
-            padding: 0.75rem 1rem;
-            text-align: left;
-            font-weight: 600;
-        }
-        td {
-            background-color: var(--bg-card); /* slate-800 */
-            border-bottom: 1px solid var(--border-color); /* slate-700 */
-            padding: 0.75rem 1rem;
-        }
-        tr:hover td {
-            background-color: #293548; /* Un tono más claro de slate-800 */
-        }
-        .modal-backdrop {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.75);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 50;
-            backdrop-filter: blur(8px); /* desenfoque de fondo */
-        }
-        .modal-content {
-            background-color: var(--bg-card); /* slate-800 */
-            color: var(--text-light);
-            border-radius: 0.75rem; /* rounded-xl */
-            border: 1px solid var(--border-color); /* slate-700 */
-            width: 90%;
-            max-width: 800px;
-            max-height: 90vh;
-            overflow-y: auto;
-            z-index: 100;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-        }
-        .form-input {
-            background-color: var(--border-color); /* slate-700 */
-            border-color: #475569; /* slate-600 */
-            color: var(--text-light);
+        /* --- Estilos de Botones (Tema Épico) --- */
+        .btn {
+            /* Degradado sutil para el botón principal */
+            background-image: linear-gradient(to right, var(--accent-blue), var(--accent-blue-dark));
+            color: white;
+            padding: 0.65rem 1.25rem; /* Un poco más pequeño para el panel */
+            border: none;
             border-radius: 0.5rem; /* rounded-lg */
-            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            /* Sombra sutil para dar profundidad */
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+            text-decoration: none; /* Para los <a> */
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background-image: linear-gradient(to right, var(--accent-blue-dark), #1d4ed8); /* blue-700 */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-secondary {
+            background-image: none;
+            background-color: var(--border-color); /* slate-700 */
+            color: var(--text-light);
+            box-shadow: none;
+        }
+
+        .btn-secondary:hover {
+            background-image: none;
+            background-color: #475569; /* slate-600 */
+            transform: translateY(-1px);
+            box-shadow: none;
+        }
+        
+        .btn-danger {
+            background-image: linear-gradient(to right, var(--accent-red), var(--accent-red-dark));
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
+        }
+        
+        .btn-danger:hover {
+            background-image: linear-gradient(to right, var(--accent-red-dark), #b91c1c); /* red-700 */
+            box-shadow: 0 6px 14px rgba(239, 68, 68, 0.3);
+        }
+
+        /* --- Estilos de Inputs --- */
+        .form-input {
+            background-color: #334155; /* slate-700 */
+            border-color: #475569; /* slate-600 */
+            color: #e2e8f0; /* slate-200 */
+            border-radius: 0.5rem; /* rounded-lg */
+            width: 100%;
+            padding: 0.65rem 1rem;
             border-width: 1px;
             border-style: solid;
-            width: 100%;
             transition: all 0.2s ease-in-out;
         }
+
         .form-input:focus {
             outline: none;
             border-color: var(--accent-blue);
             /* Efecto de anillo "glow" */
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
         }
-
-        /* --- Estilos de Botones (Tema Épico) --- */
-        .btn {
-            /* Degradado sutil para el botón principal */
-            background-image: linear-gradient(to right, #3b82f6, #2563eb); /* blue-500 a blue-600 */
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border: none;
+        
+        /* --- Estilos de la Tabla --- */
+        .table-container {
+            overflow-x: auto;
+            background-color: var(--bg-card);
             border-radius: 0.5rem; /* rounded-lg */
-            font-size: 0.875rem; /* text-sm */
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-            /* Sombra sutil para dar profundidad */
-            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
-        }
-
-        .btn:hover {
-            background-image: linear-gradient(to right, #2563eb, #1d4ed8); /* blue-600 a blue-700 */
-            transform: translateY(-2px);
-            box-shadow: 0 6px 14px rgba(59, 130, 246, 0.3);
-        }
-
-        .btn-secondary {
-            background: #475569; /* slate-600 */
-            background-image: none; /* Quitar gradiente */
-            color: #e2e8f0; /* slate-200 */
-            box-shadow: none;
-        }
-
-        .btn-secondary:hover {
-            background: #64748b; /* slate-500 */
-            background-image: none;
-            transform: translateY(-1px);
-            box-shadow: none;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
         }
         
-        .btn-danger {
-            background-image: linear-gradient(to right, #ef4444, #dc2626); /* red-500 a red-600 */
-            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
+        th {
+            background-color: #293548; /* Un poco más oscuro que var(--border-color) */
+            color: var(--text-light);
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+        td {
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.75rem 1rem;
+            color: var(--text-muted);
+        }
+        /* Primera y última celda de la cabecera */
+        th:first-child { border-top-left-radius: 0.5rem; }
+        th:last-child { border-top-right-radius: 0.5rem; }
+        
+        /* Evitar doble borde en la última fila */
+        tr:last-child td { border-bottom: none; }
+
+        /* Efecto hover sutil en filas */
+        tbody tr:hover td {
+            background-color: #273447; /* Un poco más claro que var(--bg-card) */
+            color: var(--text-light);
         }
 
-        .btn-danger:hover {
-            background-image: linear-gradient(to right, #dc2626, #b91c1c); /* red-600 a red-700 */
-            box-shadow: 0 6px 14px rgba(239, 68, 68, 0.3);
+        /* --- Estilos del Modal --- */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 23, 42, 0.8); /* slate-900 con transparencia */
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+        }
+        .modal-content {
+            background-color: var(--bg-card);
+            color: var(--text-light);
+            border-radius: 0.75rem; /* rounded-xl */
+            border: 1px solid var(--border-color);
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            display: flex; /* Para que el body crezca */
+            flex-direction: column;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .modal-body {
+            padding: 1.5rem;
+            overflow-y: auto; /* El body es el que scrollea */
+        }
+        #closeModalBtn {
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+        #closeModalBtn:hover {
+            color: var(--text-light);
+            transform: rotate(90deg);
+        }
+        
+        /* Estilos específicos del modal de detalles */
+        .detail-section-title {
+            color: var(--accent-blue);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+            gap: 0.75rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        @media (min-width: 768px) {
+            .detail-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        .detail-field strong {
+            color: var(--text-muted);
+            display: block;
+            font-size: 0.8rem;
+        }
+        .detail-field span {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+        .detail-dependiente {
+            background-color: var(--bg-dark);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
         }
     </style>
 </head>
 
 <body>
-    <!-- --- SECCIÓN DE LOGIN (ELIMINADA) --- -->
-    <!-- El div #login-overlay ha sido removido -->
-
+    
     <!-- --- CONTENIDO PRINCIPAL --- -->
     <div id="app-content" class="p-4 md:p-8">
         <div class="container mx-auto max-w-7xl">
+            <!-- Header -->
             <div class="flex justify-between items-center mb-8 flex-wrap gap-4">
                 <h1 class="text-4xl font-bold text-white">Panel de Administrador</h1>
-                <!-- Botón de logout (simulado) -->
-                <button id="logoutBtn" class="btn btn-danger">
-                    Salir
-                </button>
+                <div class="flex items-center gap-3">
+                    <!-- 
+                        ¡IMPORTANTE! 
+                        Ajusta este enlace a la URL de tu portal principal.
+                    -->
+                    <a href="https://zynk.ezsystems.cloud" class="btn btn-secondary">
+                        Volver al Dashboard
+                    </a>
+                    <button id="logoutBtn" class="btn btn-danger">
+                        Salir
+                    </button>
+                </div>
             </div>
 
-            <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <!-- Controles (Búsqueda y Botones) -->
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 p-6 bg-slate-800 rounded-lg border border-slate-700 shadow-lg">
                 <div class="w-full md:w-1/2 lg:w-1/3">
                     <input type="text" id="searchInput" class="form-input" placeholder="Buscar por nombre o email...">
                 </div>
-                <div class="flex gap-4 w-full md:w-auto">
-                    <!-- NUEVO BOTÓN: Ir al Formulario -->
-                    <a href="/formulario" id="formButton" class="btn btn-secondary w-full md:w-auto text-center">
+                <div class="flex gap-3">
+                    <a href="/formulario" class="btn btn-secondary">
                         Ir al Formulario
                     </a>
-                    <button id="reloadButton" class="btn w-full md:w-auto">
+                    <button id="reloadButton" class="btn">
                         Recargar Datos
                     </button>
                 </div>
             </div>
 
+            <!-- Contenedor de Mensajes -->
             <div id="messageContainer" class="hidden mb-6 p-4 rounded-md"></div>
 
-            <div class="overflow-x-auto bg-gray-800 rounded-lg shadow-lg">
+            <!-- Tabla de Datos -->
+            <div class="table-container">
                 <table class="w-full table-auto">
                     <thead>
                         <tr>
-                            <th class="rounded-tl-lg">Nombre</th>
+                            <th>Nombre</th>
                             <th>Email</th>
                             <th>Teléfono</th>
                             <th>Fecha de Envío</th>
-                            <th class="rounded-tr-lg">Acciones</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="submissionsTbody">
@@ -197,50 +286,59 @@
         </div>
     </div>
 
-    <!-- Modal de Detalles -->
+    <!-- --- MODAL DE DETALLES --- -->
     <div id="detailsModal" class="modal-backdrop hidden">
         <div class="modal-content">
-            <div class="flex justify-between items-center p-6 border-b border-gray-600">
+            <!-- Header del Modal -->
+            <div class="modal-header">
                 <h2 class="text-2xl font-semibold text-white">Detalles del Envío</h2>
                 <div class="flex gap-3">
-                    <button id="printBtn" class="btn btn-secondary">
+                    <button id="printBtn" class="btn text-sm">
                         🖨️ Imprimir
                     </button>
-                    <button id="closeModalBtn" class="text-gray-400 hover:text-white text-3xl font-bold">&times;</button>
+                    <button id="closeModalBtn" title="Cerrar">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-8 h-8">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>                          
+                    </button>
                 </div>
             </div>
-            <div id="modalBody" class="p-6 md:p-8"></div>
+            <!-- Cuerpo del Modal (con scroll) -->
+            <div id="modalBody" class="modal-body">
+                <!-- El contenido se inyectará aquí desde JavaScript -->
+            </div>
         </div>
     </div>
 
     <script>
-        // --- Lógica de Login (ELIMINADA) ---
-        // const AUTH_WEBHOOK_URL... (eliminado)
-        // const loginOverlay... (eliminado)
-        // const loginForm... (eliminado)
+        // No hay login, así que cargamos los datos directamente
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchSubmissions();
+        });
 
-        // Selectores de DOM
-        const appContent = document.getElementById('app-content');
-        
-        let allSubmissions = [];
+        // --- Selectores de DOM ---
         const tbody = document.getElementById('submissionsTbody');
         const loadingRow = document.getElementById('loadingRow');
         const reloadButton = document.getElementById('reloadButton');
         const searchInput = document.getElementById('searchInput');
         const messageContainer = document.getElementById('messageContainer');
+        const logoutBtn = document.getElementById('logoutBtn');
+        
+        const modal = document.getElementById('detailsModal');
+        const modalBody = document.getElementById('modalBody');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const printBtn = document.getElementById('printBtn');
+        
+        let allSubmissions = []; // Caché local de datos
 
-        // Cargar datos directamente al iniciar
-        document.addEventListener('DOMContentLoaded', () => {
-            // ELIMINADO: checkAuth();
-            appContent.style.display = 'block'; // Asegurarse de que sea visible
-            fetchSubmissions();
+        // --- Navegación ---
+        logoutBtn.addEventListener('click', () => {
+            window.close();
         });
+        
+        reloadButton.addEventListener('click', fetchSubmissions);
 
-        // --- Funciones de Login (ELIMINADAS) ---
-        // checkAuth() (eliminado)
-        // togglePassword() (eliminado)
-        // loginForm.addEventListener() (eliminado)
-
+        // --- Lógica de Carga de Datos ---
         function showMessage(message, isError = false) {
             messageContainer.textContent = message;
             messageContainer.className = isError 
@@ -250,7 +348,7 @@
         }
 
         function renderTable(data) {
-            tbody.innerHTML = '';
+            tbody.innerHTML = ''; // Limpiar tabla
             if (data.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-400">No se encontraron envíos.</td></tr>';
                 return;
@@ -261,22 +359,24 @@
                 tr.className = 'cursor-pointer';
                 
                 tr.innerHTML = `
-                    <td>${submission.nombre_completo || 'N/A'}</td>
+                    <td class="font-medium text-slate-200">${submission.nombre_completo || 'N/A'}</td>
                     <td>${submission.email || 'N/A'}</td>
                     <td>${submission.telefono || 'N/A'}</td>
                     <td>${submission.submission_date ? new Date(submission.submission_date).toLocaleString('es-EC') : 'N/A'}</td>
                     <td>
-                        <button class="btn text-sm py-1 px-3" data-id="${submission.id}">
+                        <button class="btn btn-secondary text-sm py-1 px-3" data-id="${submission.id}">
                             Ver Detalles
                         </button>
                     </td>
                 `;
                 
+                // Event listener para el botón
                 tr.querySelector('button').addEventListener('click', (e) => {
-                    e.stopPropagation();
+                    e.stopPropagation(); // Evitar que el click se propague a la fila
                     showModal(submission.id);
                 });
 
+                // Event listener para la fila completa
                 tr.addEventListener('click', () => {
                     showModal(submission.id);
                 });
@@ -286,25 +386,22 @@
         }
 
         async function fetchSubmissions() {
-            // --- Lógica de AuthToken (ELIMINADA) ---
-            
             loadingRow.style.display = 'table-row';
             tbody.innerHTML = '';
             tbody.appendChild(loadingRow);
             showMessage('Cargando datos del servidor...', false);
 
             try {
-                // Fetch directo sin token
+                // LLamada a la API que creamos en index.js
                 const response = await fetch('/api/get-submissions');
                 
-                // --- Verificación de 401 (ELIMINADA) ---
-                
                 if (!response.ok) {
-                    throw new Error(`Error del servidor: ${response.statusText}`);
+                    const errorText = await response.text();
+                    throw new Error(`Error del servidor: ${response.status} ${errorText}`);
                 }
 
                 const data = await response.json();
-                allSubmissions = data;
+                allSubmissions = data; // Guardar en caché
                 renderTable(allSubmissions);
                 showMessage(`Datos cargados. ${data.length} envíos encontrados.`, false);
 
@@ -317,10 +414,11 @@
             }
         }
 
+        // --- Lógica de Búsqueda ---
         searchInput.addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase().trim();
             if (!searchTerm) {
-                renderTable(allSubmissions);
+                renderTable(allSubmissions); // Restaurar tabla original
                 return;
             }
 
@@ -333,54 +431,56 @@
             renderTable(filteredData);
         });
 
-        const modal = document.getElementById('detailsModal');
-        const modalBody = document.getElementById('modalBody');
-        const closeModalBtn = document.getElementById('closeModalBtn');
-        const printBtn = document.getElementById('printBtn');
-
+        // --- Lógica del Modal ---
         function formatField(key) {
+            // Capitaliza y reemplaza guiones bajos
             return (key.charAt(0).toUpperCase() + key.slice(1)).replace(/_/g, ' ');
         }
         
         function renderSection(title, data, keys) {
-            let html = `<h3 class="text-xl font-semibold text-blue-300 mb-4">${title}</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 mb-6">`;
+            let fieldsHtml = '';
+            let hasData = false;
             keys.forEach(key => {
-                // Evitar mostrar claves vacías
-                const value = data[key];
-                if (value) {
-                    // Hacer que los campos largos ocupen dos columnas
-                    const colspanClass = (key === 'gastos_descripcion' || key === 'comentarios_adicionales' || key === 'direccion_calle') ? 'md:col-span-2' : '';
-                    html += `
-                        <div class="${colspanClass}">
-                            <strong class="text-gray-400">${formatField(key)}:</strong>
-                            <span class="text-white whitespace-pre-wrap">${value}</span>
+                if (data[key]) {
+                    hasData = true;
+                    fieldsHtml += `
+                        <div class="detail-field">
+                            <strong>${formatField(key)}:</strong>
+                            <span>${data[key]}</span>
                         </div>
                     `;
                 }
             });
-            return html + '</div>';
+            
+            if (!hasData) return ''; // No renderizar sección si no hay datos
+
+            return `
+                <h3 class="detail-section-title">${title}</h3>
+                <div class="detail-grid">${fieldsHtml}</div>
+            `;
         }
 
         function showModal(submissionId) {
             const submission = allSubmissions.find(s => s.id === submissionId);
             if (!submission) return;
 
-            modalBody.innerHTML = '';
+            modalBody.innerHTML = ''; // Limpiar modal
 
             modalBody.innerHTML += renderSection('📋 Información Personal', submission, [
                 'nombre_completo', 'ssn_itin', 'fecha_nacimiento', 'estado_civil', 'telefono', 'email', 'direccion_calle', 'direccion_apto', 'direccion_ciudad', 'direccion_estado', 'direccion_zip'
             ]);
 
+            // Dependientes (sección especial)
             if (submission.dependientes && submission.dependientes.length > 0) {
-                let depHtml = '<h3 class="text-xl font-semibold text-blue-300 mb-4">Dependientes</h3>';
+                let depHtml = '<h3 class="detail-section-title">Dependientes</h3>';
                 submission.dependientes.forEach((dep, index) => {
-                    depHtml += `<div class="mb-4 p-4 bg-gray-700 rounded-lg">
-                        <strong class="text-white">Dependiente ${index + 1}</strong>
+                    depHtml += `<div class="detail-dependiente">
+                        <strong class="text-white mb-2 block">Dependiente ${index + 1}</strong>
                         <div class="grid grid-cols-2 gap-2 mt-2">
-                            <div><span class="text-gray-400">Nombre:</span> ${dep.nombre || 'N/A'}</div>
-                            <div><span class="text-gray-400">SSN:</span> ${dep.ssn || 'N/A'}</div>
-                            <div><span class="text-gray-400">Fecha Nac:</span> ${dep.fecha_nac || 'N/A'}</div>
-                            <div><span class="text-gray-400">Relación:</span> ${dep.relacion || 'N/A'}</div>
+                            <div class="detail-field"><strong>Nombre:</strong> <span>${dep.nombre}</span></div>
+                            <div class="detail-field"><strong>SSN:</strong> <span>${dep.ssn}</span></div>
+                            <div class="detail-field"><strong>Fecha Nac:</strong> <span>${dep.fecha_nac}</span></div>
+                            <div class="detail-field"><strong>Relación:</strong> <span>${dep.relacion}</span></div>
                         </div>
                     </div>`;
                 });
@@ -391,52 +491,35 @@
                 'ocupacion', 'nombre_comercial', 'ein', 'fecha_inicio_actividad', 'estados_actividad', 'ingreso_total'
             ]);
             
-            if (submission.tipo_ingreso && Array.isArray(submission.tipo_ingreso) && submission.tipo_ingreso.length > 0) {
-                modalBody.innerHTML += `<div class="mb-6"><strong class="text-gray-400">Tipos de Ingreso:</strong> <span class="text-white">${submission.tipo_ingreso.join(', ')}</span></div>`;
+            // Listas (checkboxes)
+            if (submission.tipo_ingreso && submission.tipo_ingreso.length > 0) {
+                modalBody.innerHTML += `<div class="mb-6 detail-field"><strong>Tipos de Ingreso:</strong> <span>${submission.tipo_ingreso.join(', ')}</span></div>`;
             }
-            
-            if (submission.gastos && Array.isArray(submission.gastos) && submission.gastos.length > 0) {
-                modalBody.innerHTML += `<div class="mb-6"><strong class="text-gray-400">Tipos de Gastos:</strong> <span class="text-white">${submission.gastos.join(', ')}</span></div>`;
+            if (submission.gastos && submission.gastos.length > 0) {
+                modalBody.innerHTML += `<div class="mb-6 detail-field"><strong>Tipos de Gastos:</strong> <span>${submission.gastos.join(', ')}</span></div>`;
             }
             if (submission.gastos_descripcion) {
-                modalBody.innerHTML += `<div class="mb-6"><strong class="text-gray-400">Descripción Gastos:</strong> <p class="text-white p-2 bg-gray-700 rounded whitespace-pre-wrap">${submission.gastos_descripcion}</p></div>`;
+                modalBody.innerHTML += `<div class="mb-6 detail-field"><strong>Descripción Gastos:</strong> <p class="text-white p-2 bg-slate-700 rounded mt-1">${submission.gastos_descripcion}</p></div>`;
             }
             
             if (submission.banco_nombre) {
-                modalBody.innerHTML += renderSection('🏦 Cuenta Bancaria', submission, ['banco_nombre', 'banco_routing', 'banco_cuenta']);
+                modalBody.innerHTML += renderSection('🏠 Cuenta Bancaria', submission, ['banco_nombre', 'banco_routing', 'banco_cuenta']);
             }
-            if (submission.otros_formularios && Array.isArray(submission.otros_formularios) && submission.otros_formularios.length > 0) {
-                modalBody.innerHTML += `<div class="mb-6"><strong class="text-gray-400">Otros Formularios:</strong> <span class="text-white">${submission.otros_formularios.join(', ')}</span></div>`;
+            if (submission.otros_formularios && submission.otros_formularios.length > 0) {
+                modalBody.innerHTML += `<div class="mb-6 detail-field"><strong>Otros Formularios:</strong> <span>${submission.otros_formularios.join(', ')}</span></div>`;
             }
             
             modalBody.innerHTML += renderSection('💬 Información Adicional', submission, [
-                'trabajo_varios_estados', 'pago_impuestos_estimados', 'otros_ingresos', 'cambios_importantes'
+                'trabajo_varios_estados', 'pago_impuestos_estimados', 'otros_ingresos', 'cambios_importantes', 'comentarios_adicionales'
             ]);
             
-            if (submission.comentarios_adicionales) {
-                modalBody.innerHTML += `<div class="mb-6"><strong class="text-gray-400">Comentarios Adicionales:</strong> <p class="text-white p-2 bg-gray-700 rounded whitespace-pre-wrap">${submission.comentarios_adicionales}</p></div>`;
-            }
-            
-            // Parsear files si es un string
-            let files = [];
-            if (typeof submission.files === 'string') {
-                try {
-                    files = JSON.parse(submission.files);
-                } catch (e) {
-                    console.error("Error parseando files:", e);
-                    files = [];
-                }
-            } else if (Array.isArray(submission.files)) {
-                files = submission.files;
-            }
-
+            // Archivos (sección especial)
+            const files = submission.files || []; // Usar el array parseado
             if (files.length > 0) {
-                let filesHtml = '<h3 class="text-xl font-semibold text-blue-300 mb-4">Archivos Adjuntos</h3><ul class="list-disc pl-5 mb-6">';
+                let filesHtml = '<h3 class="detail-section-title">Archivos Adjuntos</h3><ul class="list-disc pl-5 mb-6">';
                 files.forEach(file => {
-                    // Asegurarse de que file.url existe
-                    if(file.url) {
-                        filesHtml += `<li class="mb-2"><a href="${file.url}" target="_blank" class="text-blue-400 hover:text-blue-300 underline">${file.originalName || 'Archivo'}</a></li>`;
-                    }
+                    // Usar la URL relativa que definimos en index.js
+                    filesHtml += `<li class="mb-2"><a href="${file.url}" target="_blank" class="text-blue-400 hover:text-blue-300 underline">${file.originalName || 'Archivo'}</a></li>`;
                 });
                 filesHtml += '</ul>';
                 modalBody.innerHTML += filesHtml;
@@ -445,11 +528,13 @@
             modal.classList.remove('hidden');
         }
 
+        // --- Eventos del Modal ---
         closeModalBtn.addEventListener('click', () => {
             modal.classList.add('hidden');
         });
         
         modal.addEventListener('click', (e) => {
+            // Cerrar si se hace click en el fondo
             if (e.target === modal) {
                 modal.classList.add('hidden');
             }
@@ -463,44 +548,16 @@
                 <head>
                     <title>Detalles del Envío</title>
                     <style>
-                        body {
-                            font-family: Arial, sans-serif;
-                            padding: 20px;
-                            color: #333;
-                        }
-                        h3 {
-                            color: #2563eb;
-                            border-bottom: 2px solid #2563eb;
-                            padding-bottom: 5px;
-                            margin-top: 20px;
-                        }
-                        .grid {
-                            display: grid;
-                            grid-template-columns: repeat(2, 1fr);
-                            gap: 10px;
-                            margin-bottom: 20px;
-                        }
-                        .field {
-                            padding: 5px 0;
-                        }
-                        .field strong {
-                            display: inline-block;
-                            width: 150px;
-                            color: #666;
-                        }
-                        .dependiente {
-                            background: #f3f4f6;
-                            padding: 15px;
-                            margin: 10px 0;
-                            border-radius: 5px;
-                        }
-                        ul {
-                            list-style-type: disc;
-                            padding-left: 20px;
-                        }
-                        @media print {
-                            body { padding: 10px; }
-                        }
+                        body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
+                        h3 { color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 5px; margin-top: 20px; }
+                        .detail-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+                        .detail-field { padding: 5px 0; }
+                        .detail-field strong { display: block; color: #666; font-size: 0.9em; }
+                        .detail-field span { font-size: 1em; }
+                        .detail-dependiente { background: #f3f4f6; padding: 15px; margin: 10px 0; border-radius: 5px; }
+                        ul { list-style-type: disc; padding-left: 20px; }
+                        a { color: #2563eb; text-decoration: none; }
+                        @media print { body { padding: 10px; } }
                     </style>
                 </head>
                 <body>
@@ -518,21 +575,9 @@
             }, 250);
         });
 
-        reloadButton.addEventListener('click', fetchSubmissions);
-
-        // Botón de logout (simulado)
-        const logoutBtn = document.getElementById('logoutBtn');
-        logoutBtn.addEventListener('click', () => {
-            // No hay sesión de sessionStorage que limpiar
-            // showMessage('Has salido (simulado). Recargando...', false);
-            // setTimeout(() => location.reload(), 1000);
-            
-            // CAMBIO: Cerrar la ventana de la aplicación
-            showMessage('Cerrando aplicación...', false);
-            window.close();
-        });
     </script>
 </body>
 </html>
+
 
 
