@@ -112,7 +112,8 @@ app.get('/health', (req, res) => {
 
 // --- Rutas de Páginas HTML ---
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'formulario_vps.html'));
+    // CAMBIO: La ruta principal ahora sirve el admin.html
+    res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
 app.get('/formulario', (req, res) => {
@@ -144,6 +145,32 @@ async function sendContactToSMS(name, phone) {
     return { success: false, error: error.message };
   }
 }
+
+// NUEVA RUTA: API para OBTENER los envíos
+app.get('/api/get-submissions', async (req, res) => {
+    // Sin autenticación, como se solicitó
+    try {
+        const connection = await pool.getConnection();
+        const [rows] = await connection.query('SELECT * FROM submissions ORDER BY created_at DESC');
+        connection.release();
+
+        // Los datos se almacenan como JSON, necesitamos parsearlos
+        const parsedData = rows.map(row => {
+            const data = JSON.parse(row.data);
+            return {
+                id: row.id,
+                ...data, // Expandir los datos del JSON
+                submission_date: data.submission_date || row.created_at // Usar la fecha del JSON o la de la DB
+            };
+        });
+
+        res.status(200).json(parsedData);
+
+    } catch (error) {
+        console.error('❌ Error al obtener datos de la base de datos:', error);
+        res.status(500).json({ message: 'Error interno del servidor', error: error.message });
+    }
+});
 
 // API para ENVIAR el formulario
 app.post('/api/submit-form', upload.array('files'), async (req, res) => {
@@ -198,5 +225,7 @@ app.use((req, res) => {
 // Iniciar el servidor en 0.0.0.0 para Docker
 app.listen(port, '0.0.0.0', () => {
     console.log(`🚀 Servidor iniciado en http://0.0.0.0:${port}`);
-    console.log(`📝 Formulario: http://0.0.0.0:${port}/formulario`);
+    console.log(`PANEL ADMIN: http://0.0.0.0:${port}/`);
+    console.log(`FORMULARIO: http://0.0.0.0:${port}/formulario`);
 });
+
