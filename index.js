@@ -202,7 +202,6 @@ app.post('/api/submit-form', upload.array('files'), async (req, res) => {
 app.get('/api/get-submissions', async (req, res) => {
     try {
         const connection = await pool.getConnection();
-        // --- ¡CAMBIO AQUÍ! ---
         // Añadido ORDER BY created_at DESC de tu versión original
         // para mostrar los más nuevos primero.
         const [rows] = await connection.query('SELECT * FROM submissions ORDER BY created_at DESC');
@@ -210,19 +209,40 @@ app.get('/api/get-submissions', async (req, res) => {
 
         // Mapear los resultados para parsear el JSON de la columna 'data'
         const submissions = rows.map(row => {
+            let parsedData;
             try {
-                // Parsear la data y añadir el ID y la fecha
-                const parsedData = JSON.parse(row.data);
-                return {
-                    id: row.id,
-                    ...parsedData,
-                    // Asegurarse de que la fecha de envío esté (si no, usar la de la DB)
-                    submission_date: parsedData.submission_date || row.created_at 
-                };
+                // 1. Parsear el JSON principal
+                if (typeof row.data === 'string') {
+                    parsedData = JSON.parse(row.data);
+                } else {
+                    parsedData = row.data; // Ya es un objeto
+                }
             } catch (e) {
                 console.warn(`❌ Error parseando JSON de fila ID ${row.id}: ${e.message}. Fila ignorada.`);
                 return null; // Devolver null para filtrar esta fila
             }
+
+            // 2. ¡IMPORTANTE! Manejar 'files' que puede ser string (formato antiguo) o array (formato nuevo)
+            try {
+                if (parsedData.files && typeof parsedData.files === 'string') {
+                    // Es formato antiguo (string anidado), lo parseamos
+                    parsedData.files = JSON.parse(parsedData.files);
+                } else if (!parsedData.files) {
+                    // Si no existe, lo inicializamos como array vacío
+                    parsedData.files = [];
+                }
+                // Si ya es un array (formato nuevo), no hacemos nada.
+            } catch (e) {
+                console.warn(`⚠️ No se pudo parsear 'files' para submission ID ${row.id}, continuando...`);
+                parsedData.files = []; // Poner un valor por defecto
+            }
+
+            return {
+                id: row.id,
+                ...parsedData,
+                // Asegurarse de que la fecha de envío esté (si no, usar la de la DB)
+                submission_date: parsedData.submission_date || row.created_at 
+            };
         }).filter(row => row !== null); // Filtrar las filas que fallaron al parsear
 
         res.status(200).json(submissions);
@@ -247,5 +267,6 @@ app.listen(port, '0.0.0.0', () => {
     console.log(`PANEL ADMIN: http://0.0.0.0:${port}/`);
     console.log(`FORMULARIO: http://0.0.0.0:${port}/formulario`);
 });
+
 
 
