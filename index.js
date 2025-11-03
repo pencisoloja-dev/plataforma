@@ -55,11 +55,11 @@ async function initDatabase() {
         const connection = await initPool.getConnection();
         
         // Crear base de datos si no existe
-        await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbConfig.database}\``);
+        await connection.query(`CREATE DATABASE IF NOT EXISTS ${dbConfig.database}`);
         console.log(`✅ Base de datos '${dbConfig.database}' verificada/creada`);
         
         // Usar la base de datos
-        await connection.query(`USE \`${dbConfig.database}\``);
+        await connection.query(`USE ${dbConfig.database}`);
         
         // Crear tabla si no existe
         await connection.query(`
@@ -111,13 +111,10 @@ app.get('/health', (req, res) => {
 });
 
 // --- Rutas de Páginas HTML ---
-
-// RUTA PRINCIPAL: Servir el panel de admin
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
-// RUTA SECUNDARIA: Servir el formulario
 app.get('/formulario', (req, res) => {
     res.sendFile(path.join(__dirname, 'formulario_vps.html'));
 });
@@ -125,8 +122,14 @@ app.get('/formulario', (req, res) => {
 // --- RUTA DE ENVÍO DEL FORMULARIO ---
 async function sendContactToSMS(name, phone) {
   try {
-    const SMS_API_URL = process.env.SMS_API_URL || 'http://localhost:3000/contacts/add';
+    // ***** ¡CAMBIO IMPORTANTE AQUÍ! *****
+    // En lugar de localhost, usamos la URL pública de la app de SMS.
+    // La mejor práctica es usar una variable de entorno (process.env.SMS_API_URL).
+    // Pero para asegurar que funcione, la ponemos directamente.
+    const SMS_API_URL = process.env.SMS_API_URL || 'https://twilio.ezsystems.cloud/contacts/add';
     
+    console.log(`📱 Intentando sincronizar contacto con SMS app en: ${SMS_API_URL}`);
+
     const response = await fetch(SMS_API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -135,15 +138,15 @@ async function sendContactToSMS(name, phone) {
 
     const data = await response.json();
     
-    if (data.success) {
+    if (response.ok && data.success) {
       console.log(`✅ Contacto enviado a SMS: ${name} - ${phone}`);
       return { success: true, data };
     } else {
-      console.warn(`⚠️ No se pudo enviar contacto a SMS: ${data.error}`);
-      return { success: false, error: data.error };
+      console.warn(`⚠️ No se pudo enviar contacto a SMS: ${data.error || 'Respuesta no exitosa'}`);
+      return { success: false, error: data.error || 'Respuesta no exitosa' };
     }
   } catch (error) {
-    console.error(`❌ Error enviando contacto a SMS:`, error.message);
+    console.error(`❌ Error de red enviando contacto a SMS:`, error.message);
     return { success: false, error: error.message };
   }
 }
@@ -163,7 +166,7 @@ app.post('/api/submit-form', upload.array('files'), async (req, res) => {
 
         const submission = {
             ...formData,
-            files: JSON.stringify(fileUrls),
+            files: fileUrls, // Guardar como array, no como JSON string
             submission_date: new Date()
         };
 
@@ -181,7 +184,9 @@ app.post('/api/submit-form', upload.array('files'), async (req, res) => {
           );
           
           if (smsResult.success) {
-            console.log('📱 Contacto sincronizado con SMS app');
+            console.log('📱 Contacto sincronizado con SMS app exitosamente.');
+          } else {
+            console.warn(`⚠️ Falló la sincronización con SMS app: ${smsResult.error}`);
           }
         }
 
@@ -193,52 +198,32 @@ app.post('/api/submit-form', upload.array('files'), async (req, res) => {
     }
 });
 
-// --- RUTA PARA OBTENER ENVÍOS (para el admin.html) ---
+// API para OBTENER los envíos (para admin.html)
 app.get('/api/get-submissions', async (req, res) => {
     try {
         const connection = await pool.getConnection();
+        // --- ¡CAMBIO AQUÍ! ---
+        // Añadido ORDER BY created_at DESC de tu versión original
+        // para mostrar los más nuevos primero.
         const [rows] = await connection.query('SELECT * FROM submissions ORDER BY created_at DESC');
         connection.release();
 
-        // Procesar los datos para el frontend
-        // El campo 'data' está almacenado como un string JSON en la BD
+        // Mapear los resultados para parsear el JSON de la columna 'data'
         const submissions = rows.map(row => {
-            
-            let parsedData;
             try {
-                // --- INICIO DE LA CORRECCIÓN ---
-                // Intentamos parsear el JSON de la fila
-                if (typeof row.data === 'string') {
-                    parsedData = JSON.parse(row.data);
-                } else {
-                    // Si ya es un objeto (mysql2 lo parseó), lo usamos
-                    parsedData = row.data;
-                }
-                // --- FIN DE LA CORRECCIÓN ---
-
+                // Parsear la data y añadir el ID y la fecha
+                const parsedData = JSON.parse(row.data);
+                return {
+                    id: row.id,
+                    ...parsedData,
+                    // Asegurarse de que la fecha de envío esté (si no, usar la de la DB)
+                    submission_date: parsedData.submission_date || row.created_at 
+                };
             } catch (e) {
-                // SI FALLA: Es data corrupta. La logueamos y la saltamos.
-                console.error(`❌ Error parseando JSON para submission ID ${row.id}:`, e.message);
-                console.error(`❌ Data problemática:`, row.data);
-                return null; // Retornamos null para filtrarlo después
+                console.warn(`❌ Error parseando JSON de fila ID ${row.id}: ${e.message}. Fila ignorada.`);
+                return null; // Devolver null para filtrar esta fila
             }
-
-            // Parsear el campo 'files' anidado, que también es un string JSON
-            try {
-                if (parsedData.files && typeof parsedData.files === 'string') {
-                    parsedData.files = JSON.parse(parsedData.files);
-                }
-            } catch (e) {
-                console.warn(`⚠️ No se pudo parsear 'files' para submission ID ${row.id}, continuando...`);
-                parsedData.files = []; // Poner un valor por defecto
-            }
-
-            return {
-                id: row.id,
-                created_at: row.created_at, // Este campo viene de la fila, no del JSON 'data'
-                ...parsedData 
-            };
-        }).filter(Boolean); // <-- Este .filter(Boolean) elimina todas las filas 'null' que fallaron
+        }).filter(row => row !== null); // Filtrar las filas que fallaron al parsear
 
         res.status(200).json(submissions);
 
@@ -251,7 +236,9 @@ app.get('/api/get-submissions', async (req, res) => {
 
 // Manejo de rutas no encontradas
 app.use((req, res) => {
-    res.status(4404).json({ message: 'Ruta no encontrada' });
+    // --- ¡CAMBIO AQUÍ! ---
+    // Corregido el error 4404 a 404
+    res.status(404).json({ message: 'Ruta no encontrada' });
 });
 
 // Iniciar el servidor en 0.0.0.0 para Docker
@@ -260,4 +247,5 @@ app.listen(port, '0.0.0.0', () => {
     console.log(`PANEL ADMIN: http://0.0.0.0:${port}/`);
     console.log(`FORMULARIO: http://0.0.0.0:${port}/formulario`);
 });
+
 
