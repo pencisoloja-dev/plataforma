@@ -252,9 +252,9 @@
                     <input type="text" id="searchInput" class="form-input" placeholder="Buscar por nombre o email...">
                 </div>
                 <div class="flex gap-3">
-                    <button id="formButton" class="btn btn-secondary">
+                    <a href="/formulario" class="btn btn-secondary">
                         Ir al Formulario
-                    </button>
+                    </a>
                     <button id="reloadButton" class="btn">
                         Recargar Datos
                     </button>
@@ -322,7 +322,6 @@
         const reloadButton = document.getElementById('reloadButton');
         const searchInput = document.getElementById('searchInput');
         const messageContainer = document.getElementById('messageContainer');
-        const formButton = document.getElementById('formButton');
         const logoutBtn = document.getElementById('logoutBtn');
         
         const modal = document.getElementById('detailsModal');
@@ -333,10 +332,6 @@
         let allSubmissions = []; // Caché local de datos
 
         // --- Navegación ---
-        formButton.addEventListener('click', () => {
-            window.location.href = '/formulario';
-        });
-
         logoutBtn.addEventListener('click', () => {
             window.close();
         });
@@ -583,4 +578,6 @@
     </script>
 </body>
 </html>
+
+
 
