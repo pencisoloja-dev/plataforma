@@ -684,6 +684,9 @@
                 section.style.display = 'none';
             });
             document.getElementById(`section-${step}`).style.display = 'block';
+            
+            // Corrección de la franja verde: forzar que el contenedor de mensajes esté oculto
+            messageContainer.style.display = 'none';
 
             // Actualizar barra de progreso
             progressBar.style.width = `${(step / totalSteps) * 100}%`;
@@ -711,20 +714,30 @@
             // Quitar el 'required' de todos los inputs condicionales no mostrados
             removeRequiredFields(depIncome);
             removeRequiredFields(indepIncome);
-
+            
             // 2. Ocultar y limpiar campos obligatorios de Deducciones
             depDeductions.classList.add('hidden');
             indepDeductions.classList.add('hidden');
             
-            // La lógica para los campos de monto de gastos se maneja por su propio listener.
+            // Asegurar que los campos de monto de gastos de Independientes se desactiven si no son visibles
+            if (tipo !== 'independiente' && tipo !== 'ambos') {
+                document.querySelectorAll('#independienteDeductionsContainer input.form-input-monto').forEach(input => {
+                    input.removeAttribute('required');
+                    input.value = '';
+                });
+                document.querySelectorAll('#independienteDeductionsContainer textarea').forEach(input => {
+                    input.removeAttribute('required');
+                    input.value = '';
+                });
+            }
+
 
             // 3. Logica de visibilidad y campos obligatorios
             if (tipo === 'dependiente' || tipo === 'ambos') {
                 depIncome.classList.remove('hidden');
                 depDeductions.classList.remove('hidden');
                 // Se establece 'required' para los campos de texto/número relevantes de Ingresos Dependiente
-                setRequiredFields(depIncome);
-                // Archivo W-2 es obligatorio si se ve esta sección de ingresos
+                // Nota: Solo se pide el archivo W2 como requerido, el resto es opcional/informativo.
                 filesW2Input.setAttribute('required', 'required');
             } else {
                 filesW2Input.value = '';
@@ -749,12 +762,10 @@
                 document.getElementById('estados_actividad').setAttribute('required', 'required');
                 document.getElementById('ingreso_total').setAttribute('required', 'required');
             }
-            // Para Ingresos Dependiente, solo el W2 file es requerido
         }
 
         function removeRequiredFields(container) {
             // Remueve 'required' de los inputs no archivo para que no rompan la validación
-            // Nota: Los inputs de monto de gastos no están en estos contenedores, sino en el 'independienteDeductionsContainer'
             container.querySelectorAll('input:not([type="file"]), select, textarea').forEach(input => {
                 input.removeAttribute('required');
             });
@@ -770,7 +781,7 @@
                 tipoPresentacionSelect.reportValidity();
                 return false;
             }
-
+            
             // Validación de campos visibles y requeridos
             inputs.forEach(input => {
                 // Si el input está en un contenedor oculto o no es visible, no lo valides
@@ -802,6 +813,11 @@
                     input.reportValidity();
                 }
             });
+
+            // Si falla la validación, muestra el mensaje de error si no es un error específico de archivo
+            if (!isValid && !messageContainer.textContent.includes('Debe subir al menos un archivo')) {
+                 showMessage('Por favor, completa todos los campos obligatorios.', true);
+            }
             return isValid;
         }
 
@@ -928,7 +944,7 @@
         async function handleFormSubmit(e) {
             e.preventDefault();
             if (!validateStep(currentStep)) {
-                showMessage('Por favor, completa todos los campos obligatorios.', true);
+                // El mensaje de error ya se muestra en validateStep
                 return;
             }
 
@@ -1026,7 +1042,7 @@
                 }
 
                 // *** INTEGRACIÓN ORIGINAL DEL BACKEND ***
-                // Este es el punto de conexión que envía los datos al servidor.
+                // Esta es la acción que envía datos al servidor (base de datos y otra app)
                 const response = await fetch('/api/submit-form', {
                     method: 'POST',
                     body: submissionFormData,
@@ -1043,10 +1059,6 @@
                          throw new Error(`Error en el servidor: ${response.status} - ${errorText.substring(0, 100)}...`);
                     }
                 }
-
-                // *** INTEGRACIÓN SMS/OTRA APP ***
-                // Ya tienes el nombre y el teléfono en formDataObject.nombre_completo y formDataObject.telefono. 
-                // La llamada a la app de SMS (ej. Twilio) debería ir aquí, después de la confirmación de guardado.
 
                 // 4. Éxito
                 showMessage('Formulario enviado con éxito.', false);
