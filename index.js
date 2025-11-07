@@ -120,38 +120,6 @@ app.get('/formulario', (req, res) => {
 });
 
 // --- RUTA DE ENVÍO DEL FORMULARIO ---
-async function sendContactToSMS(name, phone) {
-  try {
-    // ***** ¡CAMBIO IMPORTANTE AQUÍ! *****
-    // En lugar de localhost, usamos la URL pública de la app de SMS.
-    // La mejor práctica es usar una variable de entorno (process.env.SMS_API_URL).
-    // Pero para asegurar que funcione, la ponemos directamente.
-    const SMS_API_URL = process.env.SMS_API_URL || 'https://twilio.ezsystems.cloud/contacts/add';
-    
-    console.log(`📱 Intentando sincronizar contacto con SMS app en: ${SMS_API_URL}`);
-
-    const response = await fetch(SMS_API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, phone })
-    });
-
-    const data = await response.json();
-    
-    if (response.ok && data.success) {
-      console.log(`✅ Contacto enviado a SMS: ${name} - ${phone}`);
-      return { success: true, data };
-    } else {
-      console.warn(`⚠️ No se pudo enviar contacto a SMS: ${data.error || 'Respuesta no exitosa'}`);
-      return { success: false, error: data.error || 'Respuesta no exitosa' };
-    }
-  } catch (error) {
-    console.error(`❌ Error de red enviando contacto a SMS:`, error.message);
-    return { success: false, error: error.message };
-  }
-}
-
-// API para ENVIAR el formulario
 app.post('/api/submit-form', upload.array('files'), async (req, res) => {
     try {
         const formData = JSON.parse(req.body.formData);
@@ -176,20 +144,6 @@ app.post('/api/submit-form', upload.array('files'), async (req, res) => {
 
         console.log('✅ Formulario guardado exitosamente');
 
-        // 🚀 INTEGRACIÓN: Enviar contacto a App SMS
-        if (formData.nombre_completo && formData.telefono) {
-          const smsResult = await sendContactToSMS(
-            formData.nombre_completo, 
-            formData.telefono
-          );
-          
-          if (smsResult.success) {
-            console.log('📱 Contacto sincronizado con SMS app exitosamente.');
-          } else {
-            console.warn(`⚠️ Falló la sincronización con SMS app: ${smsResult.error}`);
-          }
-        }
-
         res.status(200).json({ message: 'Formulario enviado con éxito' });
 
     } catch (error) {
@@ -202,8 +156,6 @@ app.post('/api/submit-form', upload.array('files'), async (req, res) => {
 app.get('/api/get-submissions', async (req, res) => {
     try {
         const connection = await pool.getConnection();
-        // Añadido ORDER BY created_at DESC de tu versión original
-        // para mostrar los más nuevos primero.
         const [rows] = await connection.query('SELECT * FROM submissions ORDER BY created_at DESC');
         connection.release();
 
@@ -253,11 +205,8 @@ app.get('/api/get-submissions', async (req, res) => {
     }
 });
 
-
 // Manejo de rutas no encontradas
 app.use((req, res) => {
-    // --- ¡CAMBIO AQUÍ! ---
-    // Corregido el error 4404 a 404
     res.status(404).json({ message: 'Ruta no encontrada' });
 });
 
@@ -267,6 +216,3 @@ app.listen(port, '0.0.0.0', () => {
     console.log(`PANEL ADMIN: http://0.0.0.0:${port}/`);
     console.log(`FORMULARIO: http://0.0.0.0:${port}/formulario`);
 });
-
-
-
