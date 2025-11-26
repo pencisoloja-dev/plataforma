@@ -324,40 +324,11 @@
                     </div>
 
                     <div id="dependientesContainer" class="hidden mt-6 bg-slate-900 p-6 rounded-lg border border-slate-700">
-                        <h3 class="text-lg font-semibold mb-4 text-white">Información de Dependientes</h3>
-                        <div id="dependientesWrapper">
-                            <!-- Campos de dependiente 1 (base) -->
-                            <div class="dependiente-group mb-6 border-b border-slate-700 pb-6">
-                                <h4 class="font-medium text-white mb-2">Dependiente 1</h4>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-medium mb-1 label-required">Nombre completo</label>
-                                        <input type="text" name="dependiente_nombre[]" class="form-input">
-                                    </div>
-                                    <div>
-                                        <!-- CAMBIO: Fecha de Nacimiento Dependiente Manual -->
-                                        <label class="block text-sm font-medium mb-1 label-required">Fecha de nacimiento</label>
-                                        <input type="text" name="dependiente_fecha_nac[]" class="form-input" placeholder="MM/DD/AAAA" pattern="\d{2}/\d{2}/\d{4}">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium mb-1 label-required">SSN o ITIN</label>
-                                        <input type="text" name="dependiente_ssn[]" class="form-input">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium mb-1 label-required">Relación contigo</label>
-                                        <input type="text" name="dependiente_relacion[]" class="form-input">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <button type="button" id="addDependienteBtn" class="btn btn-secondary">
-                            + Añadir otro dependiente
-                        </button>
-
-                        <!-- 6. CAMBIO DE ESTILO: Opción de subir documentos de dependientes (Usando <strong> y list-disc) -->
-                        <div id="filesDependientesContainer" class="mt-8 border-t border-slate-700 pt-6">
-                            <h3 class="sub-section-title text-white">Documentos de los Dependientes (Obligatorio)</h3>
-                            <p class="text-sm text-slate-400 mb-4">Sube la documentación de <strong>todos</strong> los dependientes declarados.</p>
+                        <h3 class="text-lg font-semibold mb-4 text-white">Documentos de Dependientes</h3>
+                        
+                        <!-- CAMBIO: Se eliminan todos los campos de datos de dependientes (dependientesWrapper y botón) -->
+                        <div id="filesDependientesContainer" class="mt-2">
+                            <p class="text-sm text-slate-400 mb-4">Sube la documentación de <strong>todos</strong> los dependientes que deseas declarar (SSN/ITIN, Actas de Nacimiento, etc.).</p>
                             
                             <!-- Lista con viñetas simples y formato <strong> -->
                             <ul class="list-disc list-inside text-sm text-slate-300 mb-4 ml-4">
@@ -700,17 +671,21 @@
         const indepDeductions = document.getElementById('independienteDeductionsContainer');
         const datosConyugeContainer = document.getElementById('datosConyugeContainer');
         const estadoCivilSelect = document.getElementById('estado_civil');
-        const cuentaBancariaContainer = document.getElementById('section-5').querySelector('.bg-slate-900'); // Paso 5 es solo esto ahora
+        const cuentaBancariaContainer = document.getElementById('section-5').querySelector('.bg-slate-900'); 
         
         // Referencias a los campos de archivos
-        const filesDeclarantesInput = document.getElementById('files_declarantes'); // Nuevo
-        const filesDependientesInput = document.getElementById('files_dependientes'); // Nuevo
+        const filesDeclarantesInput = document.getElementById('files_declarantes');
+        const filesDependientesInput = document.getElementById('files_dependientes');
         const filesW2Input = document.getElementById('files_w2');
         const filesIngresosInput = document.getElementById('files_ingresos');
-        const filesDeduccionesInput = document.getElementById('files_deducciones'); // Nuevo
-        const deduccionObligatorioText = document.getElementById('deducciones_obligatorio_text'); // Nuevo
-        const filesDeduccionesHint = document.getElementById('files_deducciones_hint'); // Nuevo
+        const filesDeduccionesInput = document.getElementById('files_deducciones');
+        const deduccionObligatorioText = document.getElementById('deducciones_obligatorio_text');
+        const filesDeduccionesHint = document.getElementById('files_deducciones_hint');
 
+        // Contenedores de dependientes eliminados (ya no se usan)
+        // const dependientesWrapper = document.getElementById('dependientesWrapper'); 
+        // const addDependienteBtn = document.getElementById('addDependienteBtn'); 
+        
         // --- LÓGICA DE CONDICIONALIDAD DE DATOS DE CÓNYUGE ---
         estadoCivilSelect.addEventListener('change', () => {
             const isMarriedJoint = estadoCivilSelect.value === 'casado_juntos';
@@ -956,7 +931,8 @@
 
         function validateStep(step) {
             const currentSection = document.getElementById(`section-${step}`);
-            const inputs = currentSection.querySelectorAll('input[required], select[required], textarea[required]');
+            // Solo considerar inputs requeridos que no sean de dependientes, ya que los quitamos
+            const inputs = currentSection.querySelectorAll('input[required]:not([name^="dependiente_"]), select[required], textarea[required]');
             let isValid = true;
             let firstInvalidInput = null;
             
@@ -1013,20 +989,7 @@
                 // Validación de archivos de dependientes si "tiene dependientes" es "si"
                 const tieneDependientesSi = document.querySelector('input[name="tiene_dependientes"][value="si"]:checked');
                 if (tieneDependientesSi) {
-                    const dependienteGroups = document.querySelectorAll('#dependientesWrapper .dependiente-group');
-                    dependienteGroups.forEach(group => {
-                        const depFecha = group.querySelector('input[name="dependiente_fecha_nac[]"]');
-                        if (depFecha && depFecha.value && !isValidDate(depFecha.value)) {
-                            isValid = false;
-                            depFecha.setCustomValidity("Formato de fecha inválido o vacío para el dependiente. Use MM/DD/AAAA.");
-                            depFecha.reportValidity();
-                            if (!firstInvalidInput) firstInvalidInput = depFecha;
-                        } else if (depFecha) {
-                            depFecha.setCustomValidity("");
-                        }
-                    });
-
-                    // Validar que se hayan subido documentos de dependientes
+                    // Solo validar que se hayan subido documentos de dependientes (archivos)
                     if (filesDependientesInput.files.length === 0) {
                         isValid = false;
                         filesDependientesInput.setCustomValidity("Debe subir los documentos de los dependientes.");
@@ -1111,20 +1074,9 @@
         // --- Lógica de campos condicionales (Dependientes) ---
         const tieneDependientesRadios = document.querySelectorAll('input[name="tiene_dependientes"]');
         const dependientesContainer = document.getElementById('dependientesContainer');
-        const dependienteInputs = dependientesContainer.querySelectorAll('input:not([type="radio"])');
-        const dependientesWrapper = document.getElementById('dependientesWrapper');
-
-        // Función para activar/desactivar required de dependientes
+        
+        // Función para activar/desactivar required del input de archivo de dependientes
         function toggleDependientesRequired(required) {
-            // Activar/desactivar required de los inputs de texto/fecha/ssn de dependientes
-            dependientesWrapper.querySelectorAll('input').forEach(input => {
-                if (required) {
-                    input.setAttribute('required', 'required');
-                } else {
-                    input.removeAttribute('required');
-                }
-            });
-            
             // Activar/desactivar required del input de archivo de dependientes
             if (required) {
                 filesDependientesInput.setAttribute('required', 'required');
@@ -1139,45 +1091,17 @@
             radio.addEventListener('change', (e) => {
                 if (e.target.value === 'si') {
                     dependientesContainer.classList.remove('hidden');
-                    // Solo el primer grupo de dependientes es requerido al inicio.
+                    // Solo activar el requerido del archivo
                     toggleDependientesRequired(true);
                 } else {
                     dependientesContainer.classList.add('hidden');
+                    // Desactivar requerido y limpiar archivos
                     toggleDependientesRequired(false);
                 }
             });
         });
 
-        let dependienteCount = 1;
-        const addDependienteBtn = document.getElementById('addDependienteBtn');
-        
-        addDependienteBtn.addEventListener('click', () => {
-            dependienteCount++;
-            const newDependienteGroup = document.createElement('div');
-            newDependienteGroup.className = 'dependiente-group mb-6 border-b border-slate-700 pb-6';
-            newDependienteGroup.innerHTML = `
-                <h4 class="font-medium text-white mb-2">Dependiente ${dependienteCount}</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-1 label-required">Nombre completo</label>
-                        <input type="text" name="dependiente_nombre[]" class="form-input" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1 label-required">Fecha de nacimiento</label>
-                        <input type="text" name="dependiente_fecha_nac[]" class="form-input" placeholder="MM/DD/AAAA" pattern="\d{2}/\d{2}/\d{4}" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1 label-required">SSN o ITIN</label>
-                        <input type="text" name="dependiente_ssn[]" class="form-input" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1 label-required">Relación contigo</label>
-                        <input type="text" name="dependiente_relacion[]" class="form-input" required>
-                    </div>
-                </div>
-            `;
-            dependientesWrapper.appendChild(newDependienteGroup);
-        });
+        // --- ELIMINADA Lógica de añadir dependientes (dependienteCount, addDependienteBtn) ---
 
         // --- LÓGICA PASO 5 (Cuenta Bancaria) ---
         // Se elimina la lógica de radios. El contenedor de cuenta bancaria es siempre visible y sus campos requeridos.
@@ -1238,12 +1162,14 @@
                 
                 // Procesar campos normales (excluyendo campos de archivos, montos y descripciones de gastos específicos)
                 rawFormData.forEach((value, key) => {
+                    // Excluir cualquier campo relacionado con datos de dependientes que ya eliminamos
+                    const isDependienteData = key.startsWith('dependiente_'); // Mantener esta línea por si el navegador conserva el valor del radio "tiene_dependientes"
                     const isFile = (document.getElementById(key) && document.getElementById(key).type === 'file');
                     const isExpenseData = key.startsWith('monto_') || key === 'descripcion_otros_gastos';
                     const isCreditCheckbox = key.startsWith('credito_') || key === 'recibio_1099r' || key === 'otro_credito_checkbox';
-                    const isBankData = key.startsWith('banco_'); // Excluir temporalmente
+                    const isBankData = key.startsWith('banco_');
                     
-                    if (!key.endsWith('[]') && !isFile && !isExpenseData && !isCreditCheckbox && !isBankData) {
+                    if (!key.endsWith('[]') && !isFile && !isExpenseData && !isCreditCheckbox && !isBankData && !isDependienteData) {
                         formDataObject[key] = value;
                     }
                 });
@@ -1259,11 +1185,11 @@
                     hipoteca: rawFormData.get('credito_hipoteca') === 'si',
                     estudios: rawFormData.get('credito_estudios') === 'si',
                     seguro_salud: rawFormData.get('credito_seguro_salud') === 'si',
-                    recibio_1099r: rawFormData.get('recibio_1099r') === 'si', // Nuevo
-                    otro_credito: rawFormData.get('otro_credito_checkbox') === 'otro' ? rawFormData.get('descripcion_otro_credito') : null, // Nuevo con descripción
+                    recibio_1099r: rawFormData.get('recibio_1099r') === 'si',
+                    otro_credito: rawFormData.get('otro_credito_checkbox') === 'otro' ? rawFormData.get('descripcion_otro_credito') : null,
                 };
                 
-                // Procesar la cuenta bancaria (Ahora es obligatoria y se maneja por separado del paso 5 anterior)
+                // Procesar la cuenta bancaria
                 formDataObject.banco_nombre = rawFormData.get('banco_nombre');
                 formDataObject.banco_routing = rawFormData.get('banco_routing');
                 formDataObject.banco_cuenta = rawFormData.get('banco_cuenta');
@@ -1279,27 +1205,15 @@
                     formDataObject.conyuge = null;
                 }
                 
-                // Procesar dependientes (campos de array)
-                formDataObject.dependientes = [];
-                const depNombres = rawFormData.getAll('dependiente_nombre[]');
-                const depFechas = rawFormData.getAll('dependiente_fecha_nac[]');
-                const depSSNs = rawFormData.getAll('dependiente_ssn[]');
-                const depRelaciones = rawFormData.getAll('dependiente_relacion[]');
-
-                for (let i = 0; i < depNombres.length; i++) {
-                    if (depNombres[i]) { // Asegurarse de que el dependiente tiene nombre
-                        formDataObject.dependientes.push({
-                            nombre: depNombres[i],
-                            fecha_nac: depFechas[i],
-                            ssn: depSSNs[i],
-                            relacion: depRelaciones[i]
-                        });
-                    }
-                }
+                // Procesar dependientes (solo el estado, los datos ya no existen)
+                // Se mantiene la estructura para que el backend lo reciba
                 formDataObject.tiene_dependientes = rawFormData.get('tiene_dependientes') === 'si';
+                // CAMBIO CLAVE: Los datos estructurados de dependientes ya no se recopilan, se envía un array vacío o se omite.
+                // Lo omitimos para limpiar la estructura JSON, solo queda 'tiene_dependientes'.
+                formDataObject.dependientes = [];
 
 
-                // Limpieza de campos temporales/genéricos
+                // Limpieza de campos temporales/genéricos (Se mantuvo la limpieza del array de dependientes por seguridad)
                 delete formDataObject['dependiente_nombre[]'];
                 delete formDataObject['dependiente_fecha_nac[]'];
                 delete formDataObject['dependiente_ssn[]'];
@@ -1311,7 +1225,7 @@
                 delete formDataObject.recibio_1099r;
                 delete formDataObject.otro_credito_checkbox;
                 delete formDataObject.descripcion_otro_credito;
-                delete formDataObject.tiene_cuenta_bancaria; // Ya no aplica
+                delete formDataObject.tiene_cuenta_bancaria; 
 
                 // 2. Preparar FormData para el envío (incluyendo archivos)
                 const submissionFormData = new FormData();
@@ -1322,14 +1236,16 @@
                 // Añadir un ID de usuario simple (para nombrar archivos en el backend)
                 submissionFormData.append('userId', formDataObject.ssn_itin || 'user-' + Date.now());
 
-                // Añadir los archivos de declarantes (Paso 2 - NUEVO)
+                // Añadir los archivos de declarantes (Paso 2)
                 for (const file of filesDeclarantesInput.files) {
                     submissionFormData.append('files', file, `declarantes-${file.name}`);
                 }
                 
-                // Añadir los archivos de dependientes (Paso 2 - NUEVO CONDICIONAL)
-                for (const file of filesDependientesInput.files) {
-                    submissionFormData.append('files', file, `dependientes-${file.name}`);
+                // Añadir los archivos de dependientes (Paso 2 - CONDICIONAL)
+                if (formDataObject.tiene_dependientes) {
+                    for (const file of filesDependientesInput.files) {
+                        submissionFormData.append('files', file, `dependientes-${file.name}`);
+                    }
                 }
 
                 // Añadir los archivos de ingresos (W-2, 1099, etc.)
@@ -1344,7 +1260,6 @@
                 }
 
                 // Añadir los archivos de deducciones/créditos (Paso 4 - CONDICIONAL)
-                // Solo adjuntar si hay archivos, ya que no es obligatorio si no se marcó nada.
                 if (filesDeduccionesInput.files.length > 0) {
                     for (const file of filesDeduccionesInput.files) {
                         submissionFormData.append('files', file, `deducciones-${file.name}`);
