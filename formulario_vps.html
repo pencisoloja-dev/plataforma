@@ -314,7 +314,7 @@
                         <input type="file" id="files_declarantes" name="files_declarantes" class="form-input" required multiple accept="image/*,application/pdf">
                         <p class="text-xs text-slate-500 mt-1">Puedes tomar fotos, buscar en galería, drive o descargas.</p>
                         
-                        <!-- NUEVO: Contenedor para mostrar los archivos seleccionados (FIX DE VISUALIZACIÓN) -->
+                        <!-- Contenedor para mostrar los archivos seleccionados (FIX DE VISUALIZACIÓN) -->
                         <div id="filesDeclarantesList" class="mt-3 p-3 bg-slate-700 rounded-lg text-sm hidden">
                             <p class="text-white font-medium mb-1">Archivos seleccionados:</p>
                             <ul id="filesDeclarantesUl" class="list-disc list-inside text-slate-300 ml-4"></ul>
@@ -348,6 +348,14 @@
 
                             <input type="file" id="files_dependientes" name="files_dependientes" class="form-input" multiple accept="image/*,application/pdf">
                             <p class="text-xs text-slate-500 mt-1">Puedes tomar fotos, buscar en galería, drive o descargas.</p>
+                             <!-- NUEVO: Contenedor para mostrar los archivos seleccionados (FIX DE VISUALIZACIÓN) -->
+                            <div id="filesDependientesList" class="mt-3 p-3 bg-slate-700 rounded-lg text-sm hidden">
+                                <p class="text-white font-medium mb-1">Archivos seleccionados:</p>
+                                <ul id="filesDependientesUl" class="list-disc list-inside text-slate-300 ml-4"></ul>
+                                <button type="button" id="clearDependientesFilesBtn" class="mt-2 text-red-400 hover:text-red-300 text-xs font-semibold">
+                                    Limpiar selección
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -378,6 +386,14 @@
                                 <label for="files_w2" class="block text-sm font-medium mb-2 label-required">3. Sube aquí tu(s) formulario(s) W-2</label>
                                 <input type="file" id="files_w2" name="files_w2" class="form-input" data-is-required-file="true" required multiple accept="image/*,application/pdf">
                                 <p class="text-xs text-slate-500 mt-1">Este campo es obligatorio.</p>
+                                <!-- NUEVO: Contenedor para mostrar los archivos seleccionados (FIX DE VISUALIZACIÓN) -->
+                                <div id="filesW2List" class="mt-3 p-3 bg-slate-700 rounded-lg text-sm hidden">
+                                    <p class="text-white font-medium mb-1">Archivos seleccionados:</p>
+                                    <ul id="filesW2Ul" class="list-disc list-inside text-slate-300 ml-4"></ul>
+                                    <button type="button" id="clearW2FilesBtn" class="mt-2 text-red-400 hover:text-red-300 text-xs font-semibold">
+                                        Limpiar selección
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -425,6 +441,14 @@
                             <!-- Item 6 (anterior 8) -->
                             <label for="files_ingresos" class="block text-sm font-medium mb-2 label-required">6. Sube aquí tus 1099, etc.</label>
                             <input type="file" id="files_ingresos" name="files_ingresos" class="form-input" data-is-required-file="true" required multiple accept="image/*,application/pdf">
+                             <!-- NUEVO: Contenedor para mostrar los archivos seleccionados (FIX DE VISUALIZACIÓN) -->
+                             <div id="filesIngresosList" class="mt-3 p-3 bg-slate-700 rounded-lg text-sm hidden">
+                                <p class="text-white font-medium mb-1">Archivos seleccionados:</p>
+                                <ul id="filesIngresosUl" class="list-disc list-inside text-slate-300 ml-4"></ul>
+                                <button type="button" id="clearIngresosFilesBtn" class="mt-2 text-red-400 hover:text-red-300 text-xs font-semibold">
+                                    Limpiar selección
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -479,7 +503,7 @@
                                 <label class="checkbox-label"><input type="checkbox" name="gastos_checkbox" value="internet"> Internet / Software</label>
                                 <div id="monto_internet_container" class="monto-input-container hidden mt-3">
                                     <label class="block text-xs font-medium mb-1 text-slate-400 label-required">Monto total de Internet / Software ($)</label>
-                                    <input type="number" name="monto_internet" class="form-input form-input-monto" placeholder="$" min="0">
+                                    <input type="number" name="monto_internet" class="form-input form-input-monto" placeholder="$">
                                 </div>
                             </div>
                             
@@ -588,6 +612,14 @@
                             <p class="text-sm text-slate-400 mb-4">Sube los formularios (1098, 1098-T, 1095-A, 1099-R, etc.) que apliquen según tus selecciones arriba.</p>
                             <input type="file" id="files_deducciones" name="files_deducciones" class="form-input" multiple accept="image/*,application/pdf">
                             <p id="files_deducciones_hint" class="text-xs text-slate-500 mt-1">Este campo es opcional a menos que selecciones un crédito o deducción.</p>
+                             <!-- NUEVO: Contenedor para mostrar los archivos seleccionados (FIX DE VISUALIZACIÓN) -->
+                             <div id="filesDeduccionesList" class="mt-3 p-3 bg-slate-700 rounded-lg text-sm hidden">
+                                <p class="text-white font-medium mb-1">Archivos seleccionados:</p>
+                                <ul id="filesDeduccionesUl" class="list-disc list-inside text-slate-300 ml-4"></ul>
+                                <button type="button" id="clearDeduccionesFilesBtn" class="mt-2 text-red-400 hover:text-red-300 text-xs font-semibold">
+                                    Limpiar selección
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -691,35 +723,116 @@
         const deduccionObligatorioText = document.getElementById('deducciones_obligatorio_text');
         const filesDeduccionesHint = document.getElementById('files_deducciones_hint');
 
-        // NUEVOS ELEMENTOS DE VISUALIZACIÓN DE ARCHIVOS (Fix para móvil)
+        // Referencias de visualización de archivos
         const filesDeclarantesList = document.getElementById('filesDeclarantesList');
         const filesDeclarantesUl = document.getElementById('filesDeclarantesUl');
         const clearDeclarantesFilesBtn = document.getElementById('clearDeclarantesFilesBtn');
         
-        // --- LÓGICA DE VISUALIZACIÓN DE ARCHIVOS PARA files_declarantes (FIX) ---
-        function renderDeclarantesFiles() {
-            filesDeclarantesUl.innerHTML = '';
-            const files = filesDeclarantesInput.files;
+        const filesDependientesList = document.getElementById('filesDependientesList');
+        const filesDependientesUl = document.getElementById('filesDependientesUl');
+        const clearDependientesFilesBtn = document.getElementById('clearDependientesFilesBtn');
 
+        const filesW2List = document.getElementById('filesW2List');
+        const filesW2Ul = document.getElementById('filesW2Ul');
+        const clearW2FilesBtn = document.getElementById('clearW2FilesBtn');
+
+        const filesIngresosList = document.getElementById('filesIngresosList');
+        const filesIngresosUl = document.getElementById('filesIngresosUl');
+        const clearIngresosFilesBtn = document.getElementById('clearIngresosFilesBtn');
+
+        const filesDeduccionesList = document.getElementById('filesDeduccionesList');
+        const filesDeduccionesUl = document.getElementById('filesDeduccionesUl');
+        const clearDeduccionesFilesBtn = document.getElementById('clearDeduccionesFilesBtn');
+
+
+        // --- LÓGICA DE ACUMULACIÓN ROBUSTA (Guarda archivos en memoria) ---
+        
+        // Objeto global para almacenar los archivos acumulados, clave: inputId
+        const accumulatedFiles = {};
+
+        // Función para renderizar los archivos seleccionados
+        function renderFiles(inputId) {
+            const files = accumulatedFiles[inputId] || [];
+            let ulElement, listElement;
+            
+            switch (inputId) {
+                case 'files_declarantes': ulElement = filesDeclarantesUl; listElement = filesDeclarantesList; break;
+                case 'files_dependientes': ulElement = filesDependientesUl; listElement = filesDependientesList; break;
+                case 'files_w2': ulElement = filesW2Ul; listElement = filesW2List; break;
+                case 'files_ingresos': ulElement = filesIngresosUl; listElement = filesIngresosList; break;
+                case 'files_deducciones': ulElement = filesDeduccionesUl; listElement = filesDeduccionesList; break;
+            }
+
+            if (!ulElement) return;
+
+            ulElement.innerHTML = '';
             if (files.length > 0) {
-                filesDeclarantesList.classList.remove('hidden');
-                for (let i = 0; i < files.length; i++) {
+                listElement.classList.remove('hidden');
+                files.forEach(file => {
                     const li = document.createElement('li');
-                    li.textContent = files[i].name;
-                    filesDeclarantesUl.appendChild(li);
-                }
+                    li.textContent = file.name;
+                    ulElement.appendChild(li);
+                });
             } else {
-                filesDeclarantesList.classList.add('hidden');
+                listElement.classList.add('hidden');
             }
         }
 
-        filesDeclarantesInput.addEventListener('change', renderDeclarantesFiles);
+        // --- FUNCIÓN DE UTILIDAD PARA CONFIGURAR TODOS LOS INPUTS DE ARCHIVO ---
+        function setupFileInput(inputElement, clearButton, inputId) {
+            // Inicializar el almacenamiento interno con un array vacío
+            accumulatedFiles[inputId] = [];
 
-        clearDeclarantesFilesBtn.addEventListener('click', () => {
-            // Limpiar el input de tipo file
-            filesDeclarantesInput.value = null; 
-            renderDeclarantesFiles();
-        });
+            // 1. Manejador de evento CHANGE: Acumula archivos
+            inputElement.addEventListener('change', (e) => {
+                const newFiles = Array.from(e.target.files);
+                const currentFiles = accumulatedFiles[inputId];
+                
+                // Limpiar el valor del input *inmediatamente* para que se pueda volver a seleccionar archivos
+                // y que el evento 'change' se dispare la próxima vez.
+                inputElement.value = null;
+
+                if (newFiles.length === 0) {
+                    // Si el usuario cancela la selección, no hacemos nada con la lista acumulada
+                    return;
+                }
+                
+                // 2. Acumular y filtrar duplicados
+                newFiles.forEach(newFile => {
+                    // Usar la combinación de nombre y tamaño como ID único para evitar duplicados
+                    const isDuplicate = currentFiles.some(
+                        existingFile => existingFile.name === newFile.name && existingFile.size === newFile.size
+                    );
+                    
+                    if (!isDuplicate) {
+                        currentFiles.push(newFile);
+                    }
+                });
+
+                // 3. Actualizar la visualización
+                renderFiles(inputId);
+
+                // IMPORTANTE: NO TOCAMOS inputElement.files o Object.defineProperty.
+                // El envío se hará leyendo el objeto 'accumulatedFiles' en handleFormSubmit.
+            });
+
+            // 3. Clear button logic
+            clearButton.addEventListener('click', () => {
+                accumulatedFiles[inputId] = []; // Limpiar el array en memoria
+                inputElement.value = null; // Limpiar el valor del input DOM
+                renderFiles(inputId); // Actualizar la visualización
+            });
+            
+            // Initial render
+            renderFiles(inputId);
+        }
+
+        // Aplicar la función a todos los inputs de archivo
+        setupFileInput(filesDeclarantesInput, clearDeclarantesFilesBtn, filesDeclarantesInput.id);
+        setupFileInput(filesDependientesInput, clearDependientesFilesBtn, filesDependientesInput.id);
+        setupFileInput(filesW2Input, clearW2FilesBtn, filesW2Input.id);
+        setupFileInput(filesIngresosInput, clearIngresosFilesBtn, filesIngresosInput.id);
+        setupFileInput(filesDeduccionesInput, clearDeduccionesFilesBtn, filesDeduccionesInput.id);
 
 
         // --- LÓGICA DE CONDICIONALIDAD DE DATOS DE CÓNYUGE ---
@@ -788,8 +901,8 @@
             });
         });
 
-        // --- LÓGICA CONDICIONAL DE ARCHIVOS DE DEDUCCIONES (PASO 4) ---
-        const deductionCheckboxes = document.querySelectorAll('#dependienteDeductionsContainer .checkbox-label input[type="checkbox"], #independienteDeductionsContainer .checkbox-label input[type="checkbox"]');
+        // --- LÓGICA CONDICIONAL DE ARCHIVOS DE DEDUCCIONES (Paso 4) ---
+        const deductionCheckboxes = document.querySelectorAll('#dependienteDeductionsContainer .checkbox-label input[type="checkbox"]');
 
         function checkDeductionFilesRequirement() {
             let isAnyChecked = false;
@@ -814,12 +927,12 @@
             });
 
             if (isAnyChecked) {
+                // Si es requerido, la validación se hace contra el array acumulado.
                 filesDeduccionesInput.setAttribute('required', 'required');
                 deduccionObligatorioText.textContent = 'OBLIGATORIO';
                 filesDeduccionesHint.textContent = 'Este campo es OBLIGATORIO ya que seleccionaste un crédito/deducción.';
             } else {
                 filesDeduccionesInput.removeAttribute('required');
-                filesDeduccionesInput.value = null; // Limpiar archivos si ya no son requeridos
                 deduccionObligatorioText.textContent = 'Opcional';
                 filesDeduccionesHint.textContent = 'Este campo es opcional a menos que selecciones un crédito o deducción.';
             }
@@ -1025,8 +1138,8 @@
                 // Validación de archivos de dependientes si "tiene dependientes" es "si"
                 const tieneDependientesSi = document.querySelector('input[name="tiene_dependientes"][value="si"]:checked');
                 if (tieneDependientesSi) {
-                    // Solo validar que se hayan subido documentos de dependientes (archivos)
-                    if (filesDependientesInput.files.length === 0) {
+                    // Validar que se hayan subido documentos de dependientes (archivos en memoria)
+                    if (accumulatedFiles['files_dependientes'].length === 0) {
                         isValid = false;
                         filesDependientesInput.setCustomValidity("Debe subir los documentos de los dependientes.");
                         filesDependientesInput.reportValidity();
@@ -1051,9 +1164,9 @@
                     return;
                 }
                 
-                // VALIDACIÓN DE ARCHIVOS (Paso 2, 3, 4)
+                // VALIDACIÓN DE ARCHIVOS (Paso 2, 3, 4) - Usando el array acumulado
                 if (input.type === 'file' && input.hasAttribute('required')) {
-                    if (input.files.length === 0) {
+                    if (accumulatedFiles[input.id].length === 0) {
                          isValid = false;
                          input.reportValidity();
                          if (!firstInvalidInput) firstInvalidInput = input;
@@ -1118,7 +1231,6 @@
                 filesDependientesInput.setAttribute('required', 'required');
             } else {
                 filesDependientesInput.removeAttribute('required');
-                filesDependientesInput.value = null; // Limpiar archivos
             }
         }
 
@@ -1133,6 +1245,8 @@
                     dependientesContainer.classList.add('hidden');
                     // Desactivar requerido y limpiar archivos
                     toggleDependientesRequired(false);
+                    // Si se desactiva, forzamos la limpieza de la lista acumulada
+                    document.getElementById('clearDependientesFilesBtn').click();
                 }
             });
         });
@@ -1180,9 +1294,11 @@
 
         async function handleFormSubmit(e) {
             e.preventDefault();
-            if (!validateStep(currentStep)) {
-                // El mensaje de error ya se muestra en validateStep
-                return;
+            
+            // Re-validar en el último paso
+            if (currentStep !== totalSteps) {
+                // Esto debería ser handled por el botón next, pero como es el submit final, aseguramos
+                if (!validateStep(currentStep)) return;
             }
 
             showMessage('Enviando formulario, por favor espera...', false);
@@ -1190,25 +1306,22 @@
             submitBtn.textContent = 'Enviando...';
             
             try {
-                // 1. Recopilar datos del formulario
+                // 1. Recopilar datos del formulario y metadatos
                 const rawFormData = new FormData(form);
                 const formDataObject = {};
                 
-                // Procesar campos normales (excluyendo campos de archivos, montos y descripciones de gastos específicos)
                 rawFormData.forEach((value, key) => {
-                    // Excluir cualquier campo relacionado con datos de dependientes que ya eliminamos
-                    const isDependienteData = key.startsWith('dependiente_'); // Mantener esta línea por si el navegador conserva el valor del radio "tiene_dependientes"
                     const isFile = (document.getElementById(key) && document.getElementById(key).type === 'file');
-                    const isExpenseData = key.startsWith('monto_') || key === 'descripcion_otros_gastos';
-                    const isCreditCheckbox = key.startsWith('credito_') || key === 'recibio_1099r' || key === 'otro_credito_checkbox';
-                    const isBankData = key.startsWith('banco_');
                     
-                    if (!key.endsWith('[]') && !isFile && !isExpenseData && !isCreditCheckbox && !isBankData && !isDependienteData) {
-                        formDataObject[key] = value;
+                    // Excluir todos los archivos y campos temporales/de control
+                    if (isFile || key.startsWith('monto_') || key.startsWith('dependiente_') || key.endsWith('[]') || key.includes('checkbox')) {
+                        return;
                     }
+                    
+                    formDataObject[key] = value;
                 });
 
-                // Procesar campos de array (checkboxes y otros)
+                // Procesar campos de array (checkboxes)
                 formDataObject.tipo_ingreso = rawFormData.getAll('tipo_ingreso');
 
                 // Añadir los nuevos gastos detallados (Estructurados)
@@ -1223,87 +1336,46 @@
                     otro_credito: rawFormData.get('otro_credito_checkbox') === 'otro' ? rawFormData.get('descripcion_otro_credito') : null,
                 };
                 
-                // Procesar la cuenta bancaria
+                // Procesar la cuenta bancaria y cónyuge
                 formDataObject.banco_nombre = rawFormData.get('banco_nombre');
                 formDataObject.banco_routing = rawFormData.get('banco_routing');
                 formDataObject.banco_cuenta = rawFormData.get('banco_cuenta');
+                formDataObject.conyuge = formDataObject.estado_civil === 'casado_juntos' ? {
+                    nombre: rawFormData.get('conyuge_nombre'),
+                    fecha_nac: rawFormData.get('conyuge_fecha_nac'),
+                    ssn_itin: rawFormData.get('conyuge_ssn')
+                } : null;
                 
-                // Procesar datos del cónyuge
-                if (formDataObject.estado_civil === 'casado_juntos') {
-                    formDataObject.conyuge = {
-                        nombre: rawFormData.get('conyuge_nombre'),
-                        fecha_nac: rawFormData.get('conyuge_fecha_nac'),
-                        ssn_itin: rawFormData.get('conyuge_ssn')
-                    };
-                } else {
-                    formDataObject.conyuge = null;
-                }
-                
-                // Procesar dependientes (solo el estado, los datos ya no existen)
-                // Se mantiene la estructura para que el backend lo reciba
                 formDataObject.tiene_dependientes = rawFormData.get('tiene_dependientes') === 'si';
-                // CAMBIO CLAVE: Los datos estructurados de dependientes ya no se recopilan, se envía un array vacío o se omite.
-                // Lo omitimos para limpiar la estructura JSON, solo queda 'tiene_dependientes'.
-                formDataObject.dependientes = [];
+                formDataObject.dependientes = []; // No hay datos de dependientes que enviar
 
-
-                // Limpieza de campos temporales/genéricos (Se mantuvo la limpieza del array de dependientes por seguridad)
-                delete formDataObject['dependiente_nombre[]'];
-                delete formDataObject['dependiente_fecha_nac[]'];
-                delete formDataObject['dependiente_ssn[]'];
-                delete formDataObject['dependiente_relacion[]'];
-                delete formDataObject.gastos_checkbox; 
-                delete formDataObject.credito_hipoteca; 
-                delete formDataObject.credito_estudios; 
-                delete formDataObject.credito_seguro_salud;
-                delete formDataObject.recibio_1099r;
-                delete formDataObject.otro_credito_checkbox;
-                delete formDataObject.descripcion_otro_credito;
-                delete formDataObject.tiene_cuenta_bancaria; 
-
-                // 2. Preparar FormData para el envío (incluyendo archivos)
+                // 2. Preparar FormData para el envío (¡Uso de un nuevo FormData para archivos!)
                 const submissionFormData = new FormData();
                 
                 // Añadir el objeto JSON de datos como un string
                 submissionFormData.append('formData', JSON.stringify(formDataObject));
                 
                 // Añadir un ID de usuario simple (para nombrar archivos en el backend)
-                submissionFormData.append('userId', formDataObject.ssn_itin || 'user-' + Date.now());
+                const userId = formDataObject.ssn_itin || 'user-' + Date.now();
+                submissionFormData.append('userId', userId);
 
-                // Añadir los archivos de declarantes (Paso 2)
-                for (const file of filesDeclarantesInput.files) {
-                    submissionFormData.append('files', file, `declarantes-${file.name}`);
-                }
-                
-                // Añadir los archivos de dependientes (Paso 2 - CONDICIONAL)
-                if (formDataObject.tiene_dependientes) {
-                    for (const file of filesDependientesInput.files) {
-                        submissionFormData.append('files', file, `dependientes-${file.name}`);
-                    }
-                }
+                // 3. AÑADIR ARCHIVOS ACUMULADOS DESDE LA MEMORIA
+                for (const inputId in accumulatedFiles) {
+                    const files = accumulatedFiles[inputId];
+                    let prefix = inputId.replace('files_', ''); // ej. 'declarantes', 'w2', 'deducciones'
 
-                // Añadir los archivos de ingresos (W-2, 1099, etc.)
-                const filesIngresos = filesIngresosInput ? filesIngresosInput.files : [];
-                const filesW2 = filesW2Input ? filesW2Input.files : [];
-                
-                for (const file of filesIngresos) {
-                    submissionFormData.append('files', file, `ingresos_independiente-${file.name}`);
-                }
-                for (const file of filesW2) {
-                    submissionFormData.append('files', file, `w2-${file.name}`);
+                    files.forEach(file => {
+                        // Usamos el nombre del campo del backend 'files' para que Multer lo capture
+                        // y renombramos en el backend (ver index.js).
+                        submissionFormData.append('files', file, `${prefix}-${file.name}`);
+                    });
                 }
 
-                // Añadir los archivos de deducciones/créditos (Paso 4 - CONDICIONAL)
-                if (filesDeduccionesInput.files.length > 0) {
-                    for (const file of filesDeduccionesInput.files) {
-                        submissionFormData.append('files', file, `deducciones-${file.name}`);
-                    }
-                }
-                
+
                 // *** INTEGRACIÓN ORIGINAL DEL BACKEND ***
                 const response = await fetch('/api/submit-form', {
                     method: 'POST',
-                    body: submissionFormData,
+                    body: submissionFormData, // Enviamos el FormData que tiene todos los archivos acumulados
                 });
 
                 if (!response.ok) {
