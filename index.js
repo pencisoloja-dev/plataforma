@@ -16,7 +16,7 @@ app.use(cors());
 app.use(express.json());
 
 // Crear directorio uploads si no existe
-const uploadsDir = path.join(__dirname, 'uploads');
+const uploadsDir = '/app/uploads';
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
     console.log('Directorio uploads creado');
@@ -216,3 +216,4 @@ app.listen(port, '0.0.0.0', () => {
     console.log(`PANEL ADMIN: http://0.0.0.0:${port}/`);
     console.log(`FORMULARIO: http://0.0.0.0:${port}/formulario`);
 });
+
