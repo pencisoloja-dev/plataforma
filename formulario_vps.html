@@ -1,199 +1,117 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formulario de Impuestos</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Fuente Inter de Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #0f172a; /* slate-900 */
-            --bg-card: #1e293b; /* slate-800 */
-            --border-color: #334155; /* slate-700 */
-            --text-light: #e2e8f0; /* slate-200 */
-            --text-muted: #94a3b8; /* slate-400 */
-            --accent-blue: #3b82f6; /* blue-500 */
-            --accent-blue-dark: #2563eb; /* blue-600 */
-            --accent-red: #ef4444; /* red-500 */
-            --accent-green: #22c55e; /* green-500 */
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --border-color: #334155;
+            --text-light: #e2e8f0;
+            --accent-blue: #3b82f6;
+            --accent-green: #22c55e;
+            --accent-red: #ef4444;
         }
-
-        body {
+        body { 
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark);
+            background: var(--bg-dark);
             background-image: radial-gradient(circle at 50% 0, var(--bg-card), var(--bg-dark) 60%);
             color: var(--text-light);
             min-height: 100vh;
         }
-
-        .form-section {
-            display: none;
-        }
-
-        #section-1 {
-            display: block;
-        }
-
-        .form-input,
-        .form-select {
-            background-color: #334155;
-            border-color: #475569;
+        .form-section { display: none; }
+        #section-1 { display: block; }
+        .form-input, .form-select {
+            background: #334155;
+            border: 1px solid #475569;
             color: var(--text-light);
             border-radius: 0.5rem;
             width: 100%;
             padding: 0.75rem 1rem;
-            border-width: 1px;
-            border-style: solid;
-            transition: all 0.2s ease-in-out;
+            transition: all 0.2s;
         }
-
-        .form-input:focus,
-        .form-select:focus {
+        .form-input:focus, .form-select:focus {
             outline: none;
             border-color: var(--accent-blue);
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
         }
-
         .btn {
-            background-image: linear-gradient(to right, var(--accent-blue), var(--accent-blue-dark));
+            background: linear-gradient(to right, var(--accent-blue), #2563eb);
             color: white;
             padding: 0.75rem 1.5rem;
             border: none;
             border-radius: 0.5rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease-in-out;
-            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
-            text-decoration: none;
-            display: inline-block;
+            transition: all 0.2s;
         }
-
         .btn:hover {
-            background-image: linear-gradient(to right, var(--accent-blue-dark), #1d4ed8);
             transform: translateY(-2px);
             box-shadow: 0 6px 14px rgba(59, 130, 246, 0.3);
         }
-
-        .btn-secondary {
-            background-image: none;
-            background-color: var(--border-color);
-            color: var(--text-light);
-            box-shadow: none;
-        }
-
-        .btn-secondary:hover {
-            background-image: none;
-            background-color: #475569;
-            transform: translateY(-1px);
-            box-shadow: none;
-        }
-
         .btn-green {
-            background-image: linear-gradient(to right, var(--accent-green), #16a34a);
-            box-shadow: 0 4px 10px rgba(34, 197, 94, 0.2);
+            background: linear-gradient(to right, var(--accent-green), #16a34a);
         }
-
-        .btn-green:hover {
-            background-image: linear-gradient(to right, #16a34a, #15803d);
-            box-shadow: 0 6px 14px rgba(34, 197, 94, 0.3);
+        .btn-secondary {
+            background: #334155;
+            color: var(--text-light);
         }
-
         .epic-card {
-            background-color: var(--bg-card);
+            background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 0.75rem;
             padding: 1.5rem 2rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
-
         .checkbox-label {
-            background-color: #334155;
+            background: #334155;
             color: var(--text-light);
             padding: 1rem;
             border-radius: 0.5rem;
             display: flex;
             align-items: center;
             cursor: pointer;
-            transition: all 0.2s ease;
             border: 1px solid #475569;
+            margin-bottom: 0.5rem;
         }
-        
-        /* Ajuste para que el texto dentro del label se alinee correctamente si se envuelve */
-        .checkbox-label > * {
-            /* Permite que el contenido (texto/span) se expanda dentro del flex container */
-            flex-shrink: 1;
-            /* Alinea el texto a la izquierda en caso de que el label sea más grande */
-            text-align: left;
-        }
-
         .checkbox-label:hover {
-            background-color: #475569;
+            background: #475569;
             border-color: var(--accent-blue);
         }
-
-        .checkbox-label input[type="checkbox"]:checked {
-            accent-color: var(--accent-blue);
-        }
-
-        .checkbox-label input[type="checkbox"] {
-            width: 1.25rem;
-            height: 1.25rem;
-            margin-right: 0.75rem;
-            /* Evita que el checkbox se haga más pequeño */
-            flex-shrink: 0; 
-        }
-        
         .label-required::after {
             content: ' *';
             color: var(--accent-red);
             font-weight: bold;
         }
-
-        /* Estilos específicos para inputs de tipo file para compatibilidad móvil */
-        input[type="file"] {
-            padding: 0.75rem 1rem;
-        }
-        
-        /* Se mantiene este estilo para dar un borde separador a las sub-secciones */
         .sub-section-title {
-            font-size: 1.25rem; /* text-xl */
+            font-size: 1.25rem;
             font-weight: 600;
             color: var(--accent-blue);
             border-bottom: 2px solid var(--border-color);
             padding-bottom: 0.5rem;
             margin-bottom: 1.5rem;
         }
-        
-        /* Barra de Progreso */
-        .progress-bar-bg {
-            background-color: #334155;
-        }
+        .progress-bar-bg { background: #334155; }
         .progress-bar-fill {
-            background-image: linear-gradient(to right, var(--accent-blue), var(--accent-blue-dark));
+            background: linear-gradient(to right, var(--accent-blue), #2563eb);
             transition: width 0.3s ease-in-out;
         }
+        .hidden { display: none !important; }
     </style>
 </head>
-
 <body class="text-slate-300">
-
     <div class="container mx-auto max-w-4xl p-4 md:p-8">
-
         <header class="flex justify-between items-center mb-10 flex-wrap gap-4">
             <h1 class="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-                <svg class="w-10 h-10 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                <svg class="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
                 </svg>
-                <!-- CAMBIO: Título simplificado -->
                 Formulario de Impuestos
             </h1>
-            <!-- Se eliminó el botón "Volver al Admin" para la versión de cliente. -->
         </header>
 
         <!-- Barra de Progreso -->
@@ -202,29 +120,29 @@
         </div>
 
         <form id="taxForm" class="epic-card p-6 md:p-10">
-            
             <div id="form-container">
                 
-                <!-- ***** SECCIÓN 1: TIPO DE PRESENTACIÓN ***** -->
+                <!-- SECCIÓN 1: TIPO DE PRESENTACIÓN -->
                 <div id="section-1" class="form-section">
                     <h2 class="text-2xl font-semibold mb-2 text-white">1️⃣ Paso 1: Tipo de Presentación</h2>
-                    <p class="text-slate-400 mb-6">Selecciona el tipo de ingresos que recibiste para cargar las secciones correctas del formulario.</p>
+                    <p class="text-slate-400 mb-6">Selecciona el tipo de ingresos que recibiste.</p>
                     
                     <div>
-                        <label class="block text-sm font-medium mb-2 label-required">¿Cuál describe mejor tu situación laboral principal en el año fiscal?</label>
+                        <label class="block text-sm font-medium mb-2 label-required">¿Cuál describe mejor tu situación?</label>
                         <select id="tipo_presentacion" name="tipo_presentacion" class="form-select" required>
                             <option value="">Selecciona...</option>
                             <option value="dependiente">Trabajador Dependiente (Recibí W-2)</option>
-                            <option value="independiente">Trabajador Independiente (Recibí 1099 / Por mi cuenta)</option>
+                            <option value="independiente">Trabajador Independiente (Recibí 1099)</option>
                             <option value="ambos">Ambos (W-2 y 1099)</option>
                         </select>
                     </div>
                 </div>
 
-                <!-- ***** SECCIÓN 2: INFORMACIÓN PERSONAL (Paso 2) ***** -->
+                <!-- SECCIÓN 2: INFORMACIÓN PERSONAL -->
                 <div id="section-2" class="form-section">
-                    <h2 class="text-2xl font-semibold mb-2 text-white">🔹 Paso 2: Datos personales y Estado Civil</h2>
-                    <p class="text-slate-400 mb-6">Completa esta información tal como aparece en tus documentos oficiales.</p>
+                    <h2 class="text-2xl font-semibold mb-2 text-white">🔹 Paso 2: Datos Personales</h2>
+                    <p class="text-slate-400 mb-6">Información personal y estado civil.</p>
+                    
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label for="nombre_completo" class="block text-sm font-medium mb-2 label-required">Nombre completo</label>
@@ -234,669 +152,432 @@
                             <label for="ssn_itin" class="block text-sm font-medium mb-2 label-required">SSN o ITIN</label>
                             <input type="text" id="ssn_itin" name="ssn_itin" class="form-input" required>
                         </div>
-                        
-                        <!-- 1. CAMBIO: Fecha de Nacimiento Manual -->
                         <div>
                             <label for="fecha_nacimiento" class="block text-sm font-medium mb-2 label-required">Fecha de nacimiento</label>
-                            <input type="text" id="fecha_nacimiento" name="fecha_nacimiento" class="form-input" placeholder="MM/DD/AAAA" pattern="\d{2}/\d{2}/\d{4}" required>
-                            <p class="text-xs text-slate-500 mt-1">Formato: Mes/Día/Año (ej: 01/25/1990)</p>
+                            <input type="text" id="fecha_nacimiento" name="fecha_nacimiento" class="form-input" placeholder="MM/DD/AAAA" required>
                         </div>
-
-                        <!-- 2. CAMBIO: Estados Civiles IRS -->
                         <div>
-                            <label for="estado_civil" class="block text-sm font-medium mb-2 label-required">Estado civil de presentación</label>
+                            <label for="estado_civil" class="block text-sm font-medium mb-2 label-required">Estado civil</label>
                             <select id="estado_civil" name="estado_civil" class="form-select" required>
                                 <option value="">Selecciona...</option>
-                                <option value="soltero">Soltero(a) (Single)</option>
-                                <option value="casado_juntos">Casado(a) declarando juntos (Married Filing Jointly - MFJ)</option>
-                                <option value="casado_separados">Casado(a) declarando separados (Married Filing Separately - MFS)</option>
-                                <option value="cabeza_familia">Cabeza de familia (Head of Household - HOH)</option>
-                                <option value="viudo_calificado">Viudo(a) calificado(a) con dependiente (Qualifying Widow(er) - QW)</option>
+                                <option value="soltero">Soltero(a)</option>
+                                <option value="casado_juntos">Casado(a) declarando juntos</option>
+                                <option value="casado_separados">Casado(a) declarando separados</option>
+                                <option value="cabeza_familia">Cabeza de familia</option>
                             </select>
                         </div>
                     </div>
-                    
-                    <!-- 3. CAMBIO: Datos del Cónyuge (Condicional) -->
+
+                    <!-- Datos del Cónyuge (condicional) -->
                     <div id="datosConyugeContainer" class="hidden mt-6 bg-slate-900 p-6 rounded-lg border border-slate-700">
-                        <h3 class="text-lg font-semibold mb-4 text-white">Datos del Cónyuge (Esposo/a)</h3>
+                        <h3 class="text-lg font-semibold mb-4 text-white">Datos del Cónyuge</h3>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
-                                <label for="conyuge_nombre" class="block text-sm font-medium mb-1 label-required">Nombre completo del cónyuge</label>
+                                <label for="conyuge_nombre" class="block text-sm font-medium mb-1 label-required">Nombre del cónyuge</label>
                                 <input type="text" id="conyuge_nombre" name="conyuge_nombre" class="form-input">
                             </div>
                             <div>
-                                <label for="conyuge_fecha_nac" class="block text-sm font-medium mb-1 label-required">Fecha de nacimiento</label>
-                                <input type="text" id="conyuge_fecha_nac" name="conyuge_fecha_nac" class="form-input" placeholder="MM/DD/AAAA" pattern="\d{2}/\d{2}/\d{4}">
+                                <label for="conyuge_fecha_nac" class="block text-sm font-medium mb-1 label-required">Fecha nacimiento</label>
+                                <input type="text" id="conyuge_fecha_nac" name="conyuge_fecha_nac" class="form-input" placeholder="MM/DD/AAAA">
                             </div>
                             <div>
-                                <label for="conyuge_ssn" class="block text-sm font-medium mb-1 label-required">SSN o ITIN del cónyuge</label>
+                                <label for="conyuge_ssn" class="block text-sm font-medium mb-1 label-required">SSN/ITIN cónyuge</label>
                                 <input type="text" id="conyuge_ssn" name="conyuge_ssn" class="form-input">
                             </div>
                         </div>
                     </div>
 
-                    <div class="mt-6 border-t border-slate-700 pt-6">
-                        <!-- 4. Dirección y Contacto NO REQUERIDO -->
-                        <label class="block text-sm font-medium mb-2">Dirección (Opcional)</label>
-                        <input type="text" id="direccion_calle" name="direccion_calle" class="form-input mb-4" placeholder="Dirección (Calle y número)">
-                        <input type="text" id="direccion_apto" name="direccion_apto" class="form-input mb-4" placeholder="Apto, suite, etc. (Opcional)">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="text" id="direccion_ciudad" name="direccion_ciudad" class="form-input" placeholder="Ciudad">
-                            <input type="text" id="direccion_estado" name="direccion_estado" class="form-input" placeholder="Estado">
-                            <input type="text" id="direccion_zip" name="direccion_zip" class="form-input" placeholder="Código Postal (ZIP)">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                        <div>
-                            <label for="telefono" class="block text-sm font-medium mb-2">Teléfono de contacto (Opcional)</label>
-                            <input type="tel" id="telefono" name="telefono" class="form-input">
-                        </div>
-                        <div>
-                            <label for="email" class="block text-sm font-medium mb-2">Correo electrónico (Opcional)</label>
-                            <input type="email" id="email" name="email" class="form-input">
-                        </div>
-                    </div>
-
-                    <!-- 5. Opción de subir documentos de declarantes -->
+                    <!-- Documentos Declarantes -->
                     <div class="mt-8 border-t border-slate-700 pt-6">
-                        <h3 class="sub-section-title text-white">5. Documentos de los Declarantes (Obligatorio)</h3>
-                        <p class="text-sm text-slate-400 mb-4">Sube la documentación del declarante principal y de su cónyuge si aplica (Casado declarando juntos).</p>
-                        
-                        <ul class="list-disc list-inside text-sm text-slate-300 mb-4 ml-4">
-                            <li><strong>Tarjeta de SSN / ITIN</strong> (del declarante y cónyuge).</li>
-                            <li><strong>Licencia de conducir</strong> o <strong>Tarjeta de Identificación</strong> (del declarante y cónyuge).</li>
-                            <li><strong>Pasaporte</strong> (de ser el caso).</li>
-                        </ul>
-
-                        <input type="file" id="files_declarantes" name="files_declarantes" class="form-input" required multiple accept="image/*,application/pdf">
-                        <p class="text-xs text-slate-500 mt-1">Puedes tomar fotos, buscar en galería, drive o descargas.</p>
-                        
-                        <!-- Contenedor para mostrar los archivos seleccionados (Acumulación) -->
-                        <div id="filesDeclarantesList" class="mt-3 p-3 bg-slate-700 rounded-lg text-sm hidden">
-                            <p class="text-white font-medium mb-1">Archivos seleccionados:</p>
-                            <ul id="filesDeclarantesUl" class="list-disc list-inside text-slate-300 ml-4"></ul>
-                            <button type="button" id="clearDeclarantesFilesBtn" class="mt-2 text-red-400 hover:text-red-300 text-xs font-semibold">
-                                Limpiar selección
-                            </button>
-                        </div>
+                        <h3 class="sub-section-title text-white">Documentos de los Declarantes</h3>
+                        <p class="text-sm text-slate-400 mb-4">Sube identificación y documentos personales.</p>
+                        <input type="file" id="files_declarantes" name="files_declarantes" class="form-input" required multiple>
                     </div>
-                    
+
+                    <!-- Dependientes -->
                     <div class="mt-6 border-t border-slate-700 pt-6">
-                        <label class="block text-sm font-medium mb-2 mt-6 label-required">6. ¿Tienes dependientes que desees incluir?</label>
+                        <label class="block text-sm font-medium mb-2 label-required">¿Tienes dependientes?</label>
                         <div class="flex gap-4">
-                            <label class="flex items-center"><input type="radio" name="tiene_dependientes" value="si" class="mr-2"> Sí</label>
-                            <label class="flex items-center"><input type="radio" name="tiene_dependientes" value="no" class="mr-2" checked> No</label>
+                            <label class="flex items-center">
+                                <input type="radio" name="tiene_dependientes" value="si" class="mr-2"> Sí
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="tiene_dependientes" value="no" class="mr-2" checked> No
+                            </label>
                         </div>
                     </div>
 
                     <div id="dependientesContainer" class="hidden mt-6 bg-slate-900 p-6 rounded-lg border border-slate-700">
                         <h3 class="text-lg font-semibold mb-4 text-white">Documentos de Dependientes</h3>
-                        
-                        <!-- Solo el campo de archivo, sin datos personales -->
-                        <div id="filesDependientesContainer" class="mt-2">
-                            <p class="text-sm text-slate-400 mb-4">Sube la documentación de <strong>todos</strong> los dependientes que deseas declarar (SSN/ITIN, Actas de Nacimiento, etc.).</p>
-                            
-                            <ul class="list-disc list-inside text-sm text-slate-300 mb-4 ml-4">
-                                <li><strong>Tarjeta de SSN / ITIN</strong>.</li>
-                                <li><strong>Acta de nacimiento</strong> o similar.</li>
-                                <li><strong>Registro de notas de la escuela</strong> o <strong>Reporte de vacunas</strong> (para verificar residencia).</li>
-                            </ul>
-
-                            <input type="file" id="files_dependientes" name="files_dependientes" class="form-input" multiple accept="image/*,application/pdf">
-                            <p class="text-xs text-slate-500 mt-1">Puedes tomar fotos, buscar en galería, drive o descargas.</p>
-                             <!-- Contenedor para mostrar los archivos seleccionados (Acumulación) -->
-                            <div id="filesDependientesList" class="mt-3 p-3 bg-slate-700 rounded-lg text-sm hidden">
-                                <p class="text-white font-medium mb-1">Archivos seleccionados:</p>
-                                <ul id="filesDependientesUl" class="list-disc list-inside text-slate-300 ml-4"></ul>
-                                <button type="button" id="clearDependientesFilesBtn" class="mt-2 text-red-400 hover:text-red-300 text-xs font-semibold">
-                                    Limpiar selección
-                                </button>
-                            </div>
-                        </div>
+                        <input type="file" id="files_dependientes" name="files_dependientes" class="form-input" multiple>
                     </div>
                 </div>
 
-                <!-- ***** SECCIÓN 3: INGRESOS (Paso 3) ***** -->
+                <!-- SECCIÓN 3: INGRESOS -->
                 <div id="section-3" class="form-section">
-                    <h2 class="text-2xl font-semibold mb-2 text-white">💰 Paso 3: Ingresos del Año Fiscal</h2>
-                    <p class="text-slate-400 mb-6">Proporciona los detalles de tus ingresos laborales.</p>
+                    <h2 class="text-2xl font-semibold mb-2 text-white">💰 Paso 3: Ingresos</h2>
+                    <p class="text-slate-400 mb-6">Detalles de tus ingresos del año.</p>
 
-                    <!-- CONTENEDOR: INGRESOS DEPENDIENTE (W-2) -->
+                    <!-- Ingresos Dependiente -->
                     <div id="dependienteIncomeContainer" class="hidden">
                         <h3 class="sub-section-title text-white">Ingresos por Nómina (W-2)</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label for="w2_recibido" class="block text-sm font-medium mb-2 label-required">1. ¿Recibiste un formulario W-2?</label>
-                                <select id="w2_recibido" name="w2_recibido" class="form-select" required>
-                                    <option value="si">Sí</option>
-                                    <option value="no">No</option>
-                                </select>
-                            </div>
-                            <div>
-                                <!-- Item 2 -->
-                                <label for="num_w2" class="block text-sm font-medium mb-2">2. Número de W-2 recibidos</label>
+                                <label for="num_w2" class="block text-sm font-medium mb-2">Número de W-2 recibidos</label>
                                 <input type="number" id="num_w2" name="num_w2" class="form-input" min="0" value="1">
                             </div>
                             <div class="md:col-span-2">
-                                <!-- Item 3 -->
-                                <label for="files_w2" class="block text-sm font-medium mb-2 label-required">3. Sube aquí tu(s) formulario(s) W-2</label>
-                                <input type="file" id="files_w2" name="files_w2" class="form-input" data-is-required-file="true" required multiple accept="image/*,application/pdf">
-                                <p class="text-xs text-slate-500 mt-1">Este campo es obligatorio.</p>
-                                <!-- Contenedor para mostrar los archivos seleccionados (Acumulación) -->
-                                <div id="filesW2List" class="mt-3 p-3 bg-slate-700 rounded-lg text-sm hidden">
-                                    <p class="text-white font-medium mb-1">Archivos seleccionados:</p>
-                                    <ul id="filesW2Ul" class="list-disc list-inside text-slate-300 ml-4"></ul>
-                                    <button type="button" id="clearW2FilesBtn" class="mt-2 text-red-400 hover:text-red-300 text-xs font-semibold">
-                                        Limpiar selección
-                                    </button>
-                                </div>
+                                <label for="files_w2" class="block text-sm font-medium mb-2 label-required">Sube tu(s) W-2</label>
+                                <input type="file" id="files_w2" name="files_w2" class="form-input" required multiple>
                             </div>
                         </div>
                     </div>
 
-                    <!-- CONTENEDOR: INGRESOS INDEPENDIENTE (1099/Negocio) - AJUSTES -->
+                    <!-- Ingresos Independiente -->
                     <div id="independienteIncomeContainer" class="hidden mt-8 pt-6 border-t border-slate-700">
-                        <h3 class="sub-section-title text-white">Ingresos por Trabajo Independiente (1099/Efectivo)</h3>
+                        <h3 class="sub-section-title text-white">Ingresos por Trabajo Independiente</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label for="ocupacion" class="block text-sm font-medium mb-2 label-required">1. Ocupación o tipo de negocio</label>
-                                <input type="text" id="ocupacion" name="ocupacion" class="form-input" placeholder="ej. limpieza, construcción...">
+                                <label for="ocupacion" class="block text-sm font-medium mb-2 label-required">Ocupación o negocio</label>
+                                <input type="text" id="ocupacion" name="ocupacion" class="form-input" required>
                             </div>
                             <div>
-                                <label for="nombre_comercial" class="block text-sm font-medium mb-2">2. Nombre comercial (o tu nombre)</label>
-                                <input type="text" id="nombre_comercial" name="nombre_comercial" class="form-input">
+                                <label for="ingreso_total" class="block text-sm font-medium mb-2 label-required">Ingreso total del año</label>
+                                <input type="number" id="ingreso_total" name="ingreso_total" class="form-input" required>
                             </div>
-                            <div>
-                                <label for="ein" class="block text-sm font-medium mb-2">3. ¿Tienes EIN?</label>
-                                <select id="ein" name="ein" class="form-select">
-                                    <option value="no">No</option>
-                                    <option value="si">Sí</option>
-                                    <option value="no_seguro">No estoy seguro</option>
-                                </select>
-                            </div>
-                            <!-- Nuevo Item 4 (anterior 6) -->
                             <div class="md:col-span-2">
-                                <label class="block text-sm font-medium mb-2">4. ¿Qué tipo de ingresos recibiste?</label>
-                                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 bg-slate-700 p-4 rounded-lg">
-                                    <label class="checkbox-label"><input type="checkbox" name="tipo_ingreso" value="1099-NEC"> 1099-NEC</label>
-                                    <label class="checkbox-label"><input type="checkbox" name="tipo_ingreso" value="1099-K"> 1099-K</label>
-                                    <label class="checkbox-label"><input type="checkbox" name="tipo_ingreso" value="efectivo"> Efectivo</label>
-                                    <label class="checkbox-label"><input type="checkbox" name="tipo_ingreso" value="cheques"> Cheques</label>
-                                    <label class="checkbox-label"><input type="checkbox" name="tipo_ingreso" value="transferencias"> Transferencias</label>
-                                    <label class="checkbox-label"><input type="checkbox" name="tipo_ingreso" value="otro"> Otro</label>
-                                </div>
-                            </div>
-                            <!-- Item 5 (anterior 7) - QUITADA PALABRA APROXIMADO -->
-                            <div>
-                                <label for="ingreso_total" class="block text-sm font-medium mb-2 label-required">5. Ingreso total del año</label>
-                                <input type="number" id="ingreso_total" name="ingreso_total" class="form-input" placeholder="$">
-                            </div>
-                        </div>
-                        
-                        <div class="mt-6">
-                            <!-- Item 6 (anterior 8) -->
-                            <label for="files_ingresos" class="block text-sm font-medium mb-2 label-required">6. Sube aquí tus 1099, etc.</label>
-                            <input type="file" id="files_ingresos" name="files_ingresos" class="form-input" data-is-required-file="true" required multiple accept="image/*,application/pdf">
-                             <!-- Contenedor para mostrar los archivos seleccionados (Acumulación) -->
-                             <div id="filesIngresosList" class="mt-3 p-3 bg-slate-700 rounded-lg text-sm hidden">
-                                <p class="text-white font-medium mb-1">Archivos seleccionados:</p>
-                                <ul id="filesIngresosUl" class="list-disc list-inside text-slate-300 ml-4"></ul>
-                                <button type="button" id="clearIngresosFilesBtn" class="mt-2 text-red-400 hover:text-red-300 text-xs font-semibold">
-                                    Limpiar selección
-                                </button>
+                                <label for="files_ingresos" class="block text-sm font-medium mb-2 label-required">Sube 1099 y comprobantes</label>
+                                <input type="file" id="files_ingresos" name="files_ingresos" class="form-input" required multiple>
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <!-- ***** SECCIÓN 4: GASTOS Y CRÉDITOS (Paso 4) ***** -->
+
+                <!-- SECCIÓN 4: GASTOS Y CRÉDITOS -->
                 <div id="section-4" class="form-section">
                     <h2 class="text-2xl font-semibold mb-2 text-white">💳 Paso 4: Gastos y Créditos</h2>
-                    <p class="text-slate-400 mb-6">Detalles de las posibles deducciones o créditos fiscales aplicables.</p>
+                    <p class="text-slate-400 mb-6">Deducciones y créditos aplicables.</p>
 
-                    <!-- CONTENEDOR: GASTOS DETALLADOS INDEPENDIENTE -->
+                    <!-- Gastos Independiente -->
                     <div id="independienteDeductionsContainer" class="hidden">
-                        <h3 class="sub-section-title text-white">Gastos Deducibles (Negocio)</h3>
-                        <p class="text-sm text-slate-400 mb-6">Marca el gasto y proporciona el monto total. El monto es <strong>obligatorio</strong> si se marca la casilla.</p>
-                        
-                        <div class="space-y-4" id="expenseCheckboxes">
-                            <!-- Patrón de Gasto: Checkbox + Contenedor de Input -->
-                            <div class="expense-group bg-slate-700 p-4 rounded-lg border border-slate-700">
-                                <!-- CAMBIO: Solo Millas -->
-                                <label class="checkbox-label"><input type="checkbox" name="gastos_checkbox" value="combustible"> Millas</label>
-                                <div id="monto_combustible_container" class="monto-input-container hidden mt-3">
-                                    <!-- CAMBIO: Escribir las millas -->
-                                    <label class="block text-xs font-medium mb-1 text-slate-400 label-required">Millas totales recorridas por trabajo</label>
-                                    <input type="number" name="monto_combustible" class="form-input form-input-monto" placeholder="Número de millas" min="0">
-                                </div>
-                            </div>
-
-                            <div class="expense-group bg-slate-700 p-4 rounded-lg border border-slate-700">
-                                <label class="checkbox-label"><input type="checkbox" name="gastos_checkbox" value="mantenimiento_vehiculo"> Mantenimiento vehículo</label>
-                                <div id="monto_mantenimiento_vehiculo_container" class="monto-input-container hidden mt-3">
-                                    <label class="block text-xs font-medium mb-1 text-slate-400 label-required">Monto total de Mantenimiento vehículo ($)</label>
-                                    <input type="number" name="monto_mantenimiento_vehiculo" class="form-input form-input-monto" placeholder="$" min="0">
-                                </div>
-                            </div>
-                            
-                            <div class="expense-group bg-slate-700 p-4 rounded-lg border border-slate-700">
-                                <label class="checkbox-label"><input type="checkbox" name="gastos_checkbox" value="herramientas"> Herramientas / Materiales</label>
-                                <div id="monto_herramientas_container" class="monto-input-container hidden mt-3">
-                                    <label class="block text-xs font-medium mb-1 text-slate-400 label-required">Monto total de Herramientas / Materiales ($)</label>
-                                    <input type="number" name="monto_herramientas" class="form-input form-input-monto" placeholder="$" min="0">
-                                </div>
-                            </div>
-                            
-                            <div class="expense-group bg-slate-700 p-4 rounded-lg border border-slate-700">
-                                <label class="checkbox-label"><input type="checkbox" name="gastos_checkbox" value="telefono"> Teléfono / Plan de datos</label>
-                                <div id="monto_telefono_container" class="monto-input-container hidden mt-3">
-                                    <label class="block text-xs font-medium mb-1 text-slate-400 label-required">Monto total de Teléfono / Plan de datos ($)</label>
-                                    <input type="number" name="monto_telefono" class="form-input form-input-monto" placeholder="$" min="0">
-                                </div>
-                            </div>
-
-                            <div class="expense-group bg-slate-700 p-4 rounded-lg border border-slate-700">
-                                <label class="checkbox-label"><input type="checkbox" name="gastos_checkbox" value="internet"> Internet / Software</label>
-                                <div id="monto_internet_container" class="monto-input-container hidden mt-3">
-                                    <label class="block text-xs font-medium mb-1 text-slate-400 label-required">Monto total de Internet / Software ($)</label>
-                                    <input type="number" name="monto_internet" class="form-input form-input-monto" placeholder="$">
-                                </div>
-                            </div>
-                            
-                            <div class="expense-group bg-slate-700 p-4 rounded-lg border border-slate-700">
-                                <label class="checkbox-label"><input type="checkbox" name="gastos_checkbox" value="publicidad"> Publicidad</label>
-                                <div id="monto_publicidad_container" class="monto-input-container hidden mt-3">
-                                    <label class="block text-xs font-medium mb-1 text-slate-400 label-required">Monto total de Publicidad ($)</label>
-                                    <input type="number" name="monto_publicidad" class="form-input form-input-monto" placeholder="$" min="0">
-                                </div>
-                            </div>
-                            
-                            <div class="expense-group bg-slate-700 p-4 rounded-lg border border-slate-700">
-                                <label class="checkbox-label"><input type="checkbox" name="gastos_checkbox" value="home_office"> Oficina en casa</label>
-                                <div id="monto_home_office_container" class="monto-input-container hidden mt-3">
-                                    <label class="block text-xs font-medium mb-1 text-slate-400 label-required">Monto total de Oficina en casa ($)</label>
-                                    <input type="number" name="monto_home_office" class="form-input form-input-monto" placeholder="$" min="0">
-                                </div>
-                            </div>
-                            
-                            <div class="expense-group bg-slate-700 p-4 rounded-lg border border-slate-700">
-                                <label class="checkbox-label"><input type="checkbox" name="gastos_checkbox" value="uniformes"> Uniformes / Ropa trabajo</label>
-                                <div id="monto_uniformes_container" class="monto-input-container hidden mt-3">
-                                    <label class="block text-xs font-medium mb-1 text-slate-400 label-required">Monto total de Uniformes / Ropa trabajo ($)</label>
-                                    <input type="number" name="monto_uniformes" class="form-input form-input-monto" placeholder="$" min="0">
-                                </div>
-                            </div>
-                            
-                            <div class="expense-group bg-slate-700 p-4 rounded-lg border border-slate-700">
-                                <label class="checkbox-label"><input type="checkbox" name="gastos_checkbox" value="comidas"> Comidas de trabajo</label>
-                                <div id="monto_comidas_container" class="monto-input-container hidden mt-3">
-                                    <label class="block text-xs font-medium mb-1 text-slate-400 label-required">Monto total de Comidas de trabajo ($)</label>
-                                    <input type="number" name="monto_comidas" class="form-input form-input-monto" placeholder="$" min="0">
-                                </div>
-                            </div>
-                            
-                            <div class="expense-group bg-slate-700 p-4 rounded-lg border border-slate-700">
-                                <label class="checkbox-label"><input type="checkbox" name="gastos_checkbox" value="capacitacion"> Capacitación / Cursos</label>
-                                <div id="monto_capacitacion_container" class="monto-input-container hidden mt-3">
-                                    <label class="block text-xs font-medium mb-1 text-slate-400 label-required">Monto total de Capacitación / Cursos ($)</label>
-                                    <input type="number" name="monto_capacitacion" class="form-input form-input-monto" placeholder="$" min="0">
-                                </div>
-                            </div>
-                            
-                            <div class="expense-group bg-slate-700 p-4 rounded-lg border border-slate-700">
-                                <label class="checkbox-label"><input type="checkbox" name="gastos_checkbox" value="seguros"> Seguros del negocio</label>
-                                <div id="monto_seguros_container" class="monto-input-container hidden mt-3">
-                                    <label class="block text-xs font-medium mb-1 text-slate-400 label-required">Monto total de Seguros del negocio ($)</label>
-                                    <input type="number" name="monto_seguros" class="form-input form-input-monto" placeholder="$" min="0">
-                                </div>
-                            </div>
-                            
-                            <div class="expense-group bg-slate-700 p-4 rounded-lg border border-slate-700">
-                                <label class="checkbox-label"><input type="checkbox" name="gastos_checkbox" value="otros"> Otros gastos</label>
-                                <div id="monto_otros_container" class="monto-input-container hidden mt-3">
-                                    <label class="block text-xs font-medium mb-1 text-slate-400 label-required">Monto total de Otros gastos ($)</label>
-                                    <input type="number" name="monto_otros" class="form-input form-input-monto" placeholder="$" min="0">
-                                    <label class="block text-xs font-medium mb-1 text-slate-400 mt-2">Describe brevemente estos "Otros" gastos:</label>
-                                    <textarea name="descripcion_otros_gastos" class="form-input" rows="2"></textarea>
-                                </div>
-                            </div>
-                            
+                        <h3 class="sub-section-title text-white">Gastos de Negocio</h3>
+                        <div class="space-y-4">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="gasto_millas" value="si"> Millas de trabajo
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="gasto_herramientas" value="si"> Herramientas y materiales
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="gasto_telefono" value="si"> Teléfono e internet
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="gasto_vehiculo" value="si"> Mantenimiento de vehículo
+                            </label>
                         </div>
                     </div>
 
-                    <!-- CONTENEDOR: CRÉDITOS COMUNES DEPENDIENTE -->
+                    <!-- Créditos Dependiente -->
                     <div id="dependienteDeductionsContainer" class="hidden">
-                        <h3 class="sub-section-title text-white">Créditos y Deducciones Comunes</h3>
+                        <h3 class="sub-section-title text-white">Créditos y Deducciones</h3>
                         <div class="space-y-4">
                             <label class="checkbox-label">
-                                <input type="checkbox" name="credito_hipoteca" value="si"> ¿Pagaste intereses de una hipoteca? (Formulario 1098)
+                                <input type="checkbox" name="credito_hipoteca" value="si"> Intereses de hipoteca (1098)
                             </label>
-                            
-                            <!-- Gasto educativo con línea de descripción separada -->
                             <label class="checkbox-label">
-                                <input type="checkbox" name="credito_estudios" value="si">
-                                <span class="flex flex-col">
-                                    <span>¿Tuviste gastos educativos (matrícula o préstamos estudiantiles)?</span>
-                                    <span class="text-xs text-slate-400 mt-1">
-                                        Aplica a gastos <strong>propios o de tus dependientes</strong>. (Formulario 1098-T o 1098-E)
-                                    </span>
-                                </span>
+                                <input type="checkbox" name="credito_estudios" value="si"> Gastos educativos
                             </label>
-                            
                             <label class="checkbox-label">
-                                <input type="checkbox" name="credito_seguro_salud" value="si"> ¿Tienes seguro de salud a través del Mercado de Seguros (Marketplace)? (Formulario 1095-A)
+                                <input type="checkbox" name="credito_seguro" value="si"> Seguro de salud (1095-A)
                             </label>
-
-                            <!-- AGREGAR: Recibiste forma 1099R -->
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="recibio_1099r" value="si"> ¿Recibiste la forma 1099-R (Distribuciones de pensiones, anualidades, IRA, etc.)?
-                            </label>
-
-                            <!-- AGREGAR: Otro -->
-                            <div class="expense-group bg-slate-700 p-4 rounded-lg border border-slate-700">
-                                <label class="checkbox-label"><input type="checkbox" name="otro_credito_checkbox" value="otro"> Otro. Y especifica:</label>
-                                <div id="otro_credito_container" class="monto-input-container hidden mt-3">
-                                    <label class="block text-xs font-medium mb-1 text-slate-400 label-required">Especifique qué otro crédito o deducción aplica:</label>
-                                    <textarea name="descripcion_otro_credito" class="form-input" rows="2"></textarea>
-                                </div>
-                            </div>
                         </div>
+                    </div>
 
-                        <!-- Subida de documentos (Paso 4) -->
-                        <div class="mt-8 border-t border-slate-700 pt-6">
-                            <h3 class="sub-section-title text-white">Documentos de Créditos/Deducciones Seleccionados (<span id="deducciones_obligatorio_text">Obligatorio si aplica</span>)</h3>
-                            <p class="text-sm text-slate-400 mb-4">Sube los formularios (1098, 1098-T, 1095-A, 1099-R, etc.) que apliquen según tus selecciones arriba.</p>
-                            <input type="file" id="files_deducciones" name="files_deducciones" class="form-input" multiple accept="image/*,application/pdf">
-                            <p id="files_deducciones_hint" class="text-xs text-slate-500 mt-1">Este campo es opcional a menos que selecciones un crédito o deducción.</p>
-                             <!-- NUEVO: Contenedor para mostrar los archivos seleccionados (FIX DE VISUALIZACIÓN) -->
-                             <div id="filesDeduccionesList" class="mt-3 p-3 bg-slate-700 rounded-lg text-sm hidden">
-                                <p class="text-white font-medium mb-1">Archivos seleccionados:</p>
-                                <ul id="filesDeduccionesUl" class="list-disc list-inside text-slate-300 ml-4"></ul>
-                                <button type="button" id="clearDeduccionesFilesBtn" class="mt-2 text-red-400 hover:text-red-300 text-xs font-semibold">
-                                    Limpiar selección
-                                </button>
-                            </div>
-                        </div>
+                    <!-- Documentos de deducciones -->
+                    <div class="mt-8 border-t border-slate-700 pt-6">
+                        <h3 class="sub-section-title text-white">Documentos de Créditos/Deducciones</h3>
+                        <input type="file" id="files_deducciones" name="files_deducciones" class="form-input" multiple>
                     </div>
                 </div>
 
-
-                <!-- ***** SECCIÓN 5: CUENTA BANCARIA (Paso 5) ***** -->
+                <!-- SECCIÓN 5: CUENTA BANCARIA -->
                 <div id="section-5" class="form-section">
-                    <h2 class="text-2xl font-semibold mb-2 text-white">🏠 Paso 5: Cuenta Bancaria</h2>
+                    <h2 class="text-2xl font-semibold mb-2 text-white">🏦 Paso 5: Cuenta Bancaria</h2>
+                    <p class="text-slate-400 mb-6">Información para depósito directo.</p>
                     
-                    <!-- Contenedor con sub-título integrado -->
-                    <div class="mt-6 bg-slate-900 p-6 rounded-lg border border-slate-700">
-                        <h3 class="sub-section-title text-white">Cuenta Bancaria (Solo)</h3>
-                        <p class="text-sm text-slate-400 mb-6">Ingresa los datos de la cuenta para depósito directo o débito (Obligatorio).</p>
+                    <div class="bg-slate-900 p-6 rounded-lg border border-slate-700">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label class="block text-sm font-medium mb-1 label-required">Nombre del banco</label>
-                                <input type="text" name="banco_nombre" id="banco_nombre" class="form-input" required>
+                                <input type="text" name="banco_nombre" class="form-input" required>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium mb-1 label-required">Routing number</label>
-                                <input type="text" name="banco_routing" id="banco_routing" class="form-input" required>
+                                <input type="text" name="banco_routing" class="form-input" required>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium mb-1 label-required">Account number</label>
-                                <input type="text" name="banco_cuenta" id="banco_cuenta" class="form-input" required>
+                                <input type="text" name="banco_cuenta" class="form-input" required>
                             </div>
                         </div>
                     </div>
-                    
                 </div>
 
-                <!-- ***** SECCIÓN 6: INFORMACIÓN ADICIONAL (Paso 6) ***** -->
+                <!-- SECCIÓN 6: INFORMACIÓN ADICIONAL -->
                 <div id="section-6" class="form-section">
                     <h2 class="text-2xl font-semibold mb-2 text-white">💬 Paso 6: Información Adicional</h2>
-                    <p class="text-slate-400 mb-6">Comentarios finales para el preparador de impuestos.</p>
-                    <div class="space-y-6">
-                        
-                        <!-- Solo conserva el punto 5, ahora como punto 1 -->
-                        <div>
-                            <label for="comentarios_adicionales" class="block text-sm font-medium mb-2">1. Comentarios o aclaraciones adicionales:</label>
-                            <textarea id="comentarios_adicionales" name="comentarios_adicionales" rows="5" class="form-input"></textarea>
-                        </div>
+                    <p class="text-slate-400 mb-6">Comentarios finales.</p>
+                    
+                    <div>
+                        <label for="comentarios_adicionales" class="block text-sm font-medium mb-2">Comentarios o aclaraciones:</label>
+                        <textarea id="comentarios_adicionales" name="comentarios_adicionales" rows="5" class="form-input"></textarea>
                     </div>
                 </div>
             </div>
 
-            <!-- Contenedor de Mensajes -->
+            <!-- Mensajes -->
             <div id="messageContainer" class="hidden mt-6 p-4 rounded-md"></div>
 
             <!-- Botones de Navegación -->
             <div class="flex justify-between mt-10">
-                <button type="button" id="prevBtn" class="btn btn-secondary" style="display: none;">
-                    Anterior
-                </button>
-                <button type="button" id="nextBtn" class="btn ml-auto">
-                    Siguiente
-                </button>
-                <button type="submit" id="submitBtn" class="btn btn-green ml-auto" style="display: none;">
-                    Enviar Formulario
-                </button>
+                <button type="button" id="prevBtn" class="btn btn-secondary hidden">Anterior</button>
+                <button type="button" id="nextBtn" class="btn ml-auto">Siguiente</button>
+                <button type="submit" id="submitBtn" class="btn btn-green ml-auto hidden">Enviar Formulario</button>
             </div>
             
-            <!-- Sección de Confirmación (Oculta) -->
+            <!-- Confirmación -->
             <div id="confirmationSection" class="form-section text-center p-8">
                 <h2 class="text-3xl font-bold text-green-400 mb-4">✅ ¡Formulario Enviado!</h2>
-                <p class="text-lg text-slate-300 mb-6">Gracias por completar este formulario. Esto nos ayudará a preparar tu declaración de forma más rápida y precisa.</p>
-                <p class="text-slate-400">Nos pondremos en contacto contigo si necesitamos información adicional.</p>
+                <p class="text-lg text-slate-300 mb-6">Gracias por completar el formulario.</p>
             </div>
-
         </form>
     </div>
 
-  <script>
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 INICIANDO FORMULARIO COMPLETO - SIN DIAGNÓSTICO');
-    
-    let currentStep = 1;
-    const totalSteps = 6;
-
-    // Referencias a elementos
-    const nextBtn = document.getElementById('nextBtn');
-    const prevBtn = document.getElementById('prevBtn');
-    const submitBtn = document.getElementById('submitBtn');
-    const progressBar = document.getElementById('progressBar');
-
-    // Función para mostrar pasos
-    function showStep(step) {
-        console.log('🔹 Mostrando paso:', step);
-        
-        // Ocultar todas las secciones
-        document.querySelectorAll('.form-section').forEach(section => {
-            section.style.display = 'none';
-        });
-        
-        // Mostrar sección actual
-        const currentSection = document.getElementById('section-' + step);
-        if (currentSection) {
-            currentSection.style.display = 'block';
+    <script>
+    // SISTEMA COMPLETO DEL FORMULARIO
+    class TaxFormSystem {
+        constructor() {
+            this.currentStep = 1;
+            this.totalSteps = 6;
+            this.accumulatedFiles = {};
+            this.init();
         }
-        
-        // Actualizar barra de progreso
-        if (progressBar) {
-            progressBar.style.width = ((step / totalSteps) * 100) + '%';
-        }
-        
-        // Mostrar/ocultar botones
-        if (prevBtn) prevBtn.style.display = (step === 1) ? 'none' : 'inline-block';
-        if (nextBtn) nextBtn.style.display = (step === totalSteps) ? 'none' : 'inline-block';
-        if (submitBtn) submitBtn.style.display = (step === totalSteps) ? 'inline-block' : 'none';
-    }
 
-    // Validación SIMPLIFICADA - Solo requerido para paso 2 en adelante
-    function validateStep(step) {
-        console.log('🔹 Validando paso:', step);
-        
-        // Paso 1: Solo validar tipo de presentación
-        if (step === 1) {
-            const tipoPresentacion = document.getElementById('tipo_presentacion');
-            if (tipoPresentacion && !tipoPresentacion.value) {
-                alert('Por favor selecciona el tipo de presentación');
-                return false;
+        init() {
+            console.log('🚀 Iniciando sistema de formulario...');
+            this.setupEventListeners();
+            this.setupFileHandling();
+            this.showStep(1);
+        }
+
+        setupEventListeners() {
+            // Navegación
+            document.getElementById('nextBtn').addEventListener('click', () => this.nextStep());
+            document.getElementById('prevBtn').addEventListener('click', () => this.prevStep());
+            document.getElementById('taxForm').addEventListener('submit', (e) => this.handleSubmit(e));
+            
+            // Condicionalidad
+            document.getElementById('tipo_presentacion').addEventListener('change', () => this.updateFormSections());
+            document.getElementById('estado_civil').addEventListener('change', () => this.toggleConyugeSection());
+            
+            // Dependientes
+            document.querySelectorAll('input[name="tiene_dependientes"]').forEach(radio => {
+                radio.addEventListener('change', (e) => this.toggleDependientes(e.target.value === 'si'));
+            });
+        }
+
+        setupFileHandling() {
+            // Inicializar acumuladores de archivos
+            ['declarantes', 'dependientes', 'w2', 'ingresos', 'deducciones'].forEach(type => {
+                this.accumulatedFiles[`files_${type}`] = [];
+            });
+        }
+
+        showStep(step) {
+            // Ocultar todas las secciones
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Mostrar sección actual
+            const currentSection = document.getElementById(`section-${step}`);
+            if (currentSection) {
+                currentSection.style.display = 'block';
             }
-            return true; // Siempre permite avanzar del paso 1
+            
+            // Actualizar progreso
+            document.getElementById('progressBar').style.width = `${(step / this.totalSteps) * 100}%`;
+            
+            // Actualizar botones
+            document.getElementById('prevBtn').style.display = step === 1 ? 'none' : 'inline-block';
+            document.getElementById('nextBtn').style.display = step === this.totalSteps ? 'none' : 'inline-block';
+            document.getElementById('submitBtn').style.display = step === this.totalSteps ? 'inline-block' : 'none';
+            
+            // Actualizar secciones condicionales si es necesario
+            if (step >= 3) {
+                this.updateFormSections();
+            }
         }
-        
-        // Paso 2: Validar campos obligatorios
-        if (step === 2) {
-            const requiredFields = [
-                document.getElementById('nombre_completo'),
-                document.getElementById('ssn_itin'), 
-                document.getElementById('fecha_nacimiento'),
-                document.getElementById('estado_civil')
-            ];
+
+        nextStep() {
+            if (this.validateStep(this.currentStep)) {
+                this.currentStep++;
+                this.showStep(this.currentStep);
+                window.scrollTo(0, 0);
+            }
+        }
+
+        prevStep() {
+            if (this.currentStep > 1) {
+                this.currentStep--;
+                this.showStep(this.currentStep);
+                window.scrollTo(0, 0);
+            }
+        }
+
+        validateStep(step) {
+            const currentSection = document.getElementById(`section-${step}`);
+            const requiredFields = currentSection.querySelectorAll('[required]');
             
             for (let field of requiredFields) {
-                if (field && field.hasAttribute('required') && !field.value.trim()) {
-                    alert('Por favor completa todos los campos obligatorios marcados con *');
+                if (!field.value.trim()) {
+                    this.showMessage(`Por favor completa: ${field.labels[0]?.textContent || 'campo obligatorio'}`, 'error');
                     field.focus();
                     return false;
                 }
             }
+            
+            return true;
         }
-        
-        return true;
-    }
 
-    // Navegación
-    nextBtn.addEventListener('click', function() {
-        console.log('📍 Click en Siguiente - Paso actual:', currentStep);
-        if (validateStep(currentStep)) {
-            if (currentStep < totalSteps) {
-                currentStep++;
-                showStep(currentStep);
-                window.scrollTo(0, 0);
+        updateFormSections() {
+            const tipo = document.getElementById('tipo_presentacion').value;
+            
+            // Ocultar todas las secciones condicionales
+            ['dependienteIncomeContainer', 'independienteIncomeContainer', 
+             'dependienteDeductionsContainer', 'independienteDeductionsContainer'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) element.classList.add('hidden');
+            });
+            
+            // Mostrar según el tipo
+            if (tipo === 'dependiente' || tipo === 'ambos') {
+                document.getElementById('dependienteIncomeContainer')?.classList.remove('hidden');
+                document.getElementById('dependienteDeductionsContainer')?.classList.remove('hidden');
+            }
+            if (tipo === 'independiente' || tipo === 'ambos') {
+                document.getElementById('independienteIncomeContainer')?.classList.remove('hidden');
+                document.getElementById('independienteDeductionsContainer')?.classList.remove('hidden');
             }
         }
-    });
 
-    prevBtn.addEventListener('click', function() {
-        console.log('📍 Click en Anterior - Paso actual:', currentStep);
-        if (currentStep > 1) {
-            currentStep--;
-            showStep(currentStep);
-            window.scrollTo(0, 0);
+        toggleConyugeSection() {
+            const estadoCivil = document.getElementById('estado_civil').value;
+            const conyugeContainer = document.getElementById('datosConyugeContainer');
+            
+            if (estadoCivil === 'casado_juntos') {
+                conyugeContainer.classList.remove('hidden');
+            } else {
+                conyugeContainer.classList.add('hidden');
+            }
         }
-    });
 
-    // Manejo de archivos simple
-    const accumulatedFiles = {
-        'files_declarantes': [],
-        'files_dependientes': [], 
-        'files_w2': [],
-        'files_ingresos': [],
-        'files_deducciones': []
-    };
+        toggleDependientes(show) {
+            const container = document.getElementById('dependientesContainer');
+            if (show) {
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
+            }
+        }
 
-    // Configurar inputs de archivo básico
-    function setupFileInput(inputId) {
-        const input = document.getElementById(inputId);
-        const clearBtn = document.getElementById('clear' + inputId.charAt(6).toUpperCase() + inputId.slice(7) + 'Btn');
-        
-        if (input && clearBtn) {
-            input.addEventListener('change', function(e) {
-                const newFiles = Array.from(e.target.files);
-                if (newFiles.length > 0) {
-                    accumulatedFiles[inputId] = accumulatedFiles[inputId].concat(newFiles);
-                    input.value = '';
-                    console.log('📁 Archivos agregados para', inputId + ':', newFiles.length);
+        async handleSubmit(event) {
+            event.preventDefault();
+            
+            if (!this.validateStep(this.currentStep)) {
+                return;
+            }
+
+            this.showMessage('Enviando formulario...', 'info');
+            document.getElementById('submitBtn').disabled = true;
+
+            try {
+                const formData = new FormData();
+                const formElements = event.target.elements;
+                
+                // Recoger datos del formulario
+                const formDataObj = {};
+                for (let element of formElements) {
+                    if (element.name && !element.disabled) {
+                        if (element.type === 'checkbox' || element.type === 'radio') {
+                            if (element.checked) {
+                                formDataObj[element.name] = element.value;
+                            }
+                        } else if (element.type !== 'file') {
+                            formDataObj[element.name] = element.value;
+                        }
+                    }
                 }
-            });
 
-            clearBtn.addEventListener('click', function() {
-                accumulatedFiles[inputId] = [];
-                input.value = '';
-                console.log('🗑️ Archivos limpiados para', inputId);
-            });
-        }
-    }
+                formData.append('formData', JSON.stringify(formDataObj));
+                formData.append('userId', formDataObj.ssn_itin || 'user-' + Date.now());
 
-    // Configurar todos los inputs de archivo
-    setupFileInput('files_declarantes');
-    setupFileInput('files_dependientes');
-    setupFileInput('files_w2');
-    setupFileInput('files_ingresos');
-    setupFileInput('files_deducciones');
+                // Agregar archivos (simplificado para esta demo)
+                const fileInputs = ['files_declarantes', 'files_dependientes', 'files_w2', 'files_ingresos', 'files_deducciones'];
+                for (let inputId of fileInputs) {
+                    const input = document.getElementById(inputId);
+                    if (input && input.files) {
+                        for (let file of input.files) {
+                            formData.append('files', file);
+                        }
+                    }
+                }
 
-    // Envío del formulario
-    document.getElementById('taxForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        console.log('🔄 Iniciando envío del formulario...');
-        
-        if (!validateStep(currentStep)) {
-            return;
-        }
-
-        // Mostrar estado de envío
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Enviando...';
-        
-        try {
-            // Recoger datos básicos del formulario
-            const formData = new FormData();
-            
-            // Agregar datos simples
-            formData.append('nombre_completo', document.getElementById('nombre_completo')?.value || '');
-            formData.append('ssn_itin', document.getElementById('ssn_itin')?.value || '');
-            formData.append('tipo_presentacion', document.getElementById('tipo_presentacion')?.value || '');
-            
-            // Agregar archivos acumulados
-            for (const inputId in accumulatedFiles) {
-                accumulatedFiles[inputId].forEach(file => {
-                    formData.append('files', file);
+                // Enviar al servidor
+                const response = await fetch('/api/submit-form', {
+                    method: 'POST',
+                    body: formData
                 });
-            }
 
-            // Agregar formData como JSON
-            const formDataObject = {};
-            formData.forEach((value, key) => {
-                if (key !== 'files') {
-                    formDataObject[key] = value;
+                const result = await response.json();
+
+                if (result.success) {
+                    this.showSuccess();
+                } else {
+                    throw new Error(result.message);
                 }
-            });
-            formData.append('formData', JSON.stringify(formDataObject));
-            formData.append('userId', 'user-' + Date.now());
 
-            console.log('📤 Enviando al servidor...');
-            
-            // Enviar al servidor
-            const response = await fetch('/api/submit-form', {
-                method: 'POST',
-                body: formData
-            });
-
-            if (!response.ok) {
-                throw new Error('Error del servidor: ' + response.status);
+            } catch (error) {
+                this.showMessage(`Error: ${error.message}`, 'error');
+                document.getElementById('submitBtn').disabled = false;
             }
+        }
 
-            const result = await response.json();
-            console.log('✅ Respuesta del servidor:', result);
-            
-            // Mostrar confirmación
+        showSuccess() {
             document.getElementById('form-container').style.display = 'none';
             document.getElementById('confirmationSection').style.display = 'block';
-            document.getElementById('progressBar').style.display = 'none';
-            
-        } catch (error) {
-            console.error('❌ Error al enviar:', error);
-            alert('Error al enviar el formulario: ' + error.message);
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Enviar Formulario';
+            document.getElementById('prevBtn').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'none';
+            document.getElementById('submitBtn').style.display = 'none';
+            this.showMessage('✅ Formulario enviado correctamente', 'success');
         }
-    });
 
-    // Inicializar
-    showStep(1);
-    console.log('✅ Formulario listo - Ahora debería funcionar sin mensajes de diagnóstico');
-});
-</script>
+        showMessage(message, type = 'info') {
+            const container = document.getElementById('messageContainer');
+            container.textContent = message;
+            container.className = `mt-6 p-4 rounded-md ${
+                type === 'error' ? 'bg-red-800 text-red-200' :
+                type === 'success' ? 'bg-green-800 text-green-200' :
+                'bg-blue-800 text-blue-200'
+            }`;
+            container.classList.remove('hidden');
+        }
+    }
+
+    // Inicializar cuando el DOM esté listo
+    document.addEventListener('DOMContentLoaded', () => {
+        new TaxFormSystem();
+    });
+    </script>
 </body>
 </html>
-
-
-
