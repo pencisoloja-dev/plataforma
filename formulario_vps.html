@@ -1317,12 +1317,12 @@
                 // Iteramos sobre form.elements para garantizar que los campos no seleccionados
                 // pero con valor por defecto (como tiene_dependientes='no') se capturen.
                 Array.from(form.elements).forEach(element => {
+                    // Si el elemento no tiene nombre o es de tipo 'file' o está deshabilitado, lo ignoramos
                     if (!element.name || element.type === 'file' || element.disabled) {
                         return;
                     }
                     
                     // Manejar radios: Solo queremos el valor del radio que está marcado
-                    // Aquí es donde se asegura que tiene_dependientes (con valor 'no') se incluya si es el check.
                     if (element.type === 'radio') {
                         if (element.checked) {
                             formDataObject[element.name] = element.value;
@@ -1330,16 +1330,11 @@
                         return;
                     }
                     
-                    // Manejar checkboxes: rawFormData.getAll se usa después para los arrays
-                    if (element.type === 'checkbox') {
-                         return; // Se manejan por estructuras o rawFormData.getAll
-                    }
-
-                    // Excluir campos que se manejan por bloques estructurados (montos y descripciones)
-                    if (element.name.startsWith('monto_') || element.name === 'descripcion_otros_gastos') {
+                    // Manejar checkboxes y otros campos complejos que se procesan por separado
+                    if (element.name.startsWith('monto_') || element.name === 'descripcion_otros_gastos' || element.name.includes('checkbox') || element.name === 'tipo_ingreso') {
                          return;
                     }
-
+                    
                     // Capturar todos los demás campos de texto/select/radio seleccionado
                     formDataObject[element.name] = element.value;
                 });
@@ -1394,7 +1389,7 @@
                     });
                 }
 
-                // 🛑 DIAGNÓSTICO FINAL (Se puede comentar después de la prueba exitosa)
+                // 🛑 DIAGNÓSTICO FINAL
                 console.log('--- DIAGNÓSTICO ENVÍO ---');
                 console.log('JSON de datos:', JSON.stringify(formDataObject, null, 2));
                 console.log('Archivos adjuntos (en memoria):', submissionFormData.getAll('files').map(f => f.name));
@@ -1445,5 +1440,4 @@
         estadoCivilSelect.dispatchEvent(new Event('change'));
     </script>
 </body>
-
 </html>
