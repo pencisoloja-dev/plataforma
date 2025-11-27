@@ -707,7 +707,7 @@
 
         // Contenedores condicionales
         const depIncome = document.getElementById('dependienteIncomeContainer');
-        const indepIncome = document = document.getElementById('independienteIncomeContainer');
+        const indepIncome = document.getElementById('independienteIncomeContainer');
         const depDeductions = document.getElementById('dependienteDeductionsContainer');
         const indepDeductions = document.getElementById('independienteDeductionsContainer');
         const datosConyugeContainer = document.getElementById('datosConyugeContainer');
@@ -1301,11 +1301,7 @@
             e.preventDefault();
             
             // 1. Validar el último paso
-            if (currentStep !== totalSteps) {
-                // Esto solo debería pasar si el usuario intenta hacer submit antes de llegar al paso final.
-                if (!validateStep(currentStep)) return;
-            } else if (!validateStep(currentStep)) {
-                 // Si la validación del último paso falla (Paso 6)
+            if (!validateStep(currentStep)) {
                 return;
             }
 
