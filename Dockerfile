@@ -1,24 +1,21 @@
 FROM node:18-alpine
 
-# Instalar curl para health checks
-RUN apk add --no-cache curl
+# Instalar dependencias del sistema primero
+RUN apk add --no-cache curl python3 make g++
 
 WORKDIR /app
 
-# Copiar SOLO los archivos necesarios para instalar dependencias
-COPY package*.json ./
+# Copiar archivos de dependencias
+COPY package.json package-lock.json* ./
 
-# Verificar que package.json existe y mostrar información útil
-RUN cat package.json && npm config list
+# Instalar dependencias con fallback
+RUN npm ci --production --no-audit --no-fund || \
+    (echo "Fallback to npm install..." && npm install --production --no-audit --no-fund)
 
-# Limpiar cache de npm y instalar dependencias con verbose
-RUN npm cache clean --force && \
-    npm install --production --verbose
-
-# Copiar el resto del código
+# Copiar aplicación
 COPY . .
 
-# Crear directorio de uploads
+# Configurar permisos
 RUN mkdir -p /app/uploads && chmod 755 /app/uploads
 
 EXPOSE 80
