@@ -689,277 +689,135 @@
         </form>
     </div>
 
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('✅ Script cargado - Iniciando formulario');
+  <script>
+// =============================================
+// 🎯 CÓDIGO DE DIAGNÓSTICO - ELIMINAR DESPUÉS
+// =============================================
+
+console.log('🔴 INICIANDO SCRIPT - Si ves esto, JavaScript funciona');
+
+// Test básico de que el DOM está listo
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ DOM Cargado - Los elementos deben estar disponibles');
+    
+    // Test de que los botones existen
+    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    console.log('📍 nextBtn encontrado:', !!nextBtn);
+    console.log('📍 prevBtn encontrado:', !!prevBtn); 
+    console.log('📍 submitBtn encontrado:', !!submitBtn);
+    
+    if (!nextBtn) {
+        console.error('❌ CRÍTICO: nextBtn NO EXISTE');
+        return;
+    }
+    
+    // TEST SUPER SIMPLE - Solo para ver si el botón responde
+    nextBtn.addEventListener('click', function() {
+        console.log('🎯 CLICK EN SIGUIENTE - El botón funciona!');
+        alert('¡El botón Siguiente funciona! Paso al diagnóstico completo.');
         
-        let currentStep = 1;
-        const totalSteps = 6;
-        const form = document.getElementById('taxForm');
-        const nextBtn = document.getElementById('nextBtn');
-        const prevBtn = document.getElementById('prevBtn');
-        const submitBtn = document.getElementById('submitBtn');
-        const progressBar = document.getElementById('progressBar');
-
-        // SIMPLIFICACIÓN: Inicializar accumulatedFiles de forma segura
-        const accumulatedFiles = {
-            'files_declarantes': [],
-            'files_dependientes': [], 
-            'files_w2': [],
-            'files_ingresos': [],
-            'files_deducciones': []
-        };
-
-        // FUNCIÓN SIMPLIFICADA para mostrar pasos
-        function showStep(step) {
-            console.log('Mostrando paso:', step);
-            
-            // Ocultar todas las secciones
-            document.querySelectorAll('.form-section').forEach(section => {
-                section.style.display = 'none';
-            });
-            
-            // Mostrar sección actual
-            const currentSection = document.getElementById('section-' + step);
-            if (currentSection) {
-                currentSection.style.display = 'block';
-            }
-            
-            // Actualizar barra de progreso
-            progressBar.style.width = ((step / totalSteps) * 100) + '%';
-            
-            // Mostrar/ocultar botones
-            prevBtn.style.display = (step === 1) ? 'none' : 'inline-block';
-            nextBtn.style.display = (step === totalSteps) ? 'none' : 'inline-block';
-            submitBtn.style.display = (step === totalSteps) ? 'inline-block' : 'none';
-        }
-
-        // FUNCIÓN SIMPLIFICADA de validación
-        function validateStep(step) {
-            console.log('Validando paso:', step);
-            
-            const currentSection = document.getElementById('section-' + step);
-            if (!currentSection) return false;
-            
-            // Validación básica para el paso 1
-            if (step === 1) {
-                const tipoPresentacion = document.getElementById('tipo_presentacion');
-                if (tipoPresentacion && !tipoPresentacion.value) {
-                    alert('Por favor selecciona el tipo de presentación');
-                    return false;
-                }
-            }
-            
-            // Validación básica para el paso 2
-            if (step === 2) {
-                const requiredFields = currentSection.querySelectorAll('[required]');
-                let valid = true;
-                
-                requiredFields.forEach(field => {
-                    if (!field.value.trim()) {
-                        valid = false;
-                        field.reportValidity();
-                    }
-                });
-                
-                if (!valid) {
-                    alert('Por favor completa todos los campos obligatorios');
-                    return false;
-                }
-            }
-            
-            return true;
-        }
-
-        // NAVEGACIÓN SIMPLIFICADA
-        nextBtn.addEventListener('click', function() {
-            console.log('Click en Siguiente');
-            if (validateStep(currentStep)) {
-                currentStep++;
-                showStep(currentStep);
-                window.scrollTo(0, 0);
-            }
+        // Ahora inicializar el formulario real
+        initializeForm();
+    });
+    
+    // También probar el botón de enviar por si acaso
+    if (submitBtn) {
+        submitBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('🎯 CLICK EN ENVIAR - El botón de enviar funciona!');
+            alert('¡Botón Enviar funciona!');
         });
+    }
+});
 
-        prevBtn.addEventListener('click', function() {
-            console.log('Click en Anterior');
+// Función que inicializa el formulario real
+function initializeForm() {
+    console.log('🚀 INICIANDO FORMULARIO COMPLETO');
+    
+    let currentStep = 1;
+    const totalSteps = 6;
+
+    // Función simple para mostrar pasos
+    function showStep(step) {
+        console.log('Mostrando paso:', step);
+        
+        // Ocultar todas las secciones
+        document.querySelectorAll('.form-section').forEach(section => {
+            section.style.display = 'none';
+        });
+        
+        // Mostrar sección actual
+        const currentSection = document.getElementById('section-' + step);
+        if (currentSection) {
+            currentSection.style.display = 'block';
+            console.log('✅ Sección', step, 'mostrada');
+        } else {
+            console.error('❌ No se encontró sección:', step);
+        }
+        
+        // Actualizar barra de progreso
+        const progressBar = document.getElementById('progressBar');
+        if (progressBar) {
+            progressBar.style.width = ((step / totalSteps) * 100) + '%';
+        }
+        
+        // Mostrar/ocultar botones
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        if (prevBtn) prevBtn.style.display = (step === 1) ? 'none' : 'inline-block';
+        if (nextBtn) nextBtn.style.display = (step === totalSteps) ? 'none' : 'inline-block';
+        if (submitBtn) submitBtn.style.display = (step === totalSteps) ? 'inline-block' : 'none';
+    }
+
+    // Navegación básica
+    document.getElementById('nextBtn').addEventListener('click', function() {
+        console.log('Siguiente click - Paso actual:', currentStep);
+        if (currentStep < totalSteps) {
+            currentStep++;
+            showStep(currentStep);
+        }
+    });
+
+    document.getElementById('prevBtn').addEventListener('click', function() {
+        console.log('Anterior click - Paso actual:', currentStep);
+        if (currentStep > 1) {
             currentStep--;
             showStep(currentStep);
-            window.scrollTo(0, 0);
-        });
-
-        // MANEJO DE ARCHIVOS SIMPLIFICADO
-        function setupFileInput(inputId) {
-            const input = document.getElementById(inputId);
-            const clearBtn = document.getElementById('clear' + inputId.charAt(6).toUpperCase() + inputId.slice(7) + 'Btn');
-            const fileList = document.getElementById(inputId + 'List');
-            const fileUl = document.getElementById(inputId + 'Ul');
-            
-            if (!input || !clearBtn) {
-                console.log('❌ Elementos no encontrados para:', inputId);
-                return;
-            }
-
-            input.addEventListener('change', function(e) {
-                const newFiles = Array.from(e.target.files);
-                
-                if (newFiles.length > 0) {
-                    accumulatedFiles[inputId] = accumulatedFiles[inputId].concat(newFiles);
-                    input.value = ''; // Reset input
-                    
-                    // Mostrar archivos seleccionados
-                    if (fileUl) {
-                        fileUl.innerHTML = '';
-                        accumulatedFiles[inputId].forEach(file => {
-                            const li = document.createElement('li');
-                            li.textContent = file.name;
-                            fileUl.appendChild(li);
-                        });
-                    }
-                    
-                    if (fileList) {
-                        fileList.classList.remove('hidden');
-                    }
-                }
-            });
-
-            clearBtn.addEventListener('click', function() {
-                accumulatedFiles[inputId] = [];
-                input.value = '';
-                if (fileList) fileList.classList.add('hidden');
-                if (fileUl) fileUl.innerHTML = '';
-            });
         }
-
-        // Configurar inputs de archivo
-        setupFileInput('files_declarantes');
-        setupFileInput('files_dependientes');
-        setupFileInput('files_w2');
-        setupFileInput('files_ingresos');
-        setupFileInput('files_deducciones');
-
-        // MANEJO DE ENVÍO SIMPLIFICADO
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            console.log('🔄 Enviando formulario...');
-            
-            if (!validateStep(currentStep)) {
-                return;
-            }
-
-            // Mostrar estado de envío
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Enviando...';
-            
-            try {
-                // Recoger datos básicos del formulario
-                const formData = new FormData(form);
-                const formDataObject = {};
-                
-                // Convertir FormData a objeto simple
-                for (let [key, value] of formData.entries()) {
-                    if (key !== 'files') {
-                        formDataObject[key] = value;
-                    }
-                }
-                
-                // Preparar datos para enviar
-                const submissionData = new FormData();
-                submissionData.append('formData', JSON.stringify(formDataObject));
-                submissionData.append('userId', 'user-' + Date.now());
-                
-                // Agregar archivos acumulados
-                for (const inputId in accumulatedFiles) {
-                    accumulatedFiles[inputId].forEach(file => {
-                        submissionData.append('files', file);
-                    });
-                }
-
-                console.log('📤 Enviando datos al servidor...');
-                
-                // Enviar al servidor
-                const response = await fetch('/api/submit-form', {
-                    method: 'POST',
-                    body: submissionData
-                });
-
-                if (!response.ok) {
-                    throw new Error('Error del servidor: ' + response.status);
-                }
-
-                const result = await response.json();
-                console.log('✅ Respuesta del servidor:', result);
-                
-                // Mostrar confirmación
-                document.getElementById('form-container').style.display = 'none';
-                document.getElementById('confirmationSection').style.display = 'block';
-                prevBtn.style.display = 'none';
-                nextBtn.style.display = 'none';
-                submitBtn.style.display = 'none';
-                progressBar.style.display = 'none';
-                
-                alert('✅ Formulario enviado con éxito!');
-                
-            } catch (error) {
-                console.error('❌ Error al enviar:', error);
-                alert('❌ Error al enviar el formulario: ' + error.message);
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Enviar Formulario';
-            }
-        });
-
-        // CONDICIONALIDAD BÁSICA
-        document.getElementById('tipo_presentacion')?.addEventListener('change', function() {
-            const tipo = this.value;
-            console.log('Tipo de presentación cambiado:', tipo);
-            
-            // Mostrar/ocultar secciones según el tipo
-            const sectionsToShow = [];
-            
-            if (tipo === 'dependiente' || tipo === 'ambos') {
-                sectionsToShow.push('dependienteIncomeContainer', 'dependienteDeductionsContainer');
-            }
-            if (tipo === 'independiente' || tipo === 'ambos') {
-                sectionsToShow.push('independienteIncomeContainer', 'independienteDeductionsContainer');
-            }
-            
-            // Ocultar todas primero
-            ['dependienteIncomeContainer', 'independienteIncomeContainer', 
-             'dependienteDeductionsContainer', 'independienteDeductionsContainer'].forEach(id => {
-                const element = document.getElementById(id);
-                if (element) element.classList.add('hidden');
-            });
-            
-            // Mostrar las necesarias
-            sectionsToShow.forEach(id => {
-                const element = document.getElementById(id);
-                if (element) element.classList.remove('hidden');
-            });
-        });
-
-        // DEPENDIENTES
-        document.querySelectorAll('input[name="tiene_dependientes"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                const container = document.getElementById('dependientesContainer');
-                if (container) {
-                    container.classList.toggle('hidden', this.value !== 'si');
-                }
-            });
-        });
-
-        // ESTADO CIVIL - CÓNYUGE
-        document.getElementById('estado_civil')?.addEventListener('change', function() {
-            const container = document.getElementById('datosConyugeContainer');
-            if (container) {
-                container.classList.toggle('hidden', this.value !== 'casado_juntos');
-            }
-        });
-
-        // INICIAR
-        console.log('🎯 Inicializando formulario en paso 1');
-        showStep(1);
     });
+
+    // Envío básico
+    document.getElementById('taxForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        console.log('🔄 ENVIANDO FORMULARIO...');
+        alert('Formulario enviado (esto es una prueba)');
+        
+        // Mostrar confirmación
+        document.getElementById('form-container').style.display = 'none';
+        document.getElementById('confirmationSection').style.display = 'block';
+    });
+
+    // Inicializar
+    showStep(1);
+    console.log('✅ Formulario inicializado correctamente');
+}
+
+// Test final para asegurar que el script se ejecuta completamente
+setTimeout(function() {
+    console.log('✅ SCRIPT EJECUTADO COMPLETAMENTE');
+    console.log('📍 Si no ves mensajes de error arriba, el problema está en otra parte');
+}, 1000);
+
+// =============================================
+// 🎯 FIN CÓDIGO DE DIAGNÓSTICO
+// =============================================
 </script>
 </body>
 </html>
+
 
