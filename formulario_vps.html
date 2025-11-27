@@ -1307,22 +1307,38 @@
             
             try {
                 // 1. Recopilar datos del formulario y metadatos
+                // Usamos el FormData original para recoger todos los campos de texto/select/radio/checkbox
                 const rawFormData = new FormData(form);
                 const formDataObject = {};
                 
-                rawFormData.forEach((value, key) => {
-                    const isFile = (document.getElementById(key) && document.getElementById(key).type === 'file');
-                    
-                    // Excluir todos los archivos y campos temporales/de control
-                    if (isFile || key.startsWith('monto_') || key.startsWith('dependiente_') || key.endsWith('[]') || key.includes('checkbox')) {
-                        return;
+                // Recolectar *todos* los campos de texto, select y radio (excepto inputs de archivo, que Multer maneja por separado)
+                for (const pair of rawFormData.entries()) {
+                    const [key, value] = pair;
+                    // Excluir inputs de tipo file y campos internos/temporales
+                    if (document.getElementById(key) && document.getElementById(key).type === 'file') {
+                        continue; 
+                    }
+                    if (key.startsWith('monto_') || key.startsWith('dependiente_') || key.endsWith('[]') || key.includes('checkbox')) {
+                        // Excluimos estos porque se manejan en bloques estructurados abajo
+                        continue;
                     }
                     
-                    formDataObject[key] = value;
-                });
+                    // Manejar las claves duplicadas de checkboxes (como tipo_ingreso)
+                    if (rawFormData.getAll(key).length > 1) {
+                         // Si es un array de checkboxes, lo manejamos con getAll más abajo
+                         if (!formDataObject[key]) {
+                            formDataObject[key] = rawFormData.getAll(key);
+                        }
+                    } else {
+                        formDataObject[key] = value;
+                    }
+                }
 
-                // Procesar campos de array (checkboxes)
+
+                // Procesar campos de array (checkboxes) que no se recolectaron arriba
+                // Nota: Usar getAll() es la forma más limpia para checkboxes
                 formDataObject.tipo_ingreso = rawFormData.getAll('tipo_ingreso');
+
 
                 // Añadir los nuevos gastos detallados (Estructurados)
                 formDataObject.gastos_detallados = getGastosDetallados();
