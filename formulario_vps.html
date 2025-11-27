@@ -1295,10 +1295,13 @@
         async function handleFormSubmit(e) {
             e.preventDefault();
             
-            // Re-validar en el último paso
+            // 1. Validar el último paso
             if (currentStep !== totalSteps) {
-                // Esto debería ser handled por el botón next, pero como es el submit final, aseguramos
+                // Esto solo debería pasar si el usuario intenta hacer submit antes de llegar al paso final.
                 if (!validateStep(currentStep)) return;
+            } else if (!validateStep(currentStep)) {
+                 // Si la validación del último paso falla (Paso 6)
+                return;
             }
 
             showMessage('Enviando formulario, por favor espera...', false);
@@ -1307,40 +1310,36 @@
             
             try {
                 // 1. Recopilar datos del formulario y metadatos
-                // Usamos el FormData original para recoger todos los campos de texto/select/radio/checkbox
-                const rawFormData = new FormData(form);
                 const formDataObject = {};
                 
-                // Recolectar *todos* los campos de texto, select y radio (excepto inputs de archivo, que Multer maneja por separado)
-                for (const pair of rawFormData.entries()) {
-                    const [key, value] = pair;
-                    // Excluir inputs de tipo file y campos internos/temporales
-                    if (document.getElementById(key) && document.getElementById(key).type === 'file') {
-                        continue; 
+                // Recolectar todos los campos de texto, select y radio
+                const formElements = form.querySelectorAll('input, select, textarea');
+                
+                formElements.forEach(element => {
+                    if (!element.name || element.type === 'file' || element.disabled) {
+                        return; // Ignorar elementos sin nombre, archivos y deshabilitados
                     }
-                    if (key.startsWith('monto_') || key.startsWith('dependiente_') || key.endsWith('[]') || key.includes('checkbox')) {
-                        // Excluimos estos porque se manejan en bloques estructurados abajo
-                        continue;
+
+                    // Ignorar checkboxes y radios no seleccionados, y campos manejados por bloques estructurados
+                    if (element.type === 'checkbox' && !element.checked) {
+                        return;
+                    }
+                    if (element.type === 'radio' && !element.checked) {
+                        return;
                     }
                     
-                    // Manejar las claves duplicadas de checkboxes (como tipo_ingreso)
-                    if (rawFormData.getAll(key).length > 1) {
-                         // Si es un array de checkboxes, lo manejamos con getAll más abajo
-                         if (!formDataObject[key]) {
-                            formDataObject[key] = rawFormData.getAll(key);
-                        }
-                    } else {
-                        formDataObject[key] = value;
+                    // Excluir campos que se manejan por bloques estructurados (como montos, descripciones, y grupos de checkbox)
+                    if (element.name.startsWith('monto_') || element.name === 'descripcion_otros_gastos' || element.name.includes('checkbox') || element.name === 'tipo_ingreso') {
+                         return;
                     }
-                }
+                    
+                    formDataObject[element.name] = element.value;
+                });
+                
 
-
-                // Procesar campos de array (checkboxes) que no se recolectaron arriba
-                // Nota: Usar getAll() es la forma más limpia para checkboxes
+                // Procesar arrays y estructuras complejas (Gastos, Créditos, Cónyuge)
+                const rawFormData = new FormData(form);
                 formDataObject.tipo_ingreso = rawFormData.getAll('tipo_ingreso');
-
-
-                // Añadir los nuevos gastos detallados (Estructurados)
                 formDataObject.gastos_detallados = getGastosDetallados();
 
                 // Recopilar créditos y deducciones simples
@@ -1352,10 +1351,7 @@
                     otro_credito: rawFormData.get('otro_credito_checkbox') === 'otro' ? rawFormData.get('descripcion_otro_credito') : null,
                 };
                 
-                // Procesar la cuenta bancaria y cónyuge
-                formDataObject.banco_nombre = rawFormData.get('banco_nombre');
-                formDataObject.banco_routing = rawFormData.get('banco_routing');
-                formDataObject.banco_cuenta = rawFormData.get('banco_cuenta');
+                // Procesar datos del cónyuge (si aplica)
                 formDataObject.conyuge = formDataObject.estado_civil === 'casado_juntos' ? {
                     nombre: rawFormData.get('conyuge_nombre'),
                     fecha_nac: rawFormData.get('conyuge_fecha_nac'),
@@ -1365,33 +1361,33 @@
                 formDataObject.tiene_dependientes = rawFormData.get('tiene_dependientes') === 'si';
                 formDataObject.dependientes = []; // No hay datos de dependientes que enviar
 
+
                 // 2. Preparar FormData para el envío (¡Uso de un nuevo FormData para archivos!)
                 const submissionFormData = new FormData();
                 
-                // Añadir el objeto JSON de datos como un string
+                // Añadir el objeto JSON de datos como un string (clave: formData)
                 submissionFormData.append('formData', JSON.stringify(formDataObject));
                 
-                // Añadir un ID de usuario simple (para nombrar archivos en el backend)
+                // Añadir un ID de usuario simple (clave: userId)
                 const userId = formDataObject.ssn_itin || 'user-' + Date.now();
                 submissionFormData.append('userId', userId);
 
                 // 3. AÑADIR ARCHIVOS ACUMULADOS DESDE LA MEMORIA
                 for (const inputId in accumulatedFiles) {
                     const files = accumulatedFiles[inputId];
-                    let prefix = inputId.replace('files_', ''); // ej. 'declarantes', 'w2', 'deducciones'
+                    let prefix = inputId.replace('files_', ''); 
 
                     files.forEach(file => {
-                        // Usamos el nombre del campo del backend 'files' para que Multer lo capture
-                        // y renombramos en el backend (ver index.js).
+                        // Adjuntar cada archivo con la clave 'files' para que Multer lo intercepte
                         submissionFormData.append('files', file, `${prefix}-${file.name}`);
                     });
                 }
 
 
-                // *** INTEGRACIÓN ORIGINAL DEL BACKEND ***
+                // 4. Integración del Backend
                 const response = await fetch('/api/submit-form', {
                     method: 'POST',
-                    body: submissionFormData, // Enviamos el FormData que tiene todos los archivos acumulados
+                    body: submissionFormData,
                 });
 
                 if (!response.ok) {
@@ -1404,7 +1400,7 @@
                     }
                 }
 
-                // 4. Éxito
+                // 5. Éxito
                 showMessage('Formulario enviado con éxito.', false);
                 formContainer.style.display = 'none';
                 document.getElementById('prevBtn').style.display = 'none';
