@@ -690,754 +690,659 @@
     </div>
 
     <script>
-        let currentStep = 1;
-        const totalSteps = 6;
-        const form = document.getElementById('taxForm');
-        const formContainer = document.getElementById('form-container');
-        const confirmationSection = document.getElementById('confirmationSection');
-        const nextBtn = document.getElementById('nextBtn');
-        const prevBtn = document.getElementById('prevBtn');
-        const submitBtn = document.getElementById('submitBtn');
-        const progressBar = document.getElementById('progressBar');
-        const messageContainer = document.getElementById('messageContainer');
-        const tipoPresentacionSelect = document.getElementById('tipo_presentacion');
+        // *** 🛑 CORRECCIÓN CLAVE: Encerrar toda la lógica en DOMContentLoaded ***
+        document.addEventListener('DOMContentLoaded', () => {
+            let currentStep = 1;
+            const totalSteps = 6;
+            const form = document.getElementById('taxForm');
+            const formContainer = document.getElementById('form-container');
+            const confirmationSection = document.getElementById('confirmationSection');
+            const nextBtn = document.getElementById('nextBtn');
+            const prevBtn = document.getElementById('prevBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            const progressBar = document.getElementById('progressBar');
+            const messageContainer = document.getElementById('messageContainer');
+            const tipoPresentacionSelect = document.getElementById('tipo_presentacion');
 
-        // Contenedores condicionales
-        const depIncome = document.getElementById('dependienteIncomeContainer');
-        const indepIncome = document.getElementById('independienteIncomeContainer');
-        const depDeductions = document.getElementById('dependienteDeductionsContainer');
-        const indepDeductions = document.getElementById('independienteDeductionsContainer');
-        const datosConyugeContainer = document.getElementById('datosConyugeContainer');
-        const estadoCivilSelect = document.getElementById('estado_civil');
-        const cuentaBancariaContainer = document.getElementById('section-5').querySelector('.bg-slate-900'); 
-        
-        // Referencias a los campos de archivos
-        const filesDeclarantesInput = document.getElementById('files_declarantes');
-        const filesDependientesInput = document.getElementById('files_dependientes');
-        const filesW2Input = document.getElementById('files_w2');
-        const filesIngresosInput = document.getElementById('files_ingresos');
-        const filesDeduccionesInput = document.getElementById('files_deducciones');
-        const deduccionObligatorioText = document.getElementById('deducciones_obligatorio_text');
-        const filesDeduccionesHint = document.getElementById('files_deducciones_hint');
-
-        // Referencias de visualización de archivos
-        const filesDeclarantesList = document.getElementById('filesDeclarantesList');
-        const filesDeclarantesUl = document.getElementById('filesDeclarantesUl');
-        const clearDeclarantesFilesBtn = document.getElementById('clearDeclarantesFilesBtn');
-        
-        const filesDependientesList = document.getElementById('filesDependientesList');
-        const filesDependientesUl = document.getElementById('filesDependientesUl');
-        const clearDependientesFilesBtn = document.getElementById('clearDependientesFilesBtn');
-
-        const filesW2List = document.getElementById('filesW2List');
-        const filesW2Ul = document.getElementById('filesW2Ul');
-        const clearW2FilesBtn = document.getElementById('clearW2FilesBtn');
-
-        const filesIngresosList = document.getElementById('filesIngresosList');
-        const filesIngresosUl = document.getElementById('filesIngresosUl');
-        const clearIngresosFilesBtn = document.getElementById('clearIngresosFilesBtn');
-
-        const filesDeduccionesList = document.getElementById('filesDeduccionesList');
-        const filesDeduccionesUl = document.getElementById('filesDeduccionesUl');
-        const clearDeduccionesFilesBtn = document.getElementById('clearDeduccionesFilesBtn');
-
-
-        // --- LÓGICA DE ACUMULACIÓN ROBUSTA (Guarda archivos en memoria) ---
-        
-        // Objeto global para almacenar los archivos acumulados, clave: inputId
-        const accumulatedFiles = {};
-
-        // Función para renderizar los archivos seleccionados
-        function renderFiles(inputId) {
-            const files = accumulatedFiles[inputId] || [];
-            let ulElement, listElement;
+            // Contenedores condicionales
+            const depIncome = document.getElementById('dependienteIncomeContainer');
+            const indepIncome = document.getElementById('independienteIncomeContainer');
+            const depDeductions = document.getElementById('dependienteDeductionsContainer');
+            const indepDeductions = document.getElementById('independienteDeductionsContainer');
+            const datosConyugeContainer = document.getElementById('datosConyugeContainer');
+            const estadoCivilSelect = document.getElementById('estado_civil');
+            const cuentaBancariaContainer = document.getElementById('section-5').querySelector('.bg-slate-900'); 
             
-            switch (inputId) {
-                case 'files_declarantes': ulElement = filesDeclarantesUl; listElement = filesDeclarantesList; break;
-                case 'files_dependientes': ulElement = filesDependientesUl; listElement = filesDependientesList; break;
-                case 'files_w2': ulElement = filesW2Ul; listElement = filesW2List; break;
-                case 'files_ingresos': ulElement = filesIngresosUl; listElement = filesIngresosList; break;
-                case 'files_deducciones': ulElement = filesDeduccionesUl; listElement = filesDeduccionesList; break;
-            }
+            // Referencias a los campos de archivos
+            const filesDeclarantesInput = document.getElementById('files_declarantes');
+            const filesDependientesInput = document.getElementById('files_dependientes');
+            const filesW2Input = document.getElementById('files_w2');
+            const filesIngresosInput = document.getElementById('files_ingresos');
+            const filesDeduccionesInput = document.getElementById('files_deducciones');
+            const deduccionObligatorioText = document.getElementById('deducciones_obligatorio_text');
+            const filesDeduccionesHint = document.getElementById('files_deducciones_hint');
 
-            if (!ulElement) return;
+            // Referencias de visualización de archivos
+            const filesDeclarantesList = document.getElementById('filesDeclarantesList');
+            const filesDeclarantesUl = document.getElementById('filesDeclarantesUl');
+            const clearDeclarantesFilesBtn = document.getElementById('clearDeclarantesFilesBtn');
+            
+            const filesDependientesList = document.getElementById('filesDependientesList');
+            const filesDependientesUl = document.getElementById('filesDependientesUl');
+            const clearDependientesFilesBtn = document.getElementById('clearDependientesFilesBtn');
 
-            ulElement.innerHTML = '';
-            if (files.length > 0) {
-                listElement.classList.remove('hidden');
-                files.forEach(file => {
-                    const li = document.createElement('li');
-                    li.textContent = file.name;
-                    ulElement.appendChild(li);
-                });
-            } else {
-                listElement.classList.add('hidden');
-            }
-        }
+            const filesW2List = document.getElementById('filesW2List');
+            const filesW2Ul = document.getElementById('filesW2Ul');
+            const clearW2FilesBtn = document.getElementById('clearW2FilesBtn');
 
-        // --- FUNCIÓN DE UTILIDAD PARA CONFIGURAR TODOS LOS INPUTS DE ARCHIVO ---
-        function setupFileInput(inputElement, clearButton, inputId) {
-            // Inicializar el almacenamiento interno con un array vacío
-            accumulatedFiles[inputId] = [];
+            const filesIngresosList = document.getElementById('filesIngresosList');
+            const filesIngresosUl = document.getElementById('filesIngresosUl');
+            const clearIngresosFilesBtn = document.getElementById('clearIngresosFilesBtn');
 
-            // 1. Manejador de evento CHANGE: Acumula archivos
-            inputElement.addEventListener('change', (e) => {
-                const newFiles = Array.from(e.target.files);
-                const currentFiles = accumulatedFiles[inputId];
+            const filesDeduccionesList = document.getElementById('filesDeduccionesList');
+            const filesDeduccionesUl = document.getElementById('filesDeduccionesUl');
+            const clearDeduccionesFilesBtn = document.getElementById('clearDeduccionesFilesBtn');
+
+
+            // --- LÓGICA DE ACUMULACIÓN ROBUSTA (Guarda archivos en memoria) ---
+            const accumulatedFiles = {};
+
+            function renderFiles(inputId) {
+                const files = accumulatedFiles[inputId] || [];
+                let ulElement, listElement;
                 
-                // Limpiar el valor del input *inmediatamente* para que se pueda volver a seleccionar archivos
-                // y que el evento 'change' se dispare la próxima vez.
-                inputElement.value = null;
-
-                if (newFiles.length === 0) {
-                    // Si el usuario cancela la selección, no hacemos nada con la lista acumulada
-                    return;
+                switch (inputId) {
+                    case 'files_declarantes': ulElement = filesDeclarantesUl; listElement = filesDeclarantesList; break;
+                    case 'files_dependientes': ulElement = filesDependientesUl; listElement = filesDependientesList; break;
+                    case 'files_w2': ulElement = filesW2Ul; listElement = filesW2List; break;
+                    case 'files_ingresos': ulElement = filesIngresosUl; listElement = filesIngresosList; break;
+                    case 'files_deducciones': ulElement = filesDeduccionesUl; listElement = filesDeduccionesList; break;
                 }
-                
-                // 2. Acumular y filtrar duplicados
-                newFiles.forEach(newFile => {
-                    // Usar la combinación de nombre y tamaño como ID único para evitar duplicados
-                    const isDuplicate = currentFiles.some(
-                        existingFile => existingFile.name === newFile.name && existingFile.size === newFile.size
-                    );
-                    
-                    if (!isDuplicate) {
-                        currentFiles.push(newFile);
-                    }
-                });
 
-                // 3. Actualizar la visualización
-                renderFiles(inputId);
+                if (!ulElement) return;
 
-                // IMPORTANTE: NO TOCAMOS inputElement.files o Object.defineProperty.
-                // El envío se hará leyendo el objeto 'accumulatedFiles' en handleFormSubmit.
-            });
-
-            // 3. Clear button logic
-            clearButton.addEventListener('click', () => {
-                accumulatedFiles[inputId] = []; // Limpiar el array en memoria
-                inputElement.value = null; // Limpiar el valor del input DOM
-                renderFiles(inputId); // Actualizar la visualización
-            });
-            
-            // Initial render
-            renderFiles(inputId);
-        }
-
-        // Aplicar la función a todos los inputs de archivo
-        setupFileInput(filesDeclarantesInput, clearDeclarantesFilesBtn, filesDeclarantesInput.id);
-        setupFileInput(filesDependientesInput, clearDependientesFilesBtn, filesDependientesInput.id);
-        setupFileInput(filesW2Input, clearW2FilesBtn, filesW2Input.id);
-        setupFileInput(filesIngresosInput, clearIngresosFilesBtn, filesIngresosInput.id);
-        setupFileInput(filesDeduccionesInput, clearDeduccionesFilesBtn, filesDeduccionesInput.id);
-
-
-        // --- LÓGICA DE CONDICIONALIDAD DE DATOS DE CÓNYUGE ---
-        estadoCivilSelect.addEventListener('change', () => {
-            const isMarriedJoint = estadoCivilSelect.value === 'casado_juntos';
-            const conyugeInputs = datosConyugeContainer.querySelectorAll('input');
-
-            if (isMarriedJoint) {
-                datosConyugeContainer.classList.remove('hidden');
-                conyugeInputs.forEach(input => input.setAttribute('required', 'required'));
-            } else {
-                datosConyugeContainer.classList.add('hidden');
-                conyugeInputs.forEach(input => {
-                    input.removeAttribute('required');
-                    input.value = ''; // Limpiar datos al ocultar
-                });
-            }
-        });
-        
-        // --- LÓGICA DE CONDICIONALIDAD DE OTRO CRÉDITO (Paso 4) ---
-        document.querySelector('input[name="otro_credito_checkbox"]').addEventListener('change', (e) => {
-            const container = document.getElementById('otro_credito_container');
-            const textarea = container.querySelector('textarea');
-            if (e.target.checked) {
-                container.classList.remove('hidden');
-                textarea.setAttribute('required', 'required');
-            } else {
-                container.classList.add('hidden');
-                textarea.removeAttribute('required');
-                textarea.value = '';
-            }
-            // Llamar a la verificación de documentos al cambiar el estado
-            checkDeductionFilesRequirement();
-        });
-
-        // Inicialización de la lógica de visibilidad condicional para los gastos independientes
-        document.querySelectorAll('#expenseCheckboxes input[type="checkbox"]').forEach(checkbox => {
-            checkbox.addEventListener('change', (e) => {
-                const expenseName = e.target.value;
-                // Los contenedores de monto tienen el ID: monto_[nombre_gasto]_container
-                const montoContainer = document.getElementById(`monto_${expenseName}_container`);
-                const montoInput = montoContainer ? montoContainer.querySelector('.form-input-monto') : null;
-                const descripcionOtros = montoContainer ? montoContainer.querySelector('textarea') : null;
-
-                if (e.target.checked) {
-                    montoContainer.classList.remove('hidden');
-                    if (montoInput) {
-                        montoInput.setAttribute('required', 'required');
-                    }
-                    if (descripcionOtros && expenseName === 'otros') {
-                        descripcionOtros.setAttribute('required', 'required');
-                    }
+                ulElement.innerHTML = '';
+                if (files.length > 0) {
+                    listElement.classList.remove('hidden');
+                    files.forEach(file => {
+                        const li = document.createElement('li');
+                        li.textContent = file.name;
+                        ulElement.appendChild(li);
+                    });
                 } else {
-                    montoContainer.classList.add('hidden');
-                    if (montoInput) {
-                        montoInput.removeAttribute('required');
-                        montoInput.value = ''; // Limpiar valor
-                    }
-                    if (descripcionOtros && expenseName === 'otros') {
-                        descripcionOtros.removeAttribute('required');
-                        descripcionOtros.value = ''; // Limpiar valor
-                    }
+                    listElement.classList.add('hidden');
                 }
-                // Llamar a la verificación de documentos al cambiar el estado
+            }
+
+            function setupFileInput(inputElement, clearButton, inputId) {
+                accumulatedFiles[inputId] = [];
+
+                inputElement.addEventListener('change', (e) => {
+                    const newFiles = Array.from(e.target.files);
+                    const currentFiles = accumulatedFiles[inputId];
+                    
+                    inputElement.value = null; // Clear value to allow re-selection
+
+                    if (newFiles.length === 0) {
+                        return;
+                    }
+                    
+                    newFiles.forEach(newFile => {
+                        const isDuplicate = currentFiles.some(
+                            existingFile => existingFile.name === newFile.name && existingFile.size === newFile.size
+                        );
+                        
+                        if (!isDuplicate) {
+                            currentFiles.push(newFile);
+                        }
+                    });
+
+                    renderFiles(inputId);
+                });
+
+                clearButton.addEventListener('click', () => {
+                    accumulatedFiles[inputId] = []; 
+                    inputElement.value = null; 
+                    renderFiles(inputId); 
+                });
+                
+                renderFiles(inputId);
+            }
+
+            // Aplicar la función a todos los inputs de archivo
+            setupFileInput(filesDeclarantesInput, clearDeclarantesFilesBtn, filesDeclarantesInput.id);
+            setupFileInput(filesDependientesInput, clearDependientesFilesBtn, filesDependientesInput.id);
+            setupFileInput(filesW2Input, clearW2FilesBtn, filesW2Input.id);
+            setupFileInput(filesIngresosInput, clearIngresosFilesBtn, filesIngresosInput.id);
+            setupFileInput(filesDeduccionesInput, clearDeduccionesFilesBtn, filesDeduccionesInput.id);
+
+
+            // --- LÓGICA DE CONDICIONALIDAD DE DATOS DE CÓNYUGE ---
+            estadoCivilSelect.addEventListener('change', () => {
+                const isMarriedJoint = estadoCivilSelect.value === 'casado_juntos';
+                const conyugeInputs = datosConyugeContainer.querySelectorAll('input');
+
+                if (isMarriedJoint) {
+                    datosConyugeContainer.classList.remove('hidden');
+                    conyugeInputs.forEach(input => input.setAttribute('required', 'required'));
+                } else {
+                    datosConyugeContainer.classList.add('hidden');
+                    conyugeInputs.forEach(input => {
+                        input.removeAttribute('required');
+                        input.value = ''; // Limpiar datos al ocultar
+                    });
+                }
+            });
+            
+            // --- LÓGICA DE CONDICIONALIDAD DE OTRO CRÉDITO (Paso 4) ---
+            document.querySelector('input[name="otro_credito_checkbox"]').addEventListener('change', (e) => {
+                const container = document.getElementById('otro_credito_container');
+                const textarea = container.querySelector('textarea');
+                if (e.target.checked) {
+                    container.classList.remove('hidden');
+                    textarea.setAttribute('required', 'required');
+                } else {
+                    container.classList.add('hidden');
+                    textarea.removeAttribute('required');
+                    textarea.value = '';
+                }
                 checkDeductionFilesRequirement();
             });
-        });
 
-        // --- LÓGICA CONDICIONAL DE ARCHIVOS DE DEDUCCIONES (Paso 4) ---
-        const deductionCheckboxes = document.querySelectorAll('#dependienteDeductionsContainer .checkbox-label input[type="checkbox"]');
+            // Inicialización de la lógica de visibilidad condicional para los gastos independientes
+            document.querySelectorAll('#expenseCheckboxes input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const expenseName = e.target.value;
+                    const montoContainer = document.getElementById(`monto_${expenseName}_container`);
+                    const montoInput = montoContainer ? montoContainer.querySelector('.form-input-monto') : null;
+                    const descripcionOtros = montoContainer ? montoContainer.querySelector('textarea') : null;
 
-        function checkDeductionFilesRequirement() {
-            let isAnyChecked = false;
-            
-            // Si la sección de deducciones no es visible (es decir, Paso 4 no es visible), no hacemos nada.
-            if (document.getElementById('section-4').style.display === 'none') return;
-            
-            // Verificar checkboxes de créditos comunes (dependientes)
-            document.querySelectorAll('#dependienteDeductionsContainer input[type="checkbox"]').forEach(checkbox => {
-                // Si el checkbox está marcado, necesitamos archivos.
-                if (checkbox.checked) {
-                    isAnyChecked = true;
+                    if (e.target.checked) {
+                        montoContainer.classList.remove('hidden');
+                        if (montoInput) {
+                            montoInput.setAttribute('required', 'required');
+                        }
+                        if (descripcionOtros && expenseName === 'otros') {
+                            descripcionOtros.setAttribute('required', 'required');
+                        }
+                    } else {
+                        montoContainer.classList.add('hidden');
+                        if (montoInput) {
+                            montoInput.removeAttribute('required');
+                            montoInput.value = ''; 
+                        }
+                        if (descripcionOtros && expenseName === 'otros') {
+                            descripcionOtros.removeAttribute('required');
+                            descripcionOtros.value = '';
+                        }
+                    }
+                    checkDeductionFilesRequirement();
+                });
+            });
+
+            // --- LÓGICA CONDICIONAL DE ARCHIVOS DE DEDUCCIONES (Paso 4) ---
+            const deductionCheckboxes = document.querySelectorAll('#dependienteDeductionsContainer .checkbox-label input[type="checkbox"]');
+
+            function checkDeductionFilesRequirement() {
+                let isAnyChecked = false;
+                
+                if (document.getElementById('section-4').style.display === 'none') return;
+                
+                document.querySelectorAll('#dependienteDeductionsContainer input[type="checkbox"]').forEach(checkbox => {
+                    if (checkbox.checked) {
+                        isAnyChecked = true;
+                    }
+                });
+                
+                document.querySelectorAll('#independienteDeductionsContainer input[name="gastos_checkbox"]').forEach(checkbox => {
+                    if (checkbox.checked) {
+                        isAnyChecked = true;
+                    }
+                });
+
+                if (isAnyChecked) {
+                    filesDeduccionesInput.setAttribute('required', 'required');
+                    deduccionObligatorioText.textContent = 'OBLIGATORIO';
+                    filesDeduccionesHint.textContent = 'Este campo es OBLIGATORIO ya que seleccionaste un crédito/deducción.';
+                } else {
+                    filesDeduccionesInput.removeAttribute('required');
+                    deduccionObligatorioText.textContent = 'Opcional';
+                    filesDeduccionesHint.textContent = 'Este campo es opcional a menos que selecciones un crédito o deducción.';
                 }
+            }
+
+            // Añadir listeners a todos los checkboxes relevantes del Paso 4
+            deductionCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', checkDeductionFilesRequirement);
             });
             
-            // Verificar checkboxes de gastos de negocio (independientes)
-            document.querySelectorAll('#independienteDeductionsContainer input[name="gastos_checkbox"]').forEach(checkbox => {
-                // Si el checkbox está marcado, necesitamos archivos.
-                if (checkbox.checked) {
-                    isAnyChecked = true;
-                }
+            document.querySelectorAll('#expenseCheckboxes input[name="gastos_checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', checkDeductionFilesRequirement);
             });
+            
 
-            if (isAnyChecked) {
-                // Si es requerido, la validación se hace contra el array acumulado.
-                filesDeduccionesInput.setAttribute('required', 'required');
-                deduccionObligatorioText.textContent = 'OBLIGATORIO';
-                filesDeduccionesHint.textContent = 'Este campo es OBLIGATORIO ya que seleccionaste un crédito/deducción.';
-            } else {
-                filesDeduccionesInput.removeAttribute('required');
+            function showStep(step) {
+                document.querySelectorAll('.form-section').forEach(section => {
+                    section.style.display = 'none';
+                });
+                document.getElementById(`section-${step}`).style.display = 'block';
+                
+                messageContainer.style.display = 'none';
+
+                progressBar.style.width = `${(step / totalSteps) * 100}%`;
+
+                prevBtn.style.display = (step === 1) ? 'none' : 'inline-block';
+                nextBtn.style.display = (step === totalSteps) ? 'none' : 'inline-block';
+                submitBtn.style.display = (step === totalSteps) ? 'inline-block' : 'none';
+
+                if (step >= 3) {
+                    updateConditionalSections();
+                }
+                
+                if (step === 4) {
+                    checkDeductionFilesRequirement();
+                }
+            }
+
+            function updateConditionalSections() {
+                const tipo = tipoPresentacionSelect.value;
+                
+                depIncome.classList.add('hidden');
+                indepIncome.classList.add('hidden');
+                filesW2Input.removeAttribute('required');
+                filesIngresosInput.removeAttribute('required');
+
+                removeRequiredFields(depIncome);
+                removeRequiredFields(indepIncome);
+                
+                depDeductions.classList.add('hidden');
+                indepDeductions.classList.add('hidden');
+                filesDeduccionesInput.removeAttribute('required'); 
                 deduccionObligatorioText.textContent = 'Opcional';
                 filesDeduccionesHint.textContent = 'Este campo es opcional a menos que selecciones un crédito o deducción.';
-            }
-        }
-
-        // Añadir listeners a todos los checkboxes relevantes del Paso 4
-        deductionCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', checkDeductionFilesRequirement);
-        });
-        
-        // Los checkboxes de gastos de negocio ya tienen un listener que llama a esta función.
-        document.querySelectorAll('#expenseCheckboxes input[name="gastos_checkbox"]').forEach(checkbox => {
-            checkbox.addEventListener('change', checkDeductionFilesRequirement);
-        });
-        
-
-        function showStep(step) {
-            document.querySelectorAll('.form-section').forEach(section => {
-                section.style.display = 'none';
-            });
-            document.getElementById(`section-${step}`).style.display = 'block';
-            
-            // Corrección de la franja verde: forzar que el contenedor de mensajes esté oculto
-            messageContainer.style.display = 'none';
-
-            // Actualizar barra de progreso
-            progressBar.style.width = `${(step / totalSteps) * 100}%`;
-
-            // Control de botones
-            prevBtn.style.display = (step === 1) ? 'none' : 'inline-block';
-            nextBtn.style.display = (step === totalSteps) ? 'none' : 'inline-block';
-            submitBtn.style.display = (step === totalSteps) ? 'inline-block' : 'none';
-
-            // Si se pasa el Paso 1, actualiza las secciones condicionales
-            if (step >= 3) {
-                updateConditionalSections();
-            }
-            
-            // Si el paso actual es el 4, forzar la revisión de archivos de deducciones
-            if (step === 4) {
-                checkDeductionFilesRequirement();
-            }
-        }
-
-        function updateConditionalSections() {
-            const tipo = tipoPresentacionSelect.value;
-            
-            // 1. Ocultar y limpiar campos obligatorios de Ingresos
-            depIncome.classList.add('hidden');
-            indepIncome.classList.add('hidden');
-            filesW2Input.removeAttribute('required');
-            filesIngresosInput.removeAttribute('required');
-
-            // Quitar el 'required' de todos los inputs condicionales no mostrados
-            removeRequiredFields(depIncome);
-            removeRequiredFields(indepIncome);
-            
-            // 2. Ocultar y limpiar campos obligatorios de Deducciones
-            depDeductions.classList.add('hidden');
-            indepDeductions.classList.add('hidden');
-            filesDeduccionesInput.removeAttribute('required'); // Por defecto NO requerido
-            deduccionObligatorioText.textContent = 'Opcional';
-            filesDeduccionesHint.textContent = 'Este campo es opcional a menos que selecciones un crédito o deducción.';
 
 
-            // Asegurar que los campos de monto de gastos de Independientes se desactiven si no son visibles
-            if (tipo !== 'independiente' && tipo !== 'ambos') {
-                document.querySelectorAll('#independienteDeductionsContainer input.form-input-monto').forEach(input => {
-                    input.removeAttribute('required');
-                    input.value = '';
-                });
-                document.querySelectorAll('#independienteDeductionsContainer textarea').forEach(input => {
-                    input.removeAttribute('required');
-                    input.value = '';
-                });
-            }
+                if (tipo !== 'independiente' && tipo !== 'ambos') {
+                    document.querySelectorAll('#independienteDeductionsContainer input.form-input-monto').forEach(input => {
+                        input.removeAttribute('required');
+                        input.value = '';
+                    });
+                    document.querySelectorAll('#independienteDeductionsContainer textarea').forEach(input => {
+                        input.removeAttribute('required');
+                        input.value = '';
+                    });
+                }
 
 
-            // 3. Logica de visibilidad y campos obligatorios
-            if (tipo === 'dependiente') {
-                depIncome.classList.remove('hidden');
-                depDeductions.classList.remove('hidden');
-                filesW2Input.setAttribute('required', 'required');
-            } else if (tipo === 'independiente') {
-                indepIncome.classList.remove('hidden');
-                indepDeductions.classList.remove('hidden');
-                setRequiredFields(indepIncome);
-                filesIngresosInput.setAttribute('required', 'required');
-            } else if (tipo === 'ambos') {
-                // LÓGICA AMBOS: Mostrar ambos contenedores de ingresos y deducciones
-                depIncome.classList.remove('hidden');
-                indepIncome.classList.remove('hidden');
-                depDeductions.classList.remove('hidden');
-                indepDeductions.classList.remove('hidden');
+                if (tipo === 'dependiente') {
+                    depIncome.classList.remove('hidden');
+                    depDeductions.classList.remove('hidden');
+                    filesW2Input.setAttribute('required', 'required');
+                } else if (tipo === 'independiente') {
+                    indepIncome.classList.remove('hidden');
+                    indepDeductions.classList.remove('hidden');
+                    setRequiredFields(indepIncome);
+                    filesIngresosInput.setAttribute('required', 'required');
+                } else if (tipo === 'ambos') {
+                    depIncome.classList.remove('hidden');
+                    indepIncome.classList.remove('hidden');
+                    depDeductions.classList.remove('hidden');
+                    indepDeductions.classList.remove('hidden');
 
-                // Hacer ambos archivos de ingresos obligatorios
-                filesW2Input.setAttribute('required', 'required');
-                filesIngresosInput.setAttribute('required', 'required');
+                    filesW2Input.setAttribute('required', 'required');
+                    filesIngresosInput.setAttribute('required', 'required');
 
-                // Aplicar required a campos de texto de independiente
-                setRequiredFields(indepIncome);
-            } else {
-                filesW2Input.value = '';
-                filesIngresosInput.value = '';
-            }
-
-            // Lógica de archivo de deducciones: Aplicar la verificación condicional.
-            if (tipo === 'dependiente' || tipo === 'ambos' || tipo === 'independiente') {
-                checkDeductionFilesRequirement();
-            }
-        }
-
-        function setRequiredFields(container) {
-            // Establecer campos requeridos específicos para Ingresos Independiente
-            if (container.id === 'independienteIncomeContainer') {
-                document.getElementById('ocupacion').setAttribute('required', 'required');
-                // Nota: ya no existen estados_actividad ni fecha_inicio_actividad
-                document.getElementById('ingreso_total').setAttribute('required', 'required');
-            }
-        }
-
-        function removeRequiredFields(container) {
-            // Remueve 'required' de los inputs no archivo para que no rompan la validación
-            container.querySelectorAll('input:not([type="file"]), select, textarea').forEach(input => {
-                input.removeAttribute('required');
-            });
-        }
-        
-        // Función para validar la fecha manual
-        function isValidDate(dateString) {
-            if (!dateString) return false;
-            const regex = /^\d{2}\/\d{2}\/\d{4}$/;
-            if (!regex.test(dateString)) return false;
-
-            const parts = dateString.split('/');
-            const month = parseInt(parts[0], 10);
-            const day = parseInt(parts[1], 10);
-            const year = parseInt(parts[2], 10);
-
-            if (year < 1900 || year > new Date().getFullYear() || month < 1 || month > 12) return false;
-            
-            const date = new Date(year, month - 1, day);
-            return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
-        }
-
-        function validateStep(step) {
-            const currentSection = document.getElementById(`section-${step}`);
-            // Solo considerar inputs requeridos que no sean de dependientes, ya que los quitamos
-            const inputs = currentSection.querySelectorAll('input[required]:not([name^="dependiente_"]), select[required], textarea[required]');
-            let isValid = true;
-            let firstInvalidInput = null;
-            
-            // Validación del Paso 1: Tipo de Presentación
-            if (step === 1 && !tipoPresentacionSelect.value) {
-                tipoPresentacionSelect.reportValidity();
-                return false;
-            }
-
-            // VALIDACIÓN ESPECIAL PASO 2: Fechas y Cónyuge
-            if (step === 2) {
-                // Validación Fecha de Nacimiento Principal
-                const dobInput = document.getElementById('fecha_nacimiento');
-                if (dobInput.hasAttribute('required') && !isValidDate(dobInput.value)) {
-                    isValid = false;
-                    dobInput.setCustomValidity("Formato de fecha inválido o vacío. Use MM/DD/AAAA.");
-                    dobInput.reportValidity();
-                    if (!firstInvalidInput) firstInvalidInput = dobInput;
+                    setRequiredFields(indepIncome);
                 } else {
-                    dobInput.setCustomValidity(""); // Reset validity
+                    filesW2Input.value = '';
+                    filesIngresosInput.value = '';
                 }
 
-                // Validación de Datos del Cónyuge (si es MFJ)
-                if (estadoCivilSelect.value === 'casado_juntos') {
-                    const conyugeNombre = document.getElementById('conyuge_nombre');
-                    const conyugeFechaNac = document.getElementById('conyuge_fecha_nac');
-                    const conyugeSSN = document.getElementById('conyuge_ssn');
-
-                    // Validar nombre
-                    if (conyugeNombre.value.trim() === '') {
-                        isValid = false;
-                        conyugeNombre.reportValidity();
-                        if (!firstInvalidInput) firstInvalidInput = conyugeNombre;
-                    }
-                    
-                    // Validar SSN
-                    if (conyugeSSN.value.trim() === '') {
-                        isValid = false;
-                        conyugeSSN.reportValidity();
-                        if (!firstInvalidInput) firstInvalidInput = conyugeSSN;
-                    }
-
-                    // Validar Fecha de Nacimiento Cónyuge
-                    if (!isValidDate(conyugeFechaNac.value)) {
-                        isValid = false;
-                        conyugeFechaNac.setCustomValidity("Formato de fecha inválido o vacío para el cónyuge. Use MM/DD/AAAA.");
-                        conyugeFechaNac.reportValidity();
-                        if (!firstInvalidInput) firstInvalidInput = conyugeFechaNac;
-                    } else {
-                        conyugeFechaNac.setCustomValidity("");
-                    }
+                if (tipo === 'dependiente' || tipo === 'ambos' || tipo === 'independiente') {
+                    checkDeductionFilesRequirement();
                 }
+            }
+
+            function setRequiredFields(container) {
+                if (container.id === 'independienteIncomeContainer') {
+                    document.getElementById('ocupacion').setAttribute('required', 'required');
+                    document.getElementById('ingreso_total').setAttribute('required', 'required');
+                }
+            }
+
+            function removeRequiredFields(container) {
+                container.querySelectorAll('input:not([type="file"]), select, textarea').forEach(input => {
+                    input.removeAttribute('required');
+                });
+            }
+            
+            function isValidDate(dateString) {
+                if (!dateString) return false;
+                const regex = /^\d{2}\/\d{2}\/\d{4}$/;
+                if (!regex.test(dateString)) return false;
+
+                const parts = dateString.split('/');
+                const month = parseInt(parts[0], 10);
+                const day = parseInt(parts[1], 10);
+                const year = parseInt(parts[2], 10);
+
+                if (year < 1900 || year > new Date().getFullYear() || month < 1 || month > 12) return false;
                 
-                // Validación de archivos de dependientes si "tiene dependientes" es "si"
-                const tieneDependientesSi = document.querySelector('input[name="tiene_dependientes"][value="si"]:checked');
-                if (tieneDependientesSi) {
-                    // Validar que se hayan subido documentos de dependientes (archivos en memoria)
-                    if (accumulatedFiles['files_dependientes'].length === 0) {
-                        isValid = false;
-                        filesDependientesInput.setCustomValidity("Debe subir los documentos de los dependientes.");
-                        filesDependientesInput.reportValidity();
-                        if (!firstInvalidInput) firstInvalidInput = filesDependientesInput;
-                    } else {
-                        filesDependientesInput.setCustomValidity("");
-                    }
-                }
+                const date = new Date(year, month - 1, day);
+                return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+            }
+
+            function validateStep(step) {
+                const currentSection = document.getElementById(`section-${step}`);
+                const inputs = currentSection.querySelectorAll('input[required]:not([name^="dependiente_"]), select[required], textarea[required]');
+                let isValid = true;
+                let firstInvalidInput = null;
                 
-                // Si el paso 2 falló, paramos aquí
-                if (!isValid) {
-                    showMessage('Por favor, corrige los errores en las fechas o documentos obligatorios.', true);
+                if (step === 1 && !tipoPresentacionSelect.value) {
+                    tipoPresentacionSelect.reportValidity();
                     return false;
                 }
-            }
 
+                if (step === 2) {
+                    const dobInput = document.getElementById('fecha_nacimiento');
+                    if (dobInput && dobInput.hasAttribute('required') && !isValidDate(dobInput.value)) {
+                        isValid = false;
+                        dobInput.setCustomValidity("Formato de fecha inválido o vacío. Use MM/DD/AAAA.");
+                        dobInput.reportValidity();
+                        if (!firstInvalidInput) firstInvalidInput = dobInput;
+                    } else if (dobInput) {
+                        dobInput.setCustomValidity(""); 
+                    }
 
-            // Validación de campos visibles y requeridos (General)
-            inputs.forEach(input => {
-                // Si el input está en un contenedor oculto o no es visible, no lo valides
-                if (input.closest('.hidden') || input.offsetParent === null) {
-                    return;
-                }
-                
-                // VALIDACIÓN DE ARCHIVOS (Paso 2, 3, 4) - USANDO LA MEMORIA PARA LA VALIDACIÓN
-                if (input.type === 'file' && input.hasAttribute('required')) {
-                    if (accumulatedFiles[input.id].length === 0) {
-                         isValid = false;
-                         // Usar el setCustomValidity para que el mensaje de error aparezca en el campo de archivo
-                         input.setCustomValidity("Este campo es obligatorio. Debe subir al menos un archivo.");
-                         input.reportValidity();
-                         if (!firstInvalidInput) firstInvalidInput = input;
-                         return; 
-                    } else {
-                        // Resetear el mensaje de error si la validación pasa
-                        input.setCustomValidity("");
+                    if (estadoCivilSelect.value === 'casado_juntos') {
+                        const conyugeNombre = document.getElementById('conyuge_nombre');
+                        const conyugeFechaNac = document.getElementById('conyuge_fecha_nac');
+                        const conyugeSSN = document.getElementById('conyuge_ssn');
+
+                        if (conyugeNombre.value.trim() === '') {
+                            isValid = false;
+                            conyugeNombre.reportValidity();
+                            if (!firstInvalidInput) firstInvalidInput = conyugeNombre;
+                        }
+                        
+                        if (conyugeSSN.value.trim() === '') {
+                            isValid = false;
+                            conyugeSSN.reportValidity();
+                            if (!firstInvalidInput) firstInvalidInput = conyugeSSN;
+                        }
+
+                        if (!isValidDate(conyugeFechaNac.value)) {
+                            isValid = false;
+                            conyugeFechaNac.setCustomValidity("Formato de fecha inválido o vacío para el cónyuge. Use MM/DD/AAAA.");
+                            conyugeFechaNac.reportValidity();
+                            if (!firstInvalidInput) firstInvalidInput = conyugeFechaNac;
+                        } else {
+                            conyugeFechaNac.setCustomValidity("");
+                        }
+                    }
+                    
+                    const tieneDependientesSi = document.querySelector('input[name="tiene_dependientes"][value="si"]:checked');
+                    if (tieneDependientesSi) {
+                        if (accumulatedFiles['files_dependientes'].length === 0) {
+                            isValid = false;
+                            filesDependientesInput.setCustomValidity("Debe subir los documentos de los dependientes.");
+                            filesDependientesInput.reportValidity();
+                            if (!firstInvalidInput) firstInvalidInput = filesDependientesInput;
+                        } else {
+                            filesDependientesInput.setCustomValidity("");
+                        }
+                    }
+                    
+                    if (!isValid) {
+                        showMessage('Por favor, corrige los errores en las fechas o documentos obligatorios.', true);
+                        return false;
                     }
                 }
-                
-                // Validación específica para montos de gastos (Paso 4, solo si están visibles y checked)
-                if (input.classList.contains('form-input-monto') && !input.closest('.monto-input-container').classList.contains('hidden')) {
-                    // Asegúrate de que el input tenga un valor y sea > 0
-                    if (!input.value.trim() || (input.type === 'number' && parseFloat(input.value) <= 0)) {
+
+                inputs.forEach(input => {
+                    if (input.closest('.hidden') || input.offsetParent === null) {
+                        return;
+                    }
+                    
+                    if (input.type === 'file' && input.hasAttribute('required')) {
+                        if (accumulatedFiles[input.id].length === 0) {
+                             isValid = false;
+                             input.setCustomValidity("Este campo es obligatorio. Debe subir al menos un archivo.");
+                             input.reportValidity();
+                             if (!firstInvalidInput) firstInvalidInput = input;
+                             return; 
+                        } else {
+                            input.setCustomValidity("");
+                        }
+                    }
+                    
+                    if (input.classList.contains('form-input-monto') && !input.closest('.monto-input-container').classList.contains('hidden')) {
+                        if (!input.value.trim() || (input.type === 'number' && parseFloat(input.value) <= 0)) {
+                            isValid = false;
+                            input.reportValidity();
+                            if (!firstInvalidInput) firstInvalidInput = input;
+                        }
+                    } else if (input.type !== 'file' && input.type !== 'radio' && input.type !== 'checkbox' && !input.value.trim()) {
                         isValid = false;
                         input.reportValidity();
                         if (!firstInvalidInput) firstInvalidInput = input;
                     }
-                } else if (input.type !== 'file' && input.type !== 'radio' && input.type !== 'checkbox' && !input.value.trim()) {
-                    // Validación estándar para otros campos de texto/select no-archivo
-                    isValid = false;
-                    input.reportValidity();
-                    if (!firstInvalidInput) firstInvalidInput = input;
+                });
+                
+                if (!isValid) {
+                     showMessage('Por favor, completa todos los campos y sube los documentos obligatorios.', true);
+                     if (firstInvalidInput) {
+                         firstInvalidInput.focus();
+                     }
+                }
+                return isValid;
+            }
+
+            // Lógica de navegación
+            nextBtn.addEventListener('click', () => {
+                showMessage(''); 
+                if (validateStep(currentStep)) {
+                    if (currentStep === 1) {
+                        updateConditionalSections();
+                    }
+                    currentStep++;
+                    showStep(currentStep);
+                    window.scrollTo(0, 0); 
                 }
             });
-            
-            // Si falla la validación, muestra el mensaje de error general
-            if (!isValid) {
-                 showMessage('Por favor, completa todos los campos y sube los documentos obligatorios.', true);
-                 if (firstInvalidInput) {
-                     firstInvalidInput.focus();
-                 }
-            }
-            return isValid;
-        }
 
-        // Lógica de navegación
-        nextBtn.addEventListener('click', () => {
-            showMessage(''); // Limpiar mensajes de error
-            if (validateStep(currentStep)) {
-                // Lógica especial para el Paso 1: Establecer campos requeridos para los próximos pasos
-                if (currentStep === 1) {
-                    updateConditionalSections();
-                }
-                currentStep++;
+            prevBtn.addEventListener('click', () => {
+                currentStep--;
                 showStep(currentStep);
-                window.scrollTo(0, 0); // Scroll al inicio de la nueva sección
-            }
-        });
-
-        prevBtn.addEventListener('click', () => {
-            currentStep--;
-            showStep(currentStep);
-            window.scrollTo(0, 0); // Scroll al inicio de la nueva sección
-        });
-        
-        // --- Lógica de campos condicionales (Dependientes) ---
-        const tieneDependientesRadios = document.querySelectorAll('input[name="tiene_dependientes"]');
-        const dependientesContainer = document.getElementById('dependientesContainer');
-        
-        // Función para activar/desactivar required del input de archivo de dependientes
-        function toggleDependientesRequired(required) {
-            // Activar/desactivar required del input de archivo de dependientes
-            if (required) {
-                filesDependientesInput.setAttribute('required', 'required');
-            } else {
-                filesDependientesInput.removeAttribute('required');
-            }
-        }
-
-
-        tieneDependientesRadios.forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                if (e.target.value === 'si') {
-                    dependientesContainer.classList.remove('hidden');
-                    // Solo activar el requerido del archivo
-                    toggleDependientesRequired(true);
+                window.scrollTo(0, 0); 
+            });
+            
+            // --- Lógica de campos condicionales (Dependientes) ---
+            const tieneDependientesRadios = document.querySelectorAll('input[name="tiene_dependientes"]');
+            const dependientesContainer = document.getElementById('dependientesContainer');
+            
+            function toggleDependientesRequired(required) {
+                if (required) {
+                    filesDependientesInput.setAttribute('required', 'required');
                 } else {
-                    dependientesContainer.classList.add('hidden');
-                    // Desactivar requerido y limpiar archivos
-                    toggleDependientesRequired(false);
-                    // Si se desactiva, forzamos la limpieza de la lista acumulada
-                    document.getElementById('clearDependientesFilesBtn').click();
+                    filesDependientesInput.removeAttribute('required');
                 }
-            });
-        });
-
-        // --- LÓGICA PASO 5 (Cuenta Bancaria) ---
-        // Se elimina la lógica de radios. El contenedor de cuenta bancaria es siempre visible y sus campos requeridos.
-        const cuentaInputs = cuentaBancariaContainer.querySelectorAll('input');
-        // Asegurarse de que los campos de cuenta bancaria sean requeridos en todo momento.
-        cuentaInputs.forEach(input => input.setAttribute('required', 'required'));
-
-        // Evento para actualizar las secciones cuando se cambia el tipo de presentación
-        tipoPresentacionSelect.addEventListener('change', updateConditionalSections);
-
-
-        // --- Lógica de Envío del Formulario (a VPS Backend) ---
-
-        function showMessage(message, isError = false) {
-            messageContainer.textContent = message;
-            messageContainer.className = isError
-                ? 'mt-6 p-4 rounded-md bg-red-800 text-red-200 border border-red-600'
-                : 'mt-6 p-4 rounded-md bg-green-800 text-green-200 border border-green-600';
-            messageContainer.classList.remove('hidden');
-        }
-
-        // Función para recopilar los montos de gastos detallados
-        function getGastosDetallados() {
-            const gastos = [];
-            // Recorre solo los checkboxes de gastos en el contenedor de deducciones de independientes
-            document.querySelectorAll('#independienteDeductionsContainer input[name="gastos_checkbox"]:checked').forEach(checkbox => {
-                const expenseName = checkbox.value;
-                const montoInput = document.querySelector(`input[name="monto_${expenseName}"]`);
-                const descripcion = document.querySelector(`textarea[name="descripcion_otros_gastos"]`); // Solo hay uno para "otros"
-
-                if (montoInput && montoInput.value) {
-                    gastos.push({
-                        tipo: expenseName,
-                        monto: parseFloat(montoInput.value),
-                        descripcion: (expenseName === 'otros' && descripcion) ? descripcion.value : undefined
-                    });
-                }
-            });
-            return gastos;
-        }
-
-
-        async function handleFormSubmit(e) {
-            e.preventDefault();
-            
-            // 1. Validar el último paso
-            if (!validateStep(currentStep)) {
-                return;
             }
 
-            showMessage('Enviando formulario, por favor espera...', false);
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Enviando...';
-            
-            try {
-                // 1. Recopilar datos del formulario y metadatos
-                const formDataObject = {};
-                
-                // Usamos FormData para obtener los valores de forma nativa
-                const rawFormData = new FormData(form);
-                
-                // 🛑 CORRECCIÓN CLAVE: Recolección de datos de texto y radio/checkbox
-                // Iteramos sobre form.elements para garantizar que los campos no seleccionados
-                // pero con valor por defecto (como tiene_dependientes='no') se capturen.
-                Array.from(form.elements).forEach(element => {
-                    // Si el elemento no tiene nombre o es de tipo 'file' o está deshabilitado, lo ignoramos
-                    if (!element.name || element.type === 'file' || element.disabled) {
-                        return;
+
+            tieneDependientesRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    if (e.target.value === 'si') {
+                        dependientesContainer.classList.remove('hidden');
+                        toggleDependientesRequired(true);
+                    } else {
+                        dependientesContainer.classList.add('hidden');
+                        toggleDependientesRequired(false);
+                        document.getElementById('clearDependientesFilesBtn').click();
                     }
+                });
+            });
+
+            // --- LÓGICA PASO 5 (Cuenta Bancaria) ---
+            const cuentaInputs = cuentaBancariaContainer.querySelectorAll('input');
+            cuentaInputs.forEach(input => input.setAttribute('required', 'required'));
+
+            // Evento para actualizar las secciones cuando se cambia el tipo de presentación
+            tipoPresentacionSelect.addEventListener('change', updateConditionalSections);
+
+
+            // --- Lógica de Envío del Formulario (a VPS Backend) ---
+
+            function showMessage(message, isError = false) {
+                messageContainer.textContent = message;
+                messageContainer.className = isError
+                    ? 'mt-6 p-4 rounded-md bg-red-800 text-red-200 border border-red-600'
+                    : 'mt-6 p-4 rounded-md bg-green-800 text-green-200 border border-green-600';
+                messageContainer.classList.remove('hidden');
+            }
+
+            function getGastosDetallados() {
+                const gastos = [];
+                document.querySelectorAll('#independienteDeductionsContainer input[name="gastos_checkbox"]:checked').forEach(checkbox => {
+                    const expenseName = checkbox.value;
+                    const montoInput = document.querySelector(`input[name="monto_${expenseName}"]`);
+                    const descripcion = document.querySelector(`textarea[name="descripcion_otros_gastos"]`); 
+
+                    if (montoInput && montoInput.value) {
+                        gastos.push({
+                            tipo: expenseName,
+                            monto: parseFloat(montoInput.value),
+                            descripcion: (expenseName === 'otros' && descripcion) ? descripcion.value : undefined
+                        });
+                    }
+                });
+                return gastos;
+            }
+
+
+            async function handleFormSubmit(e) {
+                e.preventDefault();
+                
+                if (!validateStep(currentStep)) {
+                    return;
+                }
+
+                showMessage('Enviando formulario, por favor espera...', false);
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Enviando...';
+                
+                try {
+                    const formDataObject = {};
+                    const formElements = form.elements;
+                    const rawFormData = new FormData(form);
                     
-                    // Manejar radios: Solo queremos el valor del radio que está marcado
-                    if (element.type === 'radio') {
-                        if (element.checked) {
-                            formDataObject[element.name] = element.value;
+                    Array.from(formElements).forEach(element => {
+                        if (!element.name || element.type === 'file' || element.disabled) {
+                            return;
                         }
-                        return;
-                    }
-                    
-                    // Manejar checkboxes y otros campos complejos que se procesan por separado
-                    if (element.name.startsWith('monto_') || element.name === 'descripcion_otros_gastos' || element.name.includes('checkbox') || element.name === 'tipo_ingreso') {
-                         return;
-                    }
-                    
-                    // Capturar todos los demás campos de texto/select/radio seleccionado
-                    formDataObject[element.name] = element.value;
-                });
-                
-
-                // Procesar arrays y estructuras complejas (Gastos, Créditos, Cónyuge)
-                
-                // Array de ingresos (checkboxes)
-                formDataObject.tipo_ingreso = rawFormData.getAll('tipo_ingreso');
-                // Gastos detallados (montos y descripciones)
-                formDataObject.gastos_detallados = getGastosDetallados();
-
-                // Recopilar créditos y deducciones simples
-                // Usamos rawFormData.get para obtener el valor del radio/checkbox
-                formDataObject.creditos = {
-                    hipoteca: rawFormData.get('credito_hipoteca') === 'si',
-                    estudios: rawFormData.get('credito_estudios') === 'si',
-                    seguro_salud: rawFormData.get('credito_seguro_salud') === 'si',
-                    recibio_1099r: rawFormData.get('recibio_1099r') === 'si',
-                    otro_credito: rawFormData.get('otro_credito_checkbox') === 'otro' ? rawFormData.get('descripcion_otro_credito') : null,
-                };
-                
-                // Procesar datos del cónyuge (si aplica)
-                formDataObject.conyuge = formDataObject.estado_civil === 'casado_juntos' ? {
-                    nombre: rawFormData.get('conyuge_nombre'),
-                    fecha_nac: rawFormData.get('conyuge_fecha_nac'),
-                    ssn_itin: rawFormData.get('conyuge_ssn')
-                } : null;
-                
-                // Se asegura que tiene_dependientes esté en formDataObject (capturado por el bucle anterior)
-                formDataObject.dependientes = []; // No hay datos de dependientes que enviar
-
-
-                // 2. Preparar FormData para el envío (¡Uso de un nuevo FormData para archivos!)
-                const submissionFormData = new FormData();
-                
-                // Añadir el objeto JSON de datos como un string (clave: formData)
-                submissionFormData.append('formData', JSON.stringify(formDataObject));
-                
-                // Añadir un ID de usuario simple (clave: userId)
-                const userId = formDataObject.ssn_itin || 'user-' + Date.now();
-                submissionFormData.append('userId', userId); // <-- Clave utilizada por Multer
-                
-                // 3. AÑADIR ARCHIVOS ACUMULADOS DESDE LA MEMORIA
-                for (const inputId in accumulatedFiles) {
-                    const files = accumulatedFiles[inputId];
-                    let prefix = inputId.replace('files_', ''); 
-
-                    files.forEach(file => {
-                        // Adjuntar cada archivo con la clave 'files' para que Multer lo intercepte
-                        submissionFormData.append('files', file, `${prefix}-${file.name}`);
+                        
+                        if (element.type === 'radio') {
+                            if (element.checked) {
+                                formDataObject[element.name] = element.value;
+                            }
+                            return;
+                        }
+                        
+                        if (element.name.startsWith('monto_') || element.name === 'descripcion_otros_gastos' || element.name.includes('checkbox') || element.name === 'tipo_ingreso') {
+                             return;
+                        }
+                        
+                        formDataObject[element.name] = element.value;
                     });
-                }
+                    
+                    formDataObject.tipo_ingreso = rawFormData.getAll('tipo_ingreso');
+                    formDataObject.gastos_detallados = getGastosDetallados();
 
-                // 🛑 DIAGNÓSTICO FINAL
-                console.log('--- DIAGNÓSTICO ENVÍO ---');
-                console.log('JSON de datos:', JSON.stringify(formDataObject, null, 2));
-                console.log('Archivos adjuntos (en memoria):', submissionFormData.getAll('files').map(f => f.name));
-                console.log('--------------------------');
+                    formDataObject.creditos = {
+                        hipoteca: rawFormData.get('credito_hipoteca') === 'si',
+                        estudios: rawFormData.get('credito_estudios') === 'si',
+                        seguro_salud: rawFormData.get('credito_seguro_salud') === 'si',
+                        recibio_1099r: rawFormData.get('recibio_1099r') === 'si',
+                        otro_credito: rawFormData.get('otro_credito_checkbox') === 'otro' ? rawFormData.get('descripcion_otro_credito') : null,
+                    };
+                    
+                    formDataObject.conyuge = formDataObject.estado_civil === 'casado_juntos' ? {
+                        nombre: rawFormData.get('conyuge_nombre'),
+                        fecha_nac: rawFormData.get('conyuge_fecha_nac'),
+                        ssn_itin: rawFormData.get('conyuge_ssn')
+                    } : null;
+                    
+                    formDataObject.tiene_dependientes = rawFormData.get('tiene_dependientes') === 'si';
+                    formDataObject.dependientes = []; 
 
 
-                // 4. Integración del Backend
-                const response = await fetch('/api/submit-form', {
-                    method: 'POST',
-                    body: submissionFormData,
-                });
+                    // 2. Preparar FormData para el envío
+                    const submissionFormData = new FormData();
+                    
+                    submissionFormData.append('formData', JSON.stringify(formDataObject));
+                    
+                    const userId = formDataObject.ssn_itin || 'user-' + Date.now();
+                    submissionFormData.append('userId', userId); 
+                    
+                    // 3. AÑADIR ARCHIVOS ACUMULADOS DESDE LA MEMORIA
+                    for (const inputId in accumulatedFiles) {
+                        const files = accumulatedFiles[inputId];
+                        let prefix = inputId.replace('files_', ''); 
 
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    try {
-                        const errorData = JSON.parse(errorText);
-                         throw new Error(errorData.message || `Error en el servidor: ${response.status}`);
-                    } catch {
-                         throw new Error(`Error en el servidor: ${response.status} - ${errorText.substring(0, 100)}...`);
+                        files.forEach(file => {
+                            submissionFormData.append('files', file, `${prefix}-${file.name}`);
+                        });
                     }
+
+                    // 🛑 DIAGNÓSTICO FINAL
+                    console.log('--- DIAGNÓSTICO ENVÍO ---');
+                    console.log('JSON de datos:', JSON.stringify(formDataObject, null, 2));
+                    console.log('Archivos adjuntos (enviando):', submissionFormData.getAll('files').map(f => f.name));
+                    console.log('--------------------------');
+
+
+                    // 4. Integración del Backend
+                    const response = await fetch('/api/submit-form', {
+                        method: 'POST',
+                        body: submissionFormData,
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        try {
+                            const errorData = JSON.parse(errorText);
+                             throw new Error(errorData.message || `Error en el servidor: ${response.status}`);
+                        } catch {
+                             throw new Error(`Error en el servidor: ${response.status} - ${errorText.substring(0, 100)}...`);
+                        }
+                    }
+
+                    // 5. Éxito
+                    showMessage('Formulario enviado con éxito.', false);
+                    formContainer.style.display = 'none';
+                    document.getElementById('prevBtn').style.display = 'none';
+                    document.getElementById('nextBtn').style.display = 'none';
+                    document.getElementById('submitBtn').style.display = 'none';
+                    document.getElementById('progressBar').style.display = 'none';
+                    confirmationSection.style.display = 'block';
+
+                } catch (error) {
+                    console.error('Error al enviar el formulario:', error);
+                    showMessage(`Error: ${error.message}. Por favor, inténtalo de nuevo.`, true);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Enviar Formulario';
                 }
-
-                // 5. Éxito
-                showMessage('Formulario enviado con éxito.', false);
-                formContainer.style.display = 'none';
-                document.getElementById('prevBtn').style.display = 'none';
-                document.getElementById('nextBtn').style.display = 'none';
-                document.getElementById('submitBtn').style.display = 'none';
-                document.getElementById('progressBar').style.display = 'none';
-                confirmationSection.style.display = 'block';
-
-            } catch (error) {
-                console.error('Error al enviar el formulario:', error);
-                showMessage(`Error: ${error.message}. Por favor, inténtalo de nuevo.`, true);
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Enviar Formulario';
             }
-        }
 
-        // --- LÍNEA CRÍTICA: Asocia el envío del formulario a la función JS ---
-        form.addEventListener('submit', handleFormSubmit);
+            form.addEventListener('submit', handleFormSubmit);
 
-        // Inicializar el formulario y la visibilidad de los contenidos condicionales
-        showStep(currentStep);
-        updateConditionalSections();
-        
-        // Ejecutar la lógica de estado civil al cargar por si el default está seleccionado
-        estadoCivilSelect.dispatchEvent(new Event('change'));
+            // Inicializar el formulario y la visibilidad de los contenidos condicionales
+            showStep(currentStep);
+            updateConditionalSections();
+            
+            // Ejecutar la lógica de estado civil al cargar por si el default está seleccionado
+            estadoCivilSelect.dispatchEvent(new Event('change'));
+        });
     </script>
 </body>
 </html>
