@@ -1,21 +1,34 @@
-FROM node:18-alpine
+FROM node:18-alpine AS dependencies
 
-# Instalar dependencias del sistema primero
-RUN apk add --no-cache curl python3 make g++
+# Instalar herramientas de compilación para dependencias nativas
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    curl
 
 WORKDIR /app
 
-# Copiar archivos de dependencias
+# Copiar solo los archivos de dependencias
 COPY package.json package-lock.json* ./
 
-# Instalar dependencias con fallback
-RUN npm ci --production --no-audit --no-fund || \
-    (echo "Fallback to npm install..." && npm install --production --no-audit --no-fund)
+# Instalar todas las dependencias (incluyendo dev para building)
+RUN npm ci --no-audit --no-fund
 
-# Copiar aplicación
+FROM node:18-alpine AS runtime
+
+# Solo curl para health checks en runtime
+RUN apk add --no-cache curl
+
+WORKDIR /app
+
+# Copiar node_modules desde la etapa de dependencies
+COPY --from=dependencies /app/node_modules ./node_modules
+
+# Copiar el resto de la aplicación
 COPY . .
 
-# Configurar permisos
+# Crear directorio de uploads
 RUN mkdir -p /app/uploads && chmod 755 /app/uploads
 
 EXPOSE 80
