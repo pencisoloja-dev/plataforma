@@ -4,7 +4,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- CAMBIO: Título simplificado -->
     <title>Formulario de Impuestos</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Fuente Inter de Google Fonts -->
@@ -206,7 +205,7 @@
             
             <div id="form-container">
                 
-                <!-- ***** NUEVA SECCIÓN 1: TIPO DE PRESENTACIÓN ***** -->
+                <!-- ***** SECCIÓN 1: TIPO DE PRESENTACIÓN ***** -->
                 <div id="section-1" class="form-section">
                     <h2 class="text-2xl font-semibold mb-2 text-white">1️⃣ Paso 1: Tipo de Presentación</h2>
                     <p class="text-slate-400 mb-6">Selecciona el tipo de ingresos que recibiste para cargar las secciones correctas del formulario.</p>
@@ -299,12 +298,11 @@
                         </div>
                     </div>
 
-                    <!-- 5. CAMBIO DE ESTILO: Opción de subir documentos de declarantes (Usando <strong> y list-disc) -->
+                    <!-- 5. Opción de subir documentos de declarantes -->
                     <div class="mt-8 border-t border-slate-700 pt-6">
                         <h3 class="sub-section-title text-white">5. Documentos de los Declarantes (Obligatorio)</h3>
                         <p class="text-sm text-slate-400 mb-4">Sube la documentación del declarante principal y de su cónyuge si aplica (Casado declarando juntos).</p>
                         
-                        <!-- Lista con viñetas simples y formato <strong> para un look más austero/corporativo -->
                         <ul class="list-disc list-inside text-sm text-slate-300 mb-4 ml-4">
                             <li><strong>Tarjeta de SSN / ITIN</strong> (del declarante y cónyuge).</li>
                             <li><strong>Licencia de conducir</strong> o <strong>Tarjeta de Identificación</strong> (del declarante y cónyuge).</li>
@@ -314,7 +312,7 @@
                         <input type="file" id="files_declarantes" name="files_declarantes" class="form-input" required multiple accept="image/*,application/pdf">
                         <p class="text-xs text-slate-500 mt-1">Puedes tomar fotos, buscar en galería, drive o descargas.</p>
                         
-                        <!-- Contenedor para mostrar los archivos seleccionados (FIX DE VISUALIZACIÓN) -->
+                        <!-- Contenedor para mostrar los archivos seleccionados (Acumulación) -->
                         <div id="filesDeclarantesList" class="mt-3 p-3 bg-slate-700 rounded-lg text-sm hidden">
                             <p class="text-white font-medium mb-1">Archivos seleccionados:</p>
                             <ul id="filesDeclarantesUl" class="list-disc list-inside text-slate-300 ml-4"></ul>
@@ -335,11 +333,10 @@
                     <div id="dependientesContainer" class="hidden mt-6 bg-slate-900 p-6 rounded-lg border border-slate-700">
                         <h3 class="text-lg font-semibold mb-4 text-white">Documentos de Dependientes</h3>
                         
-                        <!-- CAMBIO: Se eliminan todos los campos de datos de dependientes (dependientesWrapper y botón) -->
+                        <!-- Solo el campo de archivo, sin datos personales -->
                         <div id="filesDependientesContainer" class="mt-2">
                             <p class="text-sm text-slate-400 mb-4">Sube la documentación de <strong>todos</strong> los dependientes que deseas declarar (SSN/ITIN, Actas de Nacimiento, etc.).</p>
                             
-                            <!-- Lista con viñetas simples y formato <strong> -->
                             <ul class="list-disc list-inside text-sm text-slate-300 mb-4 ml-4">
                                 <li><strong>Tarjeta de SSN / ITIN</strong>.</li>
                                 <li><strong>Acta de nacimiento</strong> o similar.</li>
@@ -348,7 +345,7 @@
 
                             <input type="file" id="files_dependientes" name="files_dependientes" class="form-input" multiple accept="image/*,application/pdf">
                             <p class="text-xs text-slate-500 mt-1">Puedes tomar fotos, buscar en galería, drive o descargas.</p>
-                             <!-- NUEVO: Contenedor para mostrar los archivos seleccionados (FIX DE VISUALIZACIÓN) -->
+                             <!-- Contenedor para mostrar los archivos seleccionados (Acumulación) -->
                             <div id="filesDependientesList" class="mt-3 p-3 bg-slate-700 rounded-lg text-sm hidden">
                                 <p class="text-white font-medium mb-1">Archivos seleccionados:</p>
                                 <ul id="filesDependientesUl" class="list-disc list-inside text-slate-300 ml-4"></ul>
@@ -386,7 +383,7 @@
                                 <label for="files_w2" class="block text-sm font-medium mb-2 label-required">3. Sube aquí tu(s) formulario(s) W-2</label>
                                 <input type="file" id="files_w2" name="files_w2" class="form-input" data-is-required-file="true" required multiple accept="image/*,application/pdf">
                                 <p class="text-xs text-slate-500 mt-1">Este campo es obligatorio.</p>
-                                <!-- NUEVO: Contenedor para mostrar los archivos seleccionados (FIX DE VISUALIZACIÓN) -->
+                                <!-- Contenedor para mostrar los archivos seleccionados (Acumulación) -->
                                 <div id="filesW2List" class="mt-3 p-3 bg-slate-700 rounded-lg text-sm hidden">
                                     <p class="text-white font-medium mb-1">Archivos seleccionados:</p>
                                     <ul id="filesW2Ul" class="list-disc list-inside text-slate-300 ml-4"></ul>
@@ -441,7 +438,7 @@
                             <!-- Item 6 (anterior 8) -->
                             <label for="files_ingresos" class="block text-sm font-medium mb-2 label-required">6. Sube aquí tus 1099, etc.</label>
                             <input type="file" id="files_ingresos" name="files_ingresos" class="form-input" data-is-required-file="true" required multiple accept="image/*,application/pdf">
-                             <!-- NUEVO: Contenedor para mostrar los archivos seleccionados (FIX DE VISUALIZACIÓN) -->
+                             <!-- Contenedor para mostrar los archivos seleccionados (Acumulación) -->
                              <div id="filesIngresosList" class="mt-3 p-3 bg-slate-700 rounded-lg text-sm hidden">
                                 <p class="text-white font-medium mb-1">Archivos seleccionados:</p>
                                 <ul id="filesIngresosUl" class="list-disc list-inside text-slate-300 ml-4"></ul>
@@ -1325,6 +1322,7 @@
                     }
                     
                     // Manejar radios: Solo queremos el valor del radio que está marcado
+                    // Aquí es donde se asegura que tiene_dependientes (con valor 'no') se incluya si es el check.
                     if (element.type === 'radio') {
                         if (element.checked) {
                             formDataObject[element.name] = element.value;
