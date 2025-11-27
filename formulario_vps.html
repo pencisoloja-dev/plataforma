@@ -1292,130 +1292,141 @@
         }
 
 
-        async function handleFormSubmit(e) {
-            e.preventDefault();
-            
-            // 1. Validar el último paso
-            if (currentStep !== totalSteps) {
-                // Esto solo debería pasar si el usuario intenta hacer submit antes de llegar al paso final.
-                if (!validateStep(currentStep)) return;
-            } else if (!validateStep(currentStep)) {
-                 // Si la validación del último paso falla (Paso 6)
+       async function handleFormSubmit(e) {
+    e.preventDefault();
+    
+    // 1. Validar todos los pasos antes de enviar
+    let allStepsValid = true;
+    
+    // Validar todos los pasos del 1 al 6
+    for (let step = 1; step <= totalSteps; step++) {
+        if (!validateStep(step)) {
+            allStepsValid = false;
+            // Mostrar el paso que falló
+            currentStep = step;
+            showStep(currentStep);
+            showMessage('Por favor, completa todos los campos obligatorios en todos los pasos antes de enviar.', true);
+            window.scrollTo(0, 0);
+            break;
+        }
+    }
+    
+    if (!allStepsValid) {
+        return;
+    }
+
+    showMessage('Enviando formulario, por favor espera...', false);
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Enviando...';
+    
+    try {
+        // 1. Recopilar datos del formulario y metadatos
+        const formDataObject = {};
+        
+        // Recolectar todos los campos de texto, select y radio
+        const formElements = form.querySelectorAll('input, select, textarea');
+        
+        formElements.forEach(element => {
+            if (!element.name || element.type === 'file' || element.disabled) {
+                return; // Ignorar elementos sin nombre, archivos y deshabilitados
+            }
+
+            // Ignorar checkboxes y radios no seleccionados, y campos manejados por bloques estructurados
+            if (element.type === 'checkbox' && !element.checked) {
                 return;
             }
-
-            showMessage('Enviando formulario, por favor espera...', false);
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Enviando...';
+            if (element.type === 'radio' && !element.checked) {
+                return;
+            }
             
+            // Excluir campos que se manejan por bloques estructurados (como montos, descripciones, y grupos de checkbox)
+            if (element.name.startsWith('monto_') || element.name === 'descripcion_otros_gastos' || element.name.includes('checkbox') || element.name === 'tipo_ingreso') {
+                 return;
+            }
+            
+            formDataObject[element.name] = element.value;
+        });
+        
+
+        // Procesar arrays y estructuras complejas (Gastos, Créditos, Cónyuge)
+        const rawFormData = new FormData(form);
+        formDataObject.tipo_ingreso = rawFormData.getAll('tipo_ingreso');
+        formDataObject.gastos_detallados = getGastosDetallados();
+
+        // Recopilar créditos y deducciones simples
+        formDataObject.creditos = {
+            hipoteca: rawFormData.get('credito_hipoteca') === 'si',
+            estudios: rawFormData.get('credito_estudios') === 'si',
+            seguro_salud: rawFormData.get('credito_seguro_salud') === 'si',
+            recibio_1099r: rawFormData.get('recibio_1099r') === 'si',
+            otro_credito: rawFormData.get('otro_credito_checkbox') === 'otro' ? rawFormData.get('descripcion_otro_credito') : null,
+        };
+        
+        // Procesar datos del cónyuge (si aplica)
+        formDataObject.conyuge = formDataObject.estado_civil === 'casado_juntos' ? {
+            nombre: rawFormData.get('conyuge_nombre'),
+            fecha_nac: rawFormData.get('conyuge_fecha_nac'),
+            ssn_itin: rawFormData.get('conyuge_ssn')
+        } : null;
+        
+        formDataObject.tiene_dependientes = rawFormData.get('tiene_dependientes') === 'si';
+        formDataObject.dependientes = []; // No hay datos de dependientes que enviar
+
+
+        // 2. Preparar FormData para el envío (¡Uso de un nuevo FormData para archivos!)
+        const submissionFormData = new FormData();
+        
+        // Añadir el objeto JSON de datos como un string (clave: formData)
+        submissionFormData.append('formData', JSON.stringify(formDataObject));
+        
+        // Añadir un ID de usuario simple (clave: userId)
+        const userId = formDataObject.ssn_itin || 'user-' + Date.now();
+        submissionFormData.append('userId', userId);
+
+        // 3. AÑADIR ARCHIVOS ACUMULADOS DESDE LA MEMORIA
+        for (const inputId in accumulatedFiles) {
+            const files = accumulatedFiles[inputId];
+            let prefix = inputId.replace('files_', ''); 
+
+            files.forEach(file => {
+                // Adjuntar cada archivo con la clave 'files' para que Multer lo intercepte
+                submissionFormData.append('files', file, `${prefix}-${file.name}`);
+            });
+        }
+
+
+        // 4. Integración del Backend
+        const response = await fetch('/api/submit-form', {
+            method: 'POST',
+            body: submissionFormData,
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
             try {
-                // 1. Recopilar datos del formulario y metadatos
-                const formDataObject = {};
-                
-                // Recolectar todos los campos de texto, select y radio
-                const formElements = form.querySelectorAll('input, select, textarea');
-                
-                formElements.forEach(element => {
-                    if (!element.name || element.type === 'file' || element.disabled) {
-                        return; // Ignorar elementos sin nombre, archivos y deshabilitados
-                    }
-
-                    // Ignorar checkboxes y radios no seleccionados, y campos manejados por bloques estructurados
-                    if (element.type === 'checkbox' && !element.checked) {
-                        return;
-                    }
-                    if (element.type === 'radio' && !element.checked) {
-                        return;
-                    }
-                    
-                    // Excluir campos que se manejan por bloques estructurados (como montos, descripciones, y grupos de checkbox)
-                    if (element.name.startsWith('monto_') || element.name === 'descripcion_otros_gastos' || element.name.includes('checkbox') || element.name === 'tipo_ingreso') {
-                         return;
-                    }
-                    
-                    formDataObject[element.name] = element.value;
-                });
-                
-
-                // Procesar arrays y estructuras complejas (Gastos, Créditos, Cónyuge)
-                const rawFormData = new FormData(form);
-                formDataObject.tipo_ingreso = rawFormData.getAll('tipo_ingreso');
-                formDataObject.gastos_detallados = getGastosDetallados();
-
-                // Recopilar créditos y deducciones simples
-                formDataObject.creditos = {
-                    hipoteca: rawFormData.get('credito_hipoteca') === 'si',
-                    estudios: rawFormData.get('credito_estudios') === 'si',
-                    seguro_salud: rawFormData.get('credito_seguro_salud') === 'si',
-                    recibio_1099r: rawFormData.get('recibio_1099r') === 'si',
-                    otro_credito: rawFormData.get('otro_credito_checkbox') === 'otro' ? rawFormData.get('descripcion_otro_credito') : null,
-                };
-                
-                // Procesar datos del cónyuge (si aplica)
-                formDataObject.conyuge = formDataObject.estado_civil === 'casado_juntos' ? {
-                    nombre: rawFormData.get('conyuge_nombre'),
-                    fecha_nac: rawFormData.get('conyuge_fecha_nac'),
-                    ssn_itin: rawFormData.get('conyuge_ssn')
-                } : null;
-                
-                formDataObject.tiene_dependientes = rawFormData.get('tiene_dependientes') === 'si';
-                formDataObject.dependientes = []; // No hay datos de dependientes que enviar
-
-
-                // 2. Preparar FormData para el envío (¡Uso de un nuevo FormData para archivos!)
-                const submissionFormData = new FormData();
-                
-                // Añadir el objeto JSON de datos como un string (clave: formData)
-                submissionFormData.append('formData', JSON.stringify(formDataObject));
-                
-                // Añadir un ID de usuario simple (clave: userId)
-                const userId = formDataObject.ssn_itin || 'user-' + Date.now();
-                submissionFormData.append('userId', userId);
-
-                // 3. AÑADIR ARCHIVOS ACUMULADOS DESDE LA MEMORIA
-                for (const inputId in accumulatedFiles) {
-                    const files = accumulatedFiles[inputId];
-                    let prefix = inputId.replace('files_', ''); 
-
-                    files.forEach(file => {
-                        // Adjuntar cada archivo con la clave 'files' para que Multer lo intercepte
-                        submissionFormData.append('files', file, `${prefix}-${file.name}`);
-                    });
-                }
-
-
-                // 4. Integración del Backend
-                const response = await fetch('/api/submit-form', {
-                    method: 'POST',
-                    body: submissionFormData,
-                });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    try {
-                        const errorData = JSON.parse(errorText);
-                         throw new Error(errorData.message || `Error en el servidor: ${response.status}`);
-                    } catch {
-                         throw new Error(`Error en el servidor: ${response.status} - ${errorText.substring(0, 100)}...`);
-                    }
-                }
-
-                // 5. Éxito
-                showMessage('Formulario enviado con éxito.', false);
-                formContainer.style.display = 'none';
-                document.getElementById('prevBtn').style.display = 'none';
-                document.getElementById('nextBtn').style.display = 'none';
-                document.getElementById('submitBtn').style.display = 'none';
-                document.getElementById('progressBar').style.display = 'none';
-                confirmationSection.style.display = 'block';
-
-            } catch (error) {
-                console.error('Error al enviar el formulario:', error);
-                showMessage(`Error: ${error.message}. Por favor, inténtalo de nuevo.`, true);
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Enviar Formulario';
+                const errorData = JSON.parse(errorText);
+                 throw new Error(errorData.message || `Error en el servidor: ${response.status}`);
+            } catch {
+                 throw new Error(`Error en el servidor: ${response.status} - ${errorText.substring(0, 100)}...`);
             }
         }
+
+        // 5. Éxito
+        showMessage('Formulario enviado con éxito.', false);
+        formContainer.style.display = 'none';
+        document.getElementById('prevBtn').style.display = 'none';
+        document.getElementById('nextBtn').style.display = 'none';
+        document.getElementById('submitBtn').style.display = 'none';
+        document.getElementById('progressBar').style.display = 'none';
+        confirmationSection.style.display = 'block';
+
+    } catch (error) {
+        console.error('Error al enviar el formulario:', error);
+        showMessage(`Error: ${error.message}. Por favor, inténtalo de nuevo.`, true);
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Enviar Formulario';
+    }
+}
 
         form.addEventListener('submit', handleFormSubmit);
 
@@ -1429,3 +1440,4 @@
 </body>
 
 </html>
+
