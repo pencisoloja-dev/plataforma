@@ -1394,6 +1394,12 @@
                     });
                 }
 
+                // 🛑 DIAGNÓSTICO FINAL (Se puede comentar después de la prueba exitosa)
+                console.log('--- DIAGNÓSTICO ENVÍO ---');
+                console.log('JSON de datos:', JSON.stringify(formDataObject, null, 2));
+                console.log('Archivos adjuntos (en memoria):', submissionFormData.getAll('files').map(f => f.name));
+                console.log('--------------------------');
+
 
                 // 4. Integración del Backend
                 const response = await fetch('/api/submit-form', {
