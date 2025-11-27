@@ -1313,35 +1313,49 @@
                 // 1. Recopilar datos del formulario y metadatos
                 const formDataObject = {};
                 
-                // Recolectar todos los campos de texto, select y radio (usando form.elements para mejor compatibilidad)
-                const formElements = form.elements;
+                // Usamos FormData para obtener los valores de forma nativa
                 const rawFormData = new FormData(form);
                 
-                Array.from(formElements).forEach(element => {
+                // 🛑 CORRECCIÓN CLAVE: Recolección de datos de texto y radio/checkbox
+                // Iteramos sobre form.elements para garantizar que los campos no seleccionados
+                // pero con valor por defecto (como tiene_dependientes='no') se capturen.
+                Array.from(form.elements).forEach(element => {
                     if (!element.name || element.type === 'file' || element.disabled) {
                         return;
                     }
-
-                    // Ignorar checkboxes y radios no seleccionados, y campos manejados por bloques estructurados
-                    if ((element.type === 'checkbox' || element.type === 'radio') && !element.checked) {
+                    
+                    // Manejar radios: Solo queremos el valor del radio que está marcado
+                    if (element.type === 'radio') {
+                        if (element.checked) {
+                            formDataObject[element.name] = element.value;
+                        }
                         return;
                     }
                     
-                    // Excluir campos que se manejan por bloques estructurados
-                    if (element.name.startsWith('monto_') || element.name === 'descripcion_otros_gastos' || element.name.includes('checkbox') || element.name === 'tipo_ingreso') {
+                    // Manejar checkboxes: rawFormData.getAll se usa después para los arrays
+                    if (element.type === 'checkbox') {
+                         return; // Se manejan por estructuras o rawFormData.getAll
+                    }
+
+                    // Excluir campos que se manejan por bloques estructurados (montos y descripciones)
+                    if (element.name.startsWith('monto_') || element.name === 'descripcion_otros_gastos') {
                          return;
                     }
-                    
+
+                    // Capturar todos los demás campos de texto/select/radio seleccionado
                     formDataObject[element.name] = element.value;
                 });
                 
 
                 // Procesar arrays y estructuras complejas (Gastos, Créditos, Cónyuge)
                 
+                // Array de ingresos (checkboxes)
                 formDataObject.tipo_ingreso = rawFormData.getAll('tipo_ingreso');
+                // Gastos detallados (montos y descripciones)
                 formDataObject.gastos_detallados = getGastosDetallados();
 
                 // Recopilar créditos y deducciones simples
+                // Usamos rawFormData.get para obtener el valor del radio/checkbox
                 formDataObject.creditos = {
                     hipoteca: rawFormData.get('credito_hipoteca') === 'si',
                     estudios: rawFormData.get('credito_estudios') === 'si',
@@ -1357,7 +1371,7 @@
                     ssn_itin: rawFormData.get('conyuge_ssn')
                 } : null;
                 
-                formDataObject.tiene_dependientes = rawFormData.get('tiene_dependientes') === 'si';
+                // Se asegura que tiene_dependientes esté en formDataObject (capturado por el bucle anterior)
                 formDataObject.dependientes = []; // No hay datos de dependientes que enviar
 
 
@@ -1368,9 +1382,8 @@
                 submissionFormData.append('formData', JSON.stringify(formDataObject));
                 
                 // Añadir un ID de usuario simple (clave: userId)
-                // Usamos el ID para el backend
                 const userId = formDataObject.ssn_itin || 'user-' + Date.now();
-                submissionFormData.append('userId', userId); // <-- Esta clave es usada en Multer
+                submissionFormData.append('userId', userId); // <-- Clave utilizada por Multer
                 
                 // 3. AÑADIR ARCHIVOS ACUMULADOS DESDE LA MEMORIA
                 for (const inputId in accumulatedFiles) {
