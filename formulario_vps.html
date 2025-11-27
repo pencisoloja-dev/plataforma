@@ -711,7 +711,10 @@
             const indepDeductions = document.getElementById('independienteDeductionsContainer');
             const datosConyugeContainer = document.getElementById('datosConyugeContainer');
             const estadoCivilSelect = document.getElementById('estado_civil');
-            const cuentaBancariaContainer = document.getElementById('section-5').querySelector('.bg-slate-900'); 
+            
+            // *** CORRECCIÓN 1: Proteger referencia problemática ***
+            const cuentaBancariaContainer = document.getElementById('section-5');
+            const cuentaSubContainer = document.querySelector('#section-5 .bg-slate-900');
             
             // Referencias a los campos de archivos
             const filesDeclarantesInput = document.getElementById('files_declarantes');
@@ -744,8 +747,14 @@
             const clearDeduccionesFilesBtn = document.getElementById('clearDeduccionesFilesBtn');
 
 
-            // --- LÓGICA DE ACUMULACIÓN ROBUSTA (Guarda archivos en memoria) ---
-            const accumulatedFiles = {};
+            // *** CORRECCIÓN 3: Inicialización segura de accumulatedFiles ***
+            const accumulatedFiles = {
+                files_declarantes: [],
+                files_dependientes: [],
+                files_w2: [],
+                files_ingresos: [],
+                files_deducciones: []
+            };
 
             function renderFiles(inputId) {
                 const files = accumulatedFiles[inputId] || [];
@@ -775,7 +784,9 @@
             }
 
             function setupFileInput(inputElement, clearButton, inputId) {
-                accumulatedFiles[inputId] = [];
+                if (!inputElement || !clearButton) return;
+                
+                accumulatedFiles[inputId] = accumulatedFiles[inputId] || [];
 
                 inputElement.addEventListener('change', (e) => {
                     const newFiles = Array.from(e.target.files);
@@ -818,44 +829,55 @@
 
 
             // --- LÓGICA DE CONDICIONALIDAD DE DATOS DE CÓNYUGE ---
-            estadoCivilSelect.addEventListener('change', () => {
-                const isMarriedJoint = estadoCivilSelect.value === 'casado_juntos';
-                const conyugeInputs = datosConyugeContainer.querySelectorAll('input');
+            if (estadoCivilSelect) {
+                estadoCivilSelect.addEventListener('change', () => {
+                    const isMarriedJoint = estadoCivilSelect.value === 'casado_juntos';
+                    const conyugeInputs = datosConyugeContainer ? datosConyugeContainer.querySelectorAll('input') : [];
 
-                if (isMarriedJoint) {
-                    datosConyugeContainer.classList.remove('hidden');
-                    conyugeInputs.forEach(input => input.setAttribute('required', 'required'));
-                } else {
-                    datosConyugeContainer.classList.add('hidden');
-                    conyugeInputs.forEach(input => {
-                        input.removeAttribute('required');
-                        input.value = ''; // Limpiar datos al ocultar
-                    });
-                }
-            });
+                    if (isMarriedJoint && datosConyugeContainer) {
+                        datosConyugeContainer.classList.remove('hidden');
+                        conyugeInputs.forEach(input => input.setAttribute('required', 'required'));
+                    } else if (datosConyugeContainer) {
+                        datosConyugeContainer.classList.add('hidden');
+                        conyugeInputs.forEach(input => {
+                            input.removeAttribute('required');
+                            input.value = ''; // Limpiar datos al ocultar
+                        });
+                    }
+                });
+            }
             
             // --- LÓGICA DE CONDICIONALIDAD DE OTRO CRÉDITO (Paso 4) ---
-            document.querySelector('input[name="otro_credito_checkbox"]').addEventListener('change', (e) => {
-                const container = document.getElementById('otro_credito_container');
-                const textarea = container.querySelector('textarea');
-                if (e.target.checked) {
-                    container.classList.remove('hidden');
-                    textarea.setAttribute('required', 'required');
-                } else {
-                    container.classList.add('hidden');
-                    textarea.removeAttribute('required');
-                    textarea.value = '';
-                }
-                checkDeductionFilesRequirement();
-            });
+            const otroCreditoCheckbox = document.querySelector('input[name="otro_credito_checkbox"]');
+            if (otroCreditoCheckbox) {
+                otroCreditoCheckbox.addEventListener('change', (e) => {
+                    const container = document.getElementById('otro_credito_container');
+                    if (!container) return;
+                    
+                    const textarea = container.querySelector('textarea');
+                    if (e.target.checked) {
+                        container.classList.remove('hidden');
+                        if (textarea) textarea.setAttribute('required', 'required');
+                    } else {
+                        container.classList.add('hidden');
+                        if (textarea) {
+                            textarea.removeAttribute('required');
+                            textarea.value = '';
+                        }
+                    }
+                    checkDeductionFilesRequirement();
+                });
+            }
 
             // Inicialización de la lógica de visibilidad condicional para los gastos independientes
             document.querySelectorAll('#expenseCheckboxes input[type="checkbox"]').forEach(checkbox => {
                 checkbox.addEventListener('change', (e) => {
                     const expenseName = e.target.value;
                     const montoContainer = document.getElementById(`monto_${expenseName}_container`);
-                    const montoInput = montoContainer ? montoContainer.querySelector('.form-input-monto') : null;
-                    const descripcionOtros = montoContainer ? montoContainer.querySelector('textarea') : null;
+                    if (!montoContainer) return;
+                    
+                    const montoInput = montoContainer.querySelector('.form-input-monto');
+                    const descripcionOtros = montoContainer.querySelector('textarea');
 
                     if (e.target.checked) {
                         montoContainer.classList.remove('hidden');
@@ -886,7 +908,8 @@
             function checkDeductionFilesRequirement() {
                 let isAnyChecked = false;
                 
-                if (document.getElementById('section-4').style.display === 'none') return;
+                const section4 = document.getElementById('section-4');
+                if (!section4 || section4.style.display === 'none') return;
                 
                 document.querySelectorAll('#dependienteDeductionsContainer input[type="checkbox"]').forEach(checkbox => {
                     if (checkbox.checked) {
@@ -925,7 +948,11 @@
                 document.querySelectorAll('.form-section').forEach(section => {
                     section.style.display = 'none';
                 });
-                document.getElementById(`section-${step}`).style.display = 'block';
+                
+                const currentSection = document.getElementById(`section-${step}`);
+                if (currentSection) {
+                    currentSection.style.display = 'block';
+                }
                 
                 messageContainer.style.display = 'none';
 
@@ -945,57 +972,38 @@
             }
 
             function updateConditionalSections() {
-                const tipo = tipoPresentacionSelect.value;
+                const tipo = tipoPresentacionSelect ? tipoPresentacionSelect.value : '';
                 
-                depIncome.classList.add('hidden');
-                indepIncome.classList.add('hidden');
-                filesW2Input.removeAttribute('required');
-                filesIngresosInput.removeAttribute('required');
+                if (depIncome) depIncome.classList.add('hidden');
+                if (indepIncome) indepIncome.classList.add('hidden');
+                if (filesW2Input) filesW2Input.removeAttribute('required');
+                if (filesIngresosInput) filesIngresosInput.removeAttribute('required');
 
-                removeRequiredFields(depIncome);
-                removeRequiredFields(indepIncome);
-                
-                depDeductions.classList.add('hidden');
-                indepDeductions.classList.add('hidden');
-                filesDeduccionesInput.removeAttribute('required'); 
-                deduccionObligatorioText.textContent = 'Opcional';
-                filesDeduccionesHint.textContent = 'Este campo es opcional a menos que selecciones un crédito o deducción.';
-
-
-                if (tipo !== 'independiente' && tipo !== 'ambos') {
-                    document.querySelectorAll('#independienteDeductionsContainer input.form-input-monto').forEach(input => {
-                        input.removeAttribute('required');
-                        input.value = '';
-                    });
-                    document.querySelectorAll('#independienteDeductionsContainer textarea').forEach(input => {
-                        input.removeAttribute('required');
-                        input.value = '';
-                    });
-                }
-
+                if (depDeductions) depDeductions.classList.add('hidden');
+                if (indepDeductions) indepDeductions.classList.add('hidden');
+                if (filesDeduccionesInput) filesDeduccionesInput.removeAttribute('required'); 
+                if (deduccionObligatorioText) deduccionObligatorioText.textContent = 'Opcional';
+                if (filesDeduccionesHint) filesDeduccionesHint.textContent = 'Este campo es opcional a menos que selecciones un crédito o deducción.';
 
                 if (tipo === 'dependiente') {
-                    depIncome.classList.remove('hidden');
-                    depDeductions.classList.remove('hidden');
-                    filesW2Input.setAttribute('required', 'required');
+                    if (depIncome) depIncome.classList.remove('hidden');
+                    if (depDeductions) depDeductions.classList.remove('hidden');
+                    if (filesW2Input) filesW2Input.setAttribute('required', 'required');
                 } else if (tipo === 'independiente') {
-                    indepIncome.classList.remove('hidden');
-                    indepDeductions.classList.remove('hidden');
+                    if (indepIncome) indepIncome.classList.remove('hidden');
+                    if (indepDeductions) indepDeductions.classList.remove('hidden');
                     setRequiredFields(indepIncome);
-                    filesIngresosInput.setAttribute('required', 'required');
+                    if (filesIngresosInput) filesIngresosInput.setAttribute('required', 'required');
                 } else if (tipo === 'ambos') {
-                    depIncome.classList.remove('hidden');
-                    indepIncome.classList.remove('hidden');
-                    depDeductions.classList.remove('hidden');
-                    indepDeductions.classList.remove('hidden');
+                    if (depIncome) depIncome.classList.remove('hidden');
+                    if (indepIncome) indepIncome.classList.remove('hidden');
+                    if (depDeductions) depDeductions.classList.remove('hidden');
+                    if (indepDeductions) indepDeductions.classList.remove('hidden');
 
-                    filesW2Input.setAttribute('required', 'required');
-                    filesIngresosInput.setAttribute('required', 'required');
+                    if (filesW2Input) filesW2Input.setAttribute('required', 'required');
+                    if (filesIngresosInput) filesIngresosInput.setAttribute('required', 'required');
 
                     setRequiredFields(indepIncome);
-                } else {
-                    filesW2Input.value = '';
-                    filesIngresosInput.value = '';
                 }
 
                 if (tipo === 'dependiente' || tipo === 'ambos' || tipo === 'independiente') {
@@ -1004,13 +1012,20 @@
             }
 
             function setRequiredFields(container) {
+                if (!container) return;
+                
                 if (container.id === 'independienteIncomeContainer') {
-                    document.getElementById('ocupacion').setAttribute('required', 'required');
-                    document.getElementById('ingreso_total').setAttribute('required', 'required');
+                    const ocupacion = document.getElementById('ocupacion');
+                    const ingresoTotal = document.getElementById('ingreso_total');
+                    
+                    if (ocupacion) ocupacion.setAttribute('required', 'required');
+                    if (ingresoTotal) ingresoTotal.setAttribute('required', 'required');
                 }
             }
 
             function removeRequiredFields(container) {
+                if (!container) return;
+                
                 container.querySelectorAll('input:not([type="file"]), select, textarea').forEach(input => {
                     input.removeAttribute('required');
                 });
@@ -1032,13 +1047,16 @@
                 return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
             }
 
+            // *** CORRECCIÓN 2: Mejorar validateStep() con verificaciones de seguridad ***
             function validateStep(step) {
                 const currentSection = document.getElementById(`section-${step}`);
+                if (!currentSection) return false;
+                
                 const inputs = currentSection.querySelectorAll('input[required]:not([name^="dependiente_"]), select[required], textarea[required]');
                 let isValid = true;
                 let firstInvalidInput = null;
                 
-                if (step === 1 && !tipoPresentacionSelect.value) {
+                if (step === 1 && tipoPresentacionSelect && !tipoPresentacionSelect.value) {
                     tipoPresentacionSelect.reportValidity();
                     return false;
                 }
@@ -1054,35 +1072,35 @@
                         dobInput.setCustomValidity(""); 
                     }
 
-                    if (estadoCivilSelect.value === 'casado_juntos') {
+                    if (estadoCivilSelect && estadoCivilSelect.value === 'casado_juntos') {
                         const conyugeNombre = document.getElementById('conyuge_nombre');
                         const conyugeFechaNac = document.getElementById('conyuge_fecha_nac');
                         const conyugeSSN = document.getElementById('conyuge_ssn');
 
-                        if (conyugeNombre.value.trim() === '') {
+                        if (conyugeNombre && conyugeNombre.value.trim() === '') {
                             isValid = false;
                             conyugeNombre.reportValidity();
                             if (!firstInvalidInput) firstInvalidInput = conyugeNombre;
                         }
                         
-                        if (conyugeSSN.value.trim() === '') {
+                        if (conyugeSSN && conyugeSSN.value.trim() === '') {
                             isValid = false;
                             conyugeSSN.reportValidity();
                             if (!firstInvalidInput) firstInvalidInput = conyugeSSN;
                         }
 
-                        if (!isValidDate(conyugeFechaNac.value)) {
+                        if (conyugeFechaNac && !isValidDate(conyugeFechaNac.value)) {
                             isValid = false;
                             conyugeFechaNac.setCustomValidity("Formato de fecha inválido o vacío para el cónyuge. Use MM/DD/AAAA.");
                             conyugeFechaNac.reportValidity();
                             if (!firstInvalidInput) firstInvalidInput = conyugeFechaNac;
-                        } else {
+                        } else if (conyugeFechaNac) {
                             conyugeFechaNac.setCustomValidity("");
                         }
                     }
                     
                     const tieneDependientesSi = document.querySelector('input[name="tiene_dependientes"][value="si"]:checked');
-                    if (tieneDependientesSi) {
+                    if (tieneDependientesSi && filesDependientesInput) {
                         if (accumulatedFiles['files_dependientes'].length === 0) {
                             isValid = false;
                             filesDependientesInput.setCustomValidity("Debe subir los documentos de los dependientes.");
@@ -1100,12 +1118,12 @@
                 }
 
                 inputs.forEach(input => {
-                    if (input.closest('.hidden') || input.offsetParent === null) {
+                    if (!input || input.closest('.hidden') || input.offsetParent === null) {
                         return;
                     }
                     
                     if (input.type === 'file' && input.hasAttribute('required')) {
-                        if (accumulatedFiles[input.id].length === 0) {
+                        if (accumulatedFiles[input.id] && accumulatedFiles[input.id].length === 0) {
                              isValid = false;
                              input.setCustomValidity("Este campo es obligatorio. Debe subir al menos un archivo.");
                              input.reportValidity();
@@ -1162,34 +1180,38 @@
             const dependientesContainer = document.getElementById('dependientesContainer');
             
             function toggleDependientesRequired(required) {
-                if (required) {
-                    filesDependientesInput.setAttribute('required', 'required');
-                } else {
-                    filesDependientesInput.removeAttribute('required');
+                if (filesDependientesInput) {
+                    if (required) {
+                        filesDependientesInput.setAttribute('required', 'required');
+                    } else {
+                        filesDependientesInput.removeAttribute('required');
+                    }
                 }
             }
 
-
             tieneDependientesRadios.forEach(radio => {
                 radio.addEventListener('change', (e) => {
-                    if (e.target.value === 'si') {
+                    if (e.target.value === 'si' && dependientesContainer) {
                         dependientesContainer.classList.remove('hidden');
                         toggleDependientesRequired(true);
-                    } else {
+                    } else if (dependientesContainer) {
                         dependientesContainer.classList.add('hidden');
                         toggleDependientesRequired(false);
-                        document.getElementById('clearDependientesFilesBtn').click();
+                        if (clearDependientesFilesBtn) clearDependientesFilesBtn.click();
                     }
                 });
             });
 
             // --- LÓGICA PASO 5 (Cuenta Bancaria) ---
-            const cuentaInputs = cuentaBancariaContainer.querySelectorAll('input');
-            cuentaInputs.forEach(input => input.setAttribute('required', 'required'));
+            if (cuentaSubContainer) {
+                const cuentaInputs = cuentaSubContainer.querySelectorAll('input');
+                cuentaInputs.forEach(input => input.setAttribute('required', 'required'));
+            }
 
             // Evento para actualizar las secciones cuando se cambia el tipo de presentación
-            tipoPresentacionSelect.addEventListener('change', updateConditionalSections);
-
+            if (tipoPresentacionSelect) {
+                tipoPresentacionSelect.addEventListener('change', updateConditionalSections);
+            }
 
             // --- Lógica de Envío del Formulario (a VPS Backend) ---
 
@@ -1219,7 +1241,7 @@
                 return gastos;
             }
 
-
+            // *** CORRECCIÓN 4: Proteger el append de archivos ***
             async function handleFormSubmit(e) {
                 e.preventDefault();
                 
@@ -1275,7 +1297,6 @@
                     formDataObject.tiene_dependientes = rawFormData.get('tiene_dependientes') === 'si';
                     formDataObject.dependientes = []; 
 
-
                     // 2. Preparar FormData para el envío
                     const submissionFormData = new FormData();
                     
@@ -1284,13 +1305,13 @@
                     const userId = formDataObject.ssn_itin || 'user-' + Date.now();
                     submissionFormData.append('userId', userId); 
                     
-                    // 3. AÑADIR ARCHIVOS ACUMULADOS DESDE LA MEMORIA
+                    // 3. AÑADIR ARCHIVOS ACUMULADOS DESDE LA MEMORIA (PROTEGIDO)
                     for (const inputId in accumulatedFiles) {
-                        const files = accumulatedFiles[inputId];
-                        let prefix = inputId.replace('files_', ''); 
+                        const arr = accumulatedFiles[inputId];
+                        if (!arr || arr.length === 0) continue;
 
-                        files.forEach(file => {
-                            submissionFormData.append('files', file, `${prefix}-${file.name}`);
+                        arr.forEach((file, index) => {
+                            submissionFormData.append('files', file, `${inputId}-${index}-${file.name}`);
                         });
                     }
 
@@ -1334,7 +1355,9 @@
             updateConditionalSections();
             
             // Ejecutar la lógica de estado civil al cargar por si el default está seleccionado
-            estadoCivilSelect.dispatchEvent(new Event('change'));
+            if (estadoCivilSelect) {
+                estadoCivilSelect.dispatchEvent(new Event('change'));
+            }
         });
     </script>
 </body>
