@@ -7,6 +7,7 @@ const cors = require('cors');
 const fs = require('fs');
 
 const app = express();
+// Usando process.env.PORT como en su archivo original
 const port = process.env.PORT || 80;
 
 // Configuración de CORS
@@ -94,8 +95,11 @@ const storage = multer.diskStorage({
         cb(null, uploadsDir);
     },
     filename: (req, file, cb) => {
-        const userId = req.body.userId || 'unknown';
+        // CORRECCIÓN: Si userId no está en req.body (por problemas de orden de parseo), 
+        // usamos 'unknown' para evitar errores críticos.
+        const userId = req.body.userId || 'unknown'; 
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        // El nombre original incluye el prefijo (declarantes-, w2-, etc.)
         cb(null, `${userId}-${uniqueSuffix}-${file.originalname}`);
     }
 });
@@ -119,11 +123,18 @@ app.get('/formulario', (req, res) => {
     res.sendFile(path.join(__dirname, 'formulario_vps.html'));
 });
 
-// --- RUTA DE ENVÍO DEL FORMULARIO ---
+// --- RUTA DE ENVÍO DEL FORMULARIO (Multer directo y robusto) ---
 app.post('/api/submit-form', upload.array('files'), async (req, res) => {
     try {
+        // 1. ANTES de parsear, verificamos que req.body.formData exista y sea una cadena.
+        if (!req.body.formData) {
+            console.error('❌ Error: El campo formData no se encontró en el cuerpo de la solicitud.');
+            // Devolver error 400 (Bad Request) al cliente
+            return res.status(400).json({ message: 'Datos de formulario (JSON) faltantes o inválidos.', error: 'No se encontró la clave formData.' });
+        }
+
         const formData = JSON.parse(req.body.formData);
-        const files = req.files || [];
+        const files = req.files || []; // Array de archivos subidos por Multer
 
         const fileUrls = files.map(file => {
             return {
@@ -134,7 +145,7 @@ app.post('/api/submit-form', upload.array('files'), async (req, res) => {
 
         const submission = {
             ...formData,
-            files: fileUrls, // Guardar como array, no como JSON string
+            files: fileUrls,
             submission_date: new Date()
         };
 
@@ -147,8 +158,9 @@ app.post('/api/submit-form', upload.array('files'), async (req, res) => {
         res.status(200).json({ message: 'Formulario enviado con éxito' });
 
     } catch (error) {
-        console.error('❌ Error al guardar en la base de datos:', error);
-        res.status(500).json({ message: 'Error interno del servidor', error: error.message });
+        // Este catch maneja errores de JSON.parse o de MySQL/Validación
+        console.error('❌ Error al procesar o guardar en la base de datos:', error);
+        res.status(500).json({ message: 'Error interno del servidor al procesar datos', error: error.message });
     }
 });
 
@@ -216,4 +228,3 @@ app.listen(port, '0.0.0.0', () => {
     console.log(`PANEL ADMIN: http://0.0.0.0:${port}/`);
     console.log(`FORMULARIO: http://0.0.0.0:${port}/formulario`);
 });
-
