@@ -1,230 +1,186 @@
-require('dotenv').config();
-const express = require('express');
-const mysql = require('mysql2/promise');
-const multer = require('multer');
-const path = require('path');
-const cors = require('cors');
-const fs = require('fs');
+import express from 'express';
+import mysql from 'mysql2/promise';
+import multer from 'multer';
+import path from 'path';
+import cors from 'cors';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
-// Usando process.env.PORT como en su archivo original
-const port = process.env.PORT || 80;
+const PORT = process.env.PORT || 80;
 
-// Configuración de CORS
+// Configuración básica
 app.use(cors());
-
-// Middleware para parsear JSON
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Crear directorio uploads si no existe
-const uploadsDir = '/app/uploads';
+// Crear directorio uploads
+const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-    console.log('Directorio uploads creado');
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log('📁 Directorio uploads creado');
 }
 
-// --- Configuración de Base de Datos ---
+// Configuración de Multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const userId = req.body.userId || 'unknown';
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, `${userId}-${uniqueSuffix}-${file.originalname}`);
+  }
+});
+
+const upload = multer({ storage });
+
+// Configuración de Base de Datos
 const dbConfig = {
-    host: process.env.MYSQLHOST || 'localhost',
-    user: process.env.MYSQLUSER || 'root',
-    password: process.env.MYSQLPASSWORD || '',
-    database: process.env.MYSQLDATABASE || 'taxapp',
-    port: process.env.MYSQLPORT || 3306
+  host: process.env.MYSQLHOST || 'localhost',
+  user: process.env.MYSQLUSER || 'root',
+  password: process.env.MYSQLPASSWORD || '',
+  database: process.env.MYSQLDATABASE || 'taxapp',
+  port: process.env.MYSQLPORT || 3306
 };
 
-console.log('Configuración DB:', {
-    host: dbConfig.host,
-    user: dbConfig.user,
-    database: dbConfig.database,
-    port: dbConfig.port
-});
+// Pool de conexiones
+let pool;
 
-// Crear un pool de conexiones
-const pool = mysql.createPool(dbConfig);
-
-// Verificar conexión y crear base de datos/tabla si no existen
 async function initDatabase() {
-    try {
-        // Primero conectar sin especificar base de datos
-        const initPool = mysql.createPool({
-            host: dbConfig.host,
-            user: dbConfig.user,
-            password: dbConfig.password,
-            port: dbConfig.port
-        });
-
-        const connection = await initPool.getConnection();
-        
-        // Crear base de datos si no existe
-        await connection.query(`CREATE DATABASE IF NOT EXISTS ${dbConfig.database}`);
-        console.log(`✅ Base de datos '${dbConfig.database}' verificada/creada`);
-        
-        // Usar la base de datos
-        await connection.query(`USE ${dbConfig.database}`);
-        
-        // Crear tabla si no existe
-        await connection.query(`
-            CREATE TABLE IF NOT EXISTS submissions (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                data JSON NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-        console.log('✅ Tabla submissions verificada/creada');
-        
-        connection.release();
-        await initPool.end();
-        
-        // Ahora verificar la conexión con el pool principal
-        const testConnection = await pool.getConnection();
-        console.log('✅ Conexión a MySQL exitosa');
-        testConnection.release();
-        
-    } catch (err) {
-        console.error('❌ Error inicializando base de datos:', err.message);
-        process.exit(1); // Salir si no se puede conectar
-    }
+  try {
+    // Crear pool de conexión
+    pool = mysql.createPool(dbConfig);
+    
+    // Verificar conexión
+    const connection = await pool.getConnection();
+    console.log('✅ Conectado a MySQL');
+    
+    // Crear tabla si no existe
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS submissions (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        data JSON NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('✅ Tabla submissions verificada');
+    
+    connection.release();
+  } catch (error) {
+    console.error('❌ Error con la base de datos:', error.message);
+    process.exit(1);
+  }
 }
 
-// Inicializar base de datos al arrancar
-initDatabase();
-
-// --- Configuración de Subida de Archivos (Multer) ---
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadsDir);
-    },
-    filename: (req, file, cb) => {
-        // CORRECCIÓN: Si userId no está en req.body (por problemas de orden de parseo), 
-        // usamos 'unknown' para evitar errores críticos.
-        const userId = req.body.userId || 'unknown'; 
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        // El nombre original incluye el prefijo (declarantes-, w2-, etc.)
-        cb(null, `${userId}-${uniqueSuffix}-${file.originalname}`);
-    }
-});
-
-const upload = multer({ storage: storage });
-
-// --- Rutas Estáticas ---
+// Middleware para servir archivos estáticos
 app.use('/uploads', express.static(uploadsDir));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// --- Health Check (importante para Easypanel) ---
+// Health check
 app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// --- Rutas de Páginas HTML ---
+// Rutas de páginas
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'admin.html'));
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
 app.get('/formulario', (req, res) => {
-    res.sendFile(path.join(__dirname, 'formulario_vps.html'));
+  res.sendFile(path.join(__dirname, 'public', 'formulario.html'));
 });
 
-// --- RUTA DE ENVÍO DEL FORMULARIO (Multer directo y robusto) ---
+// API: Enviar formulario
 app.post('/api/submit-form', upload.array('files'), async (req, res) => {
-    try {
-        // 1. ANTES de parsear, verificamos que req.body.formData exista y sea una cadena.
-        if (!req.body.formData) {
-            console.error('❌ Error: El campo formData no se encontró en el cuerpo de la solicitud.');
-            // Devolver error 400 (Bad Request) al cliente
-            return res.status(400).json({ message: 'Datos de formulario (JSON) faltantes o inválidos.', error: 'No se encontró la clave formData.' });
-        }
-
-        const formData = JSON.parse(req.body.formData);
-        const files = req.files || []; // Array de archivos subidos por Multer
-
-        const fileUrls = files.map(file => {
-            return {
-                originalName: file.originalname,
-                url: `/uploads/${file.filename}`
-            };
-        });
-
-        const submission = {
-            ...formData,
-            files: fileUrls,
-            submission_date: new Date()
-        };
-
-        const connection = await pool.getConnection();
-        await connection.query('INSERT INTO submissions (data) VALUES (?)', [JSON.stringify(submission)]);
-        connection.release();
-
-        console.log('✅ Formulario guardado exitosamente');
-
-        res.status(200).json({ message: 'Formulario enviado con éxito' });
-
-    } catch (error) {
-        // Este catch maneja errores de JSON.parse o de MySQL/Validación
-        console.error('❌ Error al procesar o guardar en la base de datos:', error);
-        res.status(500).json({ message: 'Error interno del servidor al procesar datos', error: error.message });
+  try {
+    console.log('📥 Recibiendo envío de formulario');
+    
+    if (!req.body.formData) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Datos del formulario faltantes' 
+      });
     }
+
+    const formData = JSON.parse(req.body.formData);
+    const files = req.files || [];
+
+    // Preparar datos para guardar
+    const submissionData = {
+      ...formData,
+      files: files.map(file => ({
+        originalName: file.originalname,
+        filename: file.filename,
+        url: `/uploads/${file.filename}`
+      })),
+      submitted_at: new Date().toISOString(),
+      ip: req.ip
+    };
+
+    // Guardar en base de datos
+    const connection = await pool.getConnection();
+    await connection.execute(
+      'INSERT INTO submissions (data) VALUES (?)',
+      [JSON.stringify(submissionData)]
+    );
+    connection.release();
+
+    console.log('✅ Formulario guardado exitosamente');
+    
+    res.json({ 
+      success: true, 
+      message: 'Formulario enviado correctamente',
+      submissionId: submissionData.submission_id
+    });
+
+  } catch (error) {
+    console.error('❌ Error al procesar formulario:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor',
+      error: error.message 
+    });
+  }
 });
 
-// API para OBTENER los envíos (para admin.html)
-app.get('/api/get-submissions', async (req, res) => {
-    try {
-        const connection = await pool.getConnection();
-        const [rows] = await connection.query('SELECT * FROM submissions ORDER BY created_at DESC');
-        connection.release();
+// API: Obtener todos los envíos
+app.get('/api/submissions', async (req, res) => {
+  try {
+    const connection = await pool.getConnection();
+    const [rows] = await connection.execute(`
+      SELECT id, data, created_at 
+      FROM submissions 
+      ORDER BY created_at DESC
+    `);
+    connection.release();
 
-        // Mapear los resultados para parsear el JSON de la columna 'data'
-        const submissions = rows.map(row => {
-            let parsedData;
-            try {
-                // 1. Parsear el JSON principal
-                if (typeof row.data === 'string') {
-                    parsedData = JSON.parse(row.data);
-                } else {
-                    parsedData = row.data; // Ya es un objeto
-                }
-            } catch (e) {
-                console.warn(`❌ Error parseando JSON de fila ID ${row.id}: ${e.message}. Fila ignorada.`);
-                return null; // Devolver null para filtrar esta fila
-            }
+    const submissions = rows.map(row => ({
+      id: row.id,
+      ...JSON.parse(row.data),
+      created_at: row.created_at
+    }));
 
-            // 2. ¡IMPORTANTE! Manejar 'files' que puede ser string (formato antiguo) o array (formato nuevo)
-            try {
-                if (parsedData.files && typeof parsedData.files === 'string') {
-                    // Es formato antiguo (string anidado), lo parseamos
-                    parsedData.files = JSON.parse(parsedData.files);
-                } else if (!parsedData.files) {
-                    // Si no existe, lo inicializamos como array vacío
-                    parsedData.files = [];
-                }
-                // Si ya es un array (formato nuevo), no hacemos nada.
-            } catch (e) {
-                console.warn(`⚠️ No se pudo parsear 'files' para submission ID ${row.id}, continuando...`);
-                parsedData.files = []; // Poner un valor por defecto
-            }
-
-            return {
-                id: row.id,
-                ...parsedData,
-                // Asegurarse de que la fecha de envío esté (si no, usar la de la DB)
-                submission_date: parsedData.submission_date || row.created_at 
-            };
-        }).filter(row => row !== null); // Filtrar las filas que fallaron al parsear
-
-        res.status(200).json(submissions);
-
-    } catch (error) {
-        console.error('❌ Error al obtener datos de la base de datos:', error);
-        res.status(500).json({ message: 'Error interno del servidor', error: error.message });
-    }
+    res.json({ success: true, data: submissions });
+    
+  } catch (error) {
+    console.error('❌ Error obteniendo submissions:', error);
+    res.status(500).json({ success: false, message: 'Error al obtener datos' });
+  }
 });
 
-// Manejo de rutas no encontradas
-app.use((req, res) => {
-    res.status(404).json({ message: 'Ruta no encontrada' });
-});
+// Iniciar servidor
+async function startServer() {
+  await initDatabase();
+  
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Servidor ejecutándose en http://0.0.0.0:${PORT}`);
+    console.log(`📋 Formulario: http://0.0.0.0:${PORT}/formulario`);
+    console.log(`⚙️  Admin: http://0.0.0.0:${PORT}/`);
+  });
+}
 
-// Iniciar el servidor en 0.0.0.0 para Docker
-app.listen(port, '0.0.0.0', () => {
-    console.log(`🚀 Servidor iniciado en http://0.0.0.0:${port}`);
-    console.log(`PANEL ADMIN: http://0.0.0.0:${port}/`);
-    console.log(`FORMULARIO: http://0.0.0.0:${port}/formulario`);
-});
+startServer().catch(console.error);
