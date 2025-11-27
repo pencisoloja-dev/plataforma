@@ -1,4 +1,4 @@
-FROM node:16-alpine
+FROM node:18-alpine
 
 RUN apk add --no-cache curl
 
@@ -6,7 +6,9 @@ WORKDIR /app
 
 COPY package.json ./
 
-RUN npm install --production --no-audit --no-fund --legacy-peer-deps --no-optional
+# Limpiar cache y instalar
+RUN npm cache clean --force && \
+    npm install --production --no-audit --no-fund
 
 COPY . .
 
