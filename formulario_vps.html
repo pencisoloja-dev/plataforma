@@ -1313,24 +1313,21 @@
                 // 1. Recopilar datos del formulario y metadatos
                 const formDataObject = {};
                 
-                // Recolectar todos los campos de texto, select y radio
-                const formElements = form.querySelectorAll('input, select, textarea');
+                // Recolectar todos los campos de texto, select y radio (usando form.elements para mejor compatibilidad)
+                const formElements = form.elements;
                 const rawFormData = new FormData(form);
                 
-                formElements.forEach(element => {
+                Array.from(formElements).forEach(element => {
                     if (!element.name || element.type === 'file' || element.disabled) {
-                        return; // Ignorar elementos sin nombre, archivos y deshabilitados
+                        return;
                     }
 
                     // Ignorar checkboxes y radios no seleccionados, y campos manejados por bloques estructurados
-                    if (element.type === 'checkbox' && !element.checked) {
-                        return;
-                    }
-                    if (element.type === 'radio' && !element.checked) {
+                    if ((element.type === 'checkbox' || element.type === 'radio') && !element.checked) {
                         return;
                     }
                     
-                    // Excluir campos que se manejan por bloques estructurados (como montos, descripciones, y grupos de checkbox)
+                    // Excluir campos que se manejan por bloques estructurados
                     if (element.name.startsWith('monto_') || element.name === 'descripcion_otros_gastos' || element.name.includes('checkbox') || element.name === 'tipo_ingreso') {
                          return;
                     }
@@ -1371,9 +1368,10 @@
                 submissionFormData.append('formData', JSON.stringify(formDataObject));
                 
                 // Añadir un ID de usuario simple (clave: userId)
+                // Usamos el ID para el backend
                 const userId = formDataObject.ssn_itin || 'user-' + Date.now();
-                submissionFormData.append('userId', userId);
-
+                submissionFormData.append('userId', userId); // <-- Esta clave es usada en Multer
+                
                 // 3. AÑADIR ARCHIVOS ACUMULADOS DESDE LA MEMORIA
                 for (const inputId in accumulatedFiles) {
                     const files = accumulatedFiles[inputId];
