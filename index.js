@@ -1,185 +1,422 @@
-import express from 'express';
-import mysql from 'mysql2/promise';
-import multer from 'multer';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import cors from 'cors';
-import dotenv from 'dotenv';
-
-dotenv.config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+require('dotenv').config();
+const express = require('express');
+const mysql = require('mysql2/promise');
+const multer = require('multer');
+const path = require('path');
+const cors = require('cors');
+const fs = require('fs');
 
 const app = express();
-const PORT = process.env.PORT || 80;
+const port = process.env.PORT || 3000;
 
-// Configuración de multer para subida de archivos
+// Configuración de CORS
+app.use(cors());
+
+// Middleware para parsear JSON
+app.use(express.json());
+
+// Crear directorio uploads si no existe
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+    console.log('✅ Directorio uploads creado');
+}
+
+// Configuración de Base de Datos
+const dbConfig = {
+    host: process.env.MYSQLHOST || 'localhost',
+    user: process.env.MYSQLUSER || 'root',
+    password: process.env.MYSQLPASSWORD || '',
+    database: process.env.MYSQLDATABASE || 'taxapp',
+    port: process.env.MYSQLPORT || 3306
+};
+
+console.log('🔧 Configuración DB:', {
+    host: dbConfig.host,
+    user: dbConfig.user,
+    database: dbConfig.database,
+    port: dbConfig.port
+});
+
+// Crear pool de conexiones
+const pool = mysql.createPool(dbConfig);
+
+// ✅ CONFIGURACIÓN OPTIMIZADA DE MULTER PARA MÚLTIPLES ARCHIVOS
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, 'uploads'));
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + '-' + file.originalname);
-  }
+    destination: (req, file, cb) => {
+        cb(null, uploadsDir);
+    },
+    filename: (req, file, cb) => {
+        const userId = req.body.userId || 'unknown';
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const safeName = file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+        cb(null, `${userId}-${uniqueSuffix}-${safeName}`);
+    }
 });
 
 const upload = multer({ 
-  storage: storage,
-  limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB límite
-  }
+    storage: storage,
+    limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB límite
+        files: 20 // Máximo 20 archivos por campo
+    },
+    fileFilter: (req, file, cb) => {
+        // Permitir imágenes y PDFs
+        if (file.mimetype.startsWith('image/') || file.mimetype === 'application/pdf') {
+            cb(null, true);
+        } else {
+            cb(new Error('Solo se permiten imágenes y archivos PDF'), false);
+        }
+    }
 });
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public'));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// ✅ CONFIGURACIÓN DE MÚLTIPLES CAMPOS DE ARCHIVO
+const multiUpload = upload.fields([
+    { name: 'files_declarantes', maxCount: 10 },
+    { name: 'files_dependientes', maxCount: 10 },
+    { name: 'files_w2', maxCount: 5 },
+    { name: 'files_ingresos', maxCount: 10 },
+    { name: 'files_deducciones', maxCount: 10 }
+]);
 
-// Configuración de la base de datos
-const dbConfig = {
-  host: process.env.MYSQLHOST || 'localhost',
-  user: process.env.MYSQLUSER || 'root',
-  password: process.env.MYSQLPASSWORD || '',
-  database: process.env.MYSQLDATABASE || 'plataforma',
-  port: process.env.MYSQLPORT || 3306
-};
+// Inicializar Base de Datos (mantener igual)
+async function initDatabase() {
+    try {
+        const initPool = mysql.createPool({
+            host: dbConfig.host,
+            user: dbConfig.user,
+            password: dbConfig.password,
+            port: dbConfig.port
+        });
 
-let db;
-
-// Conectar a la base de datos
-async function connectDB() {
-  try {
-    db = await mysql.createConnection(dbConfig);
-    console.log('✅ Conectado a MySQL');
-    
-    // Verificar/Crear base de datos y tabla
-    await db.execute(`
-      CREATE TABLE IF NOT EXISTS submissions (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        nombre_completo VARCHAR(255),
-        email VARCHAR(255),
-        telefono VARCHAR(50),
-        mensaje TEXT,
-        archivo VARCHAR(500),
-        fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    console.log('✅ Tabla submissions verificada/creada');
-    
-  } catch (error) {
-    console.error('❌ Error conectando a MySQL:', error);
-    process.exit(1);
-  }
+        const connection = await initPool.getConnection();
+        
+        await connection.query(`CREATE DATABASE IF NOT EXISTS ${dbConfig.database}`);
+        console.log(`✅ Base de datos '${dbConfig.database}' verificada/creada`);
+        
+        await connection.query(`USE ${dbConfig.database}`);
+        
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS submissions (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id VARCHAR(255) NOT NULL,
+                form_data JSON NOT NULL,
+                files_data JSON NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('✅ Tabla submissions verificada/creada');
+        
+        connection.release();
+        await initPool.end();
+        
+        const testConnection = await pool.getConnection();
+        console.log('✅ Conexión a MySQL exitosa');
+        testConnection.release();
+        
+    } catch (err) {
+        console.error('❌ Error inicializando base de datos:', err.message);
+        process.exit(1);
+    }
 }
 
-// Health check endpoint
+// Servir archivos estáticos
+app.use('/uploads', express.static(uploadsDir));
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Health Check
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
+    res.status(200).json({ 
+        status: 'ok', 
+        timestamp: new Date().toISOString(),
+        database: 'connected'
+    });
 });
 
-// Rutas para servir HTML
+// Ruta principal - Servir el formulario
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+    res.sendFile(path.join(__dirname, 'formulario_nuevo.html'));
 });
 
+// Ruta del formulario
 app.get('/formulario', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'formulario.html'));
+    res.sendFile(path.join(__dirname, 'formulario_nuevo.html'));
 });
 
-// API para obtener todas las submissions - NUEVA RUTA
-app.get('/api/get-submissions', async (req, res) => {
-  try {
-    const [rows] = await db.execute('SELECT * FROM submissions ORDER BY id DESC');
-    res.json(rows);
-  } catch (error) {
-    console.error('Error fetching submissions:', error);
-    res.status(500).json({ error: 'Database error' });
-  }
+// Ruta del admin
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin_nuevo.html'));
 });
 
-// API para eliminar submission - NUEVA RUTA
-app.delete('/api/submissions/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    await db.execute('DELETE FROM submissions WHERE id = ?', [id]);
-    res.json({ success: true });
-  } catch (error) {
-    console.error('Error deleting submission:', error);
-    res.status(500).json({ error: 'Delete failed' });
-  }
-});
-
-// API para enviar formulario
-app.post('/api/submit', upload.single('archivo'), async (req, res) => {
-  try {
-    const { nombre, email, telefono, mensaje } = req.body;
-    const archivo = req.file ? req.file.filename : null;
-
-    const [result] = await db.execute(
-      'INSERT INTO submissions (nombre_completo, email, telefono, mensaje, archivo) VALUES (?, ?, ?, ?, ?)',
-      [nombre, email, telefono, mensaje, archivo]
-    );
-
-    res.json({
-      success: true,
-      message: 'Formulario enviado correctamente',
-      id: result.insertId
-    });
-
-  } catch (error) {
-    console.error('Error guardando submission:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al guardar el formulario'
-    });
-  }
-});
-
-// Ruta para obtener submission específica
-app.get('/api/submissions/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const [rows] = await db.execute('SELECT * FROM submissions WHERE id = ?', [id]);
+// ✅✅✅ RUTA OPTIMIZADA PARA MÚLTIPLES ARCHIVOS
+app.post('/api/submit-form', multiUpload, async (req, res) => {
+    console.log('📨 Recibiendo envío de formulario con múltiples archivos...');
     
-    if (rows.length === 0) {
-      return res.status(404).json({ error: 'Submission no encontrada' });
+    try {
+        // Verificar que formData existe
+        if (!req.body.formData) {
+            console.error('❌ Error: formData no encontrado en el cuerpo');
+            return res.status(400).json({ 
+                success: false,
+                message: 'Datos de formulario faltantes',
+                error: 'No se encontró formData en la solicitud'
+            });
+        }
+
+        // Parsear datos del formulario
+        const formData = JSON.parse(req.body.formData);
+        const userId = formData.ssn_itin || 'user-' + Date.now();
+
+        console.log(`📝 Procesando envío para usuario: ${userId}`);
+        
+        // ✅ PROCESAR ARCHIVOS MÚLTIPLES
+        const allFiles = [];
+        const fileCategories = [
+            'files_declarantes',
+            'files_dependientes', 
+            'files_w2',
+            'files_ingresos',
+            'files_deducciones'
+        ];
+
+        fileCategories.forEach(category => {
+            if (req.files && req.files[category]) {
+                console.log(`📁 ${category}: ${req.files[category].length} archivos`);
+                req.files[category].forEach(file => {
+                    allFiles.push({
+                        category: category,
+                        originalName: file.originalname,
+                        filename: file.filename,
+                        url: `/uploads/${file.filename}`,
+                        size: file.size,
+                        mimetype: file.mimetype
+                    });
+                });
+            } else {
+                console.log(`📁 ${category}: 0 archivos`);
+            }
+        });
+
+        console.log(`📊 Total de archivos recibidos: ${allFiles.length}`);
+
+        // Crear objeto de envío completo
+        const submission = {
+            user_id: userId,
+            form_data: formData,
+            files_data: allFiles,
+            submission_date: new Date().toISOString()
+        };
+
+        // Guardar en base de datos
+        const connection = await pool.getConnection();
+        await connection.query(
+            'INSERT INTO submissions (user_id, form_data, files_data) VALUES (?, ?, ?)',
+            [userId, JSON.stringify(formData), JSON.stringify(allFiles)]
+        );
+        connection.release();
+
+        console.log('✅ Formulario guardado exitosamente en la base de datos');
+        console.log(`📊 Usuario: ${userId}`);
+        console.log(`📁 Archivos guardados: ${allFiles.length}`);
+
+        res.status(200).json({ 
+            success: true,
+            message: 'Formulario enviado con éxito',
+            submissionId: userId,
+            filesCount: allFiles.length,
+            fileCategories: fileCategories.reduce((acc, category) => {
+                acc[category] = req.files && req.files[category] ? req.files[category].length : 0;
+                return acc;
+            }, {})
+        });
+
+    } catch (error) {
+        console.error('❌ Error al procesar el formulario:', error);
+        
+        // Limpiar archivos subidos en caso de error
+        if (req.files) {
+            Object.values(req.files).flat().forEach(file => {
+                const filePath = path.join(uploadsDir, file.filename);
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                }
+            });
+        }
+        
+        res.status(500).json({ 
+            success: false,
+            message: 'Error interno del servidor',
+            error: error.message
+        });
+    }
+});
+
+// ✅ API PARA OBTENER ENVÍOS - MEJORADA PARA MÚLTIPLES ARCHIVOS
+app.get('/api/get-submissions', async (req, res) => {
+    try {
+        const connection = await pool.getConnection();
+        const [rows] = await connection.query(`
+            SELECT * FROM submissions 
+            ORDER BY created_at DESC
+        `);
+        connection.release();
+
+        console.log(`📋 Envíos encontrados: ${rows.length}`);
+
+        const submissions = rows.map(row => {
+            try {
+                const formData = typeof row.form_data === 'string' 
+                    ? JSON.parse(row.form_data) 
+                    : row.form_data;
+                
+                const filesData = typeof row.files_data === 'string'
+                    ? JSON.parse(row.files_data)
+                    : row.files_data;
+
+                // Agrupar archivos por categoría para mejor organización
+                const filesByCategory = {};
+                if (Array.isArray(filesData)) {
+                    filesData.forEach(file => {
+                        if (!filesByCategory[file.category]) {
+                            filesByCategory[file.category] = [];
+                        }
+                        filesByCategory[file.category].push(file);
+                    });
+                }
+
+                return {
+                    id: row.id,
+                    user_id: row.user_id,
+                    ...formData,
+                    files: filesData || [],
+                    files_by_category: filesByCategory,
+                    total_files: Array.isArray(filesData) ? filesData.length : 0,
+                    submission_date: formData.submission_date || row.created_at,
+                    created_at: row.created_at
+                };
+            } catch (parseError) {
+                console.warn(`⚠️ Error parseando fila ID ${row.id}:`, parseError.message);
+                return null;
+            }
+        }).filter(row => row !== null);
+
+        res.status(200).json({
+            success: true,
+            count: submissions.length,
+            submissions: submissions
+        });
+
+    } catch (error) {
+        console.error('❌ Error al obtener envíos:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Error al cargar los envíos',
+            error: error.message
+        });
+    }
+});
+
+// ✅ RUTA PARA ELIMINAR ENVÍO - OPTIMIZADA PARA MÚLTIPLES ARCHIVOS
+app.delete('/api/submissions/:id', async (req, res) => {
+    try {
+        const submissionId = req.params.id;
+        const connection = await pool.getConnection();
+        
+        // Obtener información de archivos antes de eliminar
+        const [rows] = await connection.query(
+            'SELECT files_data FROM submissions WHERE id = ?',
+            [submissionId]
+        );
+        
+        if (rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Envío no encontrado' });
+        }
+
+        // Eliminar archivos físicos
+        const filesData = JSON.parse(rows[0].files_data);
+        if (Array.isArray(filesData)) {
+            filesData.forEach(file => {
+                const filePath = path.join(uploadsDir, file.filename);
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                    console.log(`🗑️ Archivo eliminado: ${file.filename}`);
+                }
+            });
+        }
+
+        // Eliminar de la base de datos
+        await connection.query('DELETE FROM submissions WHERE id = ?', [submissionId]);
+        connection.release();
+
+        console.log(`✅ Envío ${submissionId} eliminado con ${filesData.length} archivos`);
+
+        res.status(200).json({ 
+            success: true, 
+            message: 'Envío eliminado correctamente',
+            deletedFiles: filesData.length
+        });
+
+    } catch (error) {
+        console.error('❌ Error eliminando envío:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error al eliminar el envío',
+            error: error.message
+        });
+    }
+});
+
+// Manejo de rutas no encontradas
+app.use('*', (req, res) => {
+    res.status(404).json({ 
+        success: false,
+        message: 'Ruta no encontrada' 
+    });
+});
+
+// Manejo global de errores
+app.use((error, req, res, next) => {
+    console.error('🔥 Error global:', error);
+    
+    if (error instanceof multer.MulterError) {
+        if (error.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({
+                success: false,
+                message: 'Archivo demasiado grande',
+                error: 'El tamaño máximo permitido es 10MB por archivo'
+            });
+        }
+        if (error.code === 'LIMIT_FILE_COUNT') {
+            return res.status(400).json({
+                success: false,
+                message: 'Demasiados archivos',
+                error: 'Se excedió el número máximo de archivos permitidos'
+            });
+        }
     }
     
-    res.json(rows[0]);
-  } catch (error) {
-    console.error('Error fetching submission:', error);
-    res.status(500).json({ error: 'Database error' });
-  }
+    res.status(500).json({ 
+        success: false,
+        message: 'Error interno del servidor',
+        error: process.env.NODE_ENV === 'development' ? error.message : 'Error interno'
+    });
 });
 
-// Iniciar servidor
+// Inicializar e iniciar servidor
 async function startServer() {
-  await connectDB();
-  
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log('\n=================================');
-    console.log('🚀 Servicio iniciado correctamente');
-    console.log(`📍 URL: http://0.0.0.0:${PORT}`);
-    console.log('=================================\n');
-    console.log(`📋 Formulario: http://0.0.0.0:${PORT}/formulario`);
-    console.log(`👨‍💼 Admin: http://0.0.0.0:${PORT}/`);
-    console.log('=================================\n');
-  });
+    await initDatabase();
+    
+    app.listen(port, '0.0.0.0', () => {
+        console.log(`\n🚀 Servidor OPTIMIZADO para múltiples archivos`);
+        console.log(`📍 Puerto: ${port}`);
+        console.log(`📋 FORMULARIO: http://0.0.0.0:${port}/formulario`);
+        console.log(`👨‍💼 ADMIN: http://0.0.0.0:${port}/admin`);
+        console.log(`❤️ HEALTH: http://0.0.0.0:${port}/health`);
+        console.log(`💾 UPLOADS: ${uploadsDir}`);
+        console.log(`🗄️ DATABASE: ${dbConfig.database}@${dbConfig.host}:${dbConfig.port}`);
+        console.log(`📁 MÚLTIPLES ARCHIVOS: ✅ CONFIGURADO`);
+    });
 }
 
-// Manejo de errores no capturados
-process.on('unhandledRejection', (err) => {
-  console.error('Unhandled Rejection:', err);
-  process.exit(1);
-});
-
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err);
-  process.exit(1);
-});
-
-startServer();
+startServer().catch(console.error);
