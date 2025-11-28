@@ -764,23 +764,89 @@
                 }
             });
 
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                if (validateStep(currentStep)) {
-                    showMessage('Enviando formulario...', false);
-                    submitBtn.disabled = true;
-                    submitBtn.textContent = 'Enviando...';
+            // ✅ REEMPLAZA LA FUNCIÓN DE SUBMIT ACTUAL CON ESTA:
 
-                    setTimeout(() => {
-                        formContainer.style.display = 'none';
-                        prevBtn.style.display = 'none';
-                        nextBtn.style.display = 'none';
-                        submitBtn.style.display = 'none';
-                        progressBar.style.display = 'none';
-                        confirmationSection.style.display = 'block';
-                    }, 2000);
+form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    if (validateStep(currentStep)) {
+        showMessage('Enviando formulario...', false);
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Enviando...';
+
+        try {
+            // Crear FormData y agregar todos los archivos acumulados
+            const formData = new FormData();
+            
+            // Agregar datos del formulario
+            const formObject = {};
+            const formElements = form.querySelectorAll('input, select, textarea');
+            formElements.forEach(element => {
+                if (element.name && !element.disabled) {
+                    if (element.type === 'checkbox' || element.type === 'radio') {
+                        if (element.checked) {
+                            if (formObject[element.name]) {
+                                if (!Array.isArray(formObject[element.name])) {
+                                    formObject[element.name] = [formObject[element.name]];
+                                }
+                                formObject[element.name].push(element.value);
+                            } else {
+                                formObject[element.name] = element.value;
+                            }
+                        }
+                    } else {
+                        formObject[element.name] = element.value;
+                    }
                 }
             });
+            
+            formData.append('formData', JSON.stringify(formObject));
+            
+            // Agregar TODOS los archivos acumulados
+            for (const [fieldName, files] of Object.entries(accumulatedFiles)) {
+                files.forEach(file => {
+                    formData.append(fieldName, file);
+                });
+            }
+
+            console.log('📤 Enviando formulario con:', {
+                campos: Object.keys(formObject).length,
+                archivos: Object.entries(accumulatedFiles).reduce((total, [key, files]) => total + files.length, 0)
+            });
+
+            // Enviar al servidor
+            const response = await fetch('/api/submit-form', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                showMessage('✅ Formulario enviado con éxito!', false);
+                
+                // Mostrar confirmación después de un breve delay
+                setTimeout(() => {
+                    formContainer.style.display = 'none';
+                    prevBtn.style.display = 'none';
+                    nextBtn.style.display = 'none';
+                    submitBtn.style.display = 'none';
+                    progressBar.style.display = 'none';
+                    confirmationSection.style.display = 'block';
+                }, 1500);
+                
+            } else {
+                throw new Error(result.message);
+            }
+            
+        } catch (error) {
+            console.error('❌ Error al enviar:', error);
+            showMessage('❌ Error al enviar el formulario: ' + error.message, true);
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Enviar Formulario';
+        }
+    }
+});
 
             // Inicializar
             showStep(currentStep);
