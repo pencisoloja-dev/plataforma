@@ -328,7 +328,51 @@ app.delete('/api/submissions/:id', async (req, res) => {
         });
     }
 });
+// ✅ RUTA PARA LIMPIAR TODOS LOS ENVÍOS Y ARCHIVOS
+app.delete('/api/clean-all', async (req, res) => {
+    try {
+        const connection = await pool.getConnection();
+        
+        // 1. Obtener todos los archivos antes de eliminar
+        const [rows] = await connection.query('SELECT files_data FROM submissions');
+        
+        // 2. Eliminar archivos físicos
+        rows.forEach(row => {
+            try {
+                const filesData = JSON.parse(row.files_data);
+                if (Array.isArray(filesData)) {
+                    filesData.forEach(file => {
+                        const filePath = path.join(uploadsDir, file.filename);
+                        if (fs.existsSync(filePath)) {
+                            fs.unlinkSync(filePath);
+                        }
+                    });
+                }
+            } catch (error) {
+                console.warn('⚠️ Error procesando archivos de un envío:', error.message);
+            }
+        });
 
+        // 3. Eliminar todos los registros de la base de datos
+        await connection.query('DELETE FROM submissions');
+        connection.release();
+
+        console.log('✅ Limpieza completa: Todos los envíos y archivos eliminados');
+        
+        res.status(200).json({ 
+            success: true, 
+            message: `Se eliminaron ${rows.length} envíos y sus archivos` 
+        });
+
+    } catch (error) {
+        console.error('❌ Error en limpieza general:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error al limpiar los datos',
+            error: error.message 
+        });
+    }
+});
 // Manejo de rutas no encontradas
 app.use('*', (req, res) => {
     res.status(404).json({ 
@@ -371,3 +415,4 @@ async function startServer() {
 }
 
 startServer().catch(console.error);
+
