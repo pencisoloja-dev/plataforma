@@ -79,7 +79,7 @@ const multiUpload = upload.fields([
     { name: 'files_deducciones', maxCount: 10 }
 ]);
 
-// Inicializar Base de Datos (mantener igual)
+// Inicializar Base de Datos
 async function initDatabase() {
     try {
         const initPool = mysql.createPool({
@@ -134,17 +134,15 @@ app.get('/health', (req, res) => {
     });
 });
 
-// Ruta principal - Servir el formulario
+// ✅✅✅ RUTAS CORREGIDAS - ADMIN EN RAÍZ COMO TU ORIGINAL
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'formulario_nuevo.html'));
+    res.sendFile(path.join(__dirname, 'admin_nuevo.html'));
 });
 
-// Ruta del formulario
 app.get('/formulario', (req, res) => {
     res.sendFile(path.join(__dirname, 'formulario_nuevo.html'));
 });
 
-// Ruta del admin
 app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin_nuevo.html'));
 });
@@ -154,7 +152,6 @@ app.post('/api/submit-form', multiUpload, async (req, res) => {
     console.log('📨 Recibiendo envío de formulario con múltiples archivos...');
     
     try {
-        // Verificar que formData existe
         if (!req.body.formData) {
             console.error('❌ Error: formData no encontrado en el cuerpo');
             return res.status(400).json({ 
@@ -164,7 +161,6 @@ app.post('/api/submit-form', multiUpload, async (req, res) => {
             });
         }
 
-        // Parsear datos del formulario
         const formData = JSON.parse(req.body.formData);
         const userId = formData.ssn_itin || 'user-' + Date.now();
 
@@ -193,20 +189,10 @@ app.post('/api/submit-form', multiUpload, async (req, res) => {
                         mimetype: file.mimetype
                     });
                 });
-            } else {
-                console.log(`📁 ${category}: 0 archivos`);
             }
         });
 
         console.log(`📊 Total de archivos recibidos: ${allFiles.length}`);
-
-        // Crear objeto de envío completo
-        const submission = {
-            user_id: userId,
-            form_data: formData,
-            files_data: allFiles,
-            submission_date: new Date().toISOString()
-        };
 
         // Guardar en base de datos
         const connection = await pool.getConnection();
@@ -217,18 +203,12 @@ app.post('/api/submit-form', multiUpload, async (req, res) => {
         connection.release();
 
         console.log('✅ Formulario guardado exitosamente en la base de datos');
-        console.log(`📊 Usuario: ${userId}`);
-        console.log(`📁 Archivos guardados: ${allFiles.length}`);
 
         res.status(200).json({ 
             success: true,
             message: 'Formulario enviado con éxito',
             submissionId: userId,
-            filesCount: allFiles.length,
-            fileCategories: fileCategories.reduce((acc, category) => {
-                acc[category] = req.files && req.files[category] ? req.files[category].length : 0;
-                return acc;
-            }, {})
+            filesCount: allFiles.length
         });
 
     } catch (error) {
@@ -252,7 +232,7 @@ app.post('/api/submit-form', multiUpload, async (req, res) => {
     }
 });
 
-// ✅ API PARA OBTENER ENVÍOS - MEJORADA PARA MÚLTIPLES ARCHIVOS
+// ✅ API PARA OBTENER ENVÍOS
 app.get('/api/get-submissions', async (req, res) => {
     try {
         const connection = await pool.getConnection();
@@ -274,23 +254,11 @@ app.get('/api/get-submissions', async (req, res) => {
                     ? JSON.parse(row.files_data)
                     : row.files_data;
 
-                // Agrupar archivos por categoría para mejor organización
-                const filesByCategory = {};
-                if (Array.isArray(filesData)) {
-                    filesData.forEach(file => {
-                        if (!filesByCategory[file.category]) {
-                            filesByCategory[file.category] = [];
-                        }
-                        filesByCategory[file.category].push(file);
-                    });
-                }
-
                 return {
                     id: row.id,
                     user_id: row.user_id,
                     ...formData,
                     files: filesData || [],
-                    files_by_category: filesByCategory,
                     total_files: Array.isArray(filesData) ? filesData.length : 0,
                     submission_date: formData.submission_date || row.created_at,
                     created_at: row.created_at
@@ -317,13 +285,12 @@ app.get('/api/get-submissions', async (req, res) => {
     }
 });
 
-// ✅ RUTA PARA ELIMINAR ENVÍO - OPTIMIZADA PARA MÚLTIPLES ARCHIVOS
+// ✅ RUTA PARA ELIMINAR ENVÍO
 app.delete('/api/submissions/:id', async (req, res) => {
     try {
         const submissionId = req.params.id;
         const connection = await pool.getConnection();
         
-        // Obtener información de archivos antes de eliminar
         const [rows] = await connection.query(
             'SELECT files_data FROM submissions WHERE id = ?',
             [submissionId]
@@ -340,21 +307,16 @@ app.delete('/api/submissions/:id', async (req, res) => {
                 const filePath = path.join(uploadsDir, file.filename);
                 if (fs.existsSync(filePath)) {
                     fs.unlinkSync(filePath);
-                    console.log(`🗑️ Archivo eliminado: ${file.filename}`);
                 }
             });
         }
 
-        // Eliminar de la base de datos
         await connection.query('DELETE FROM submissions WHERE id = ?', [submissionId]);
         connection.release();
 
-        console.log(`✅ Envío ${submissionId} eliminado con ${filesData.length} archivos`);
-
         res.status(200).json({ 
             success: true, 
-            message: 'Envío eliminado correctamente',
-            deletedFiles: filesData.length
+            message: 'Envío eliminado correctamente'
         });
 
     } catch (error) {
@@ -387,13 +349,6 @@ app.use((error, req, res, next) => {
                 error: 'El tamaño máximo permitido es 10MB por archivo'
             });
         }
-        if (error.code === 'LIMIT_FILE_COUNT') {
-            return res.status(400).json({
-                success: false,
-                message: 'Demasiados archivos',
-                error: 'Se excedió el número máximo de archivos permitidos'
-            });
-        }
     }
     
     res.status(500).json({ 
@@ -408,14 +363,10 @@ async function startServer() {
     await initDatabase();
     
     app.listen(port, '0.0.0.0', () => {
-        console.log(`\n🚀 Servidor OPTIMIZADO para múltiples archivos`);
-        console.log(`📍 Puerto: ${port}`);
+        console.log(`\n🚀 Servidor iniciado en puerto: ${port}`);
+        console.log(`👨‍💼 ADMIN: http://0.0.0.0:${port}/`);
         console.log(`📋 FORMULARIO: http://0.0.0.0:${port}/formulario`);
-        console.log(`👨‍💼 ADMIN: http://0.0.0.0:${port}/admin`);
         console.log(`❤️ HEALTH: http://0.0.0.0:${port}/health`);
-        console.log(`💾 UPLOADS: ${uploadsDir}`);
-        console.log(`🗄️ DATABASE: ${dbConfig.database}@${dbConfig.host}:${dbConfig.port}`);
-        console.log(`📁 MÚLTIPLES ARCHIVOS: ✅ CONFIGURADO`);
     });
 }
 
