@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administrador - Envíos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fuente Inter de Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --border-color: #334155;
+            --text-light: #e2e8f0;
+            --text-muted: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-blue-dark: #2563eb;
+            --accent-red: #ef4444;
+            --accent-red-dark: #dc2626;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at 50% 0, var(--bg-card), var(--bg-dark) 60%);
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+
+        .btn {
+            background-image: linear-gradient(to right, var(--accent-blue), var(--accent-blue-dark));
+            color: white;
+            padding: 0.65rem 1.25rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background-image: linear-gradient(to right, var(--accent-blue-dark), #1d4ed8);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-secondary {
+            background-image: none;
+            background-color: var(--border-color);
+            color: var(--text-light);
+            box-shadow: none;
+        }
+
+        .btn-secondary:hover {
+            background-image: none;
+            background-color: #475569;
+            transform: translateY(-1px);
+            box-shadow: none;
+        }
+        
+        .btn-danger {
+            background-image: linear-gradient(to right, var(--accent-red), var(--accent-red-dark));
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
+        }
+        
+        .btn-danger:hover {
+            background-image: linear-gradient(to right, var(--accent-red-dark), #b91c1c);
+            box-shadow: 0 6px 14px rgba(239, 68, 68, 0.3);
+        }
+
+        .form-input {
+            background-color: #334155;
+            border-color: #475569;
+            color: #e2e8f0;
+            border-radius: 0.5rem;
+            width: 100%;
+            padding: 0.65rem 1rem;
+            border-width: 1px;
+            border-style: solid;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            background-color: var(--bg-card);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        th {
+            background-color: #293548;
+            color: var(--text-light);
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+        td {
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.75rem 1rem;
+            color: var(--text-muted);
+        }
+        th:first-child { border-top-left-radius: 0.5rem; }
+        th:last-child { border-top-right-radius: 0.5rem; }
+        tr:last-child td { border-bottom: none; }
+        tbody tr:hover td {
+            background-color: #273447;
+            color: var(--text-light);
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+        }
+        .modal-content {
+            background-color: var(--bg-card);
+            color: var(--text-light);
+            border-radius: 0.75rem;
+            border: 1px solid var(--border-color);
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+        #closeModalBtn {
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+        #closeModalBtn:hover {
+            color: var(--text-light);
+            transform: rotate(90deg);
+        }
+        
+        .detail-section-title {
+            color: var(--accent-blue);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+            gap: 0.75rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        @media (min-width: 768px) {
+            .detail-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        .detail-field strong {
+            color: var(--text-muted);
+            display: block;
+            font-size: 0.8rem;
+        }
+        .detail-field span {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+        .file-category {
+            background-color: var(--bg-dark);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+        }
+        .file-category h4 {
+            color: var(--accent-blue);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    
+    <div id="app-content" class="p-4 md:p-8">
+        <div class="container mx-auto max-w-7xl">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-8 flex-wrap gap-4">
+                <h1 class="text-4xl font-bold text-white">Panel de Administrador</h1>
+                <div class="flex items-center gap-3">
+                    <a href="https://login.ezsystems.cloud/#panel/" class="btn btn-secondary">
+                        Volver al Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <!-- Controles -->
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 p-6 bg-slate-800 rounded-lg border border-slate-700 shadow-lg">
+                <div class="w-full md:w-1/2 lg:w-1/3">
+                    <input type="text" id="searchInput" class="form-input" placeholder="Buscar por nombre o email...">
+                </div>
+                <div class="flex gap-3">
+                    <a href="/formulario" class="btn btn-secondary" target="_blank">
+                        Ir al Formulario
+                    </a>
+                    <button id="reloadButton" class="btn">
+                        Recargar Datos
+                    </button>
+                </div>
+            </div>
+
+            <!-- Contenedor de Mensajes -->
+            <div id="messageContainer" class="hidden mb-6 p-4 rounded-md"></div>
+
+            <!-- Tabla de Datos -->
+            <div class="table-container">
+                <table class="w-full table-auto">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Tipo Presentación</th>
+                            <th>Estado Civil</th>
+                            <th>Email</th>
+                            <th>Fecha de Envío</th>
+                            <th>Archivos</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="submissionsTbody">
+                        <tr id="loadingRow">
+                            <td colspan="7" class="text-center py-8 text-gray-400">Cargando envíos...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalles -->
+    <div id="detailsModal" class="modal-backdrop hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="text-2xl font-semibold text-white">Detalles del Envío</h2>
+                <div class="flex gap-3">
+                    <button id="printBtn" class="btn text-sm">
+                        🖨️ Imprimir
+                    </button>
+                    <button id="closeModalBtn" title="Cerrar">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-8 h-8">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>                          
+                    </button>
+                </div>
+            </div>
+            <div id="modalBody" class="modal-body">
+                <!-- Contenido dinámico -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchSubmissions();
+        });
+
+        // Selectores de DOM
+        const tbody = document.getElementById('submissionsTbody');
+        const loadingRow = document.getElementById('loadingRow');
+        const reloadButton = document.getElementById('reloadButton');
+        const searchInput = document.getElementById('searchInput');
+        const messageContainer = document.getElementById('messageContainer');
+        const modal = document.getElementById('detailsModal');
+        const modalBody = document.getElementById('modalBody');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const printBtn = document.getElementById('printBtn');
+        
+        let allSubmissions = [];
+
+        // Event Listeners
+        reloadButton.addEventListener('click', fetchSubmissions);
+
+        function showMessage(message, isError = false) {
+            messageContainer.textContent = message;
+            messageContainer.className = isError 
+                ? 'mb-6 p-4 rounded-md bg-red-800 text-red-200' 
+                : 'mb-6 p-4 rounded-md bg-green-800 text-green-200';
+            messageContainer.classList.remove('hidden');
+        }
+
+        // ✅ FUNCIÓN ACTUALIZADA PARA MANEJAR LA NUEVA ESTRUCTURA DE DATOS
+        function renderTable(data) {
+            tbody.innerHTML = '';
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-gray-400">No se encontraron envíos.</td></tr>';
+                return;
+            }
+
+            data.forEach(submission => {
+                const tr = document.createElement('tr');
+                tr.className = 'cursor-pointer';
+                
+                // Contar archivos totales
+                const totalFiles = submission.files ? submission.files.length : 0;
+                
+                tr.innerHTML = `
+                    <td class="font-medium text-slate-200">${submission.nombre_completo || 'N/A'}</td>
+                    <td>${formatField(submission.tipo_presentacion) || 'N/A'}</td>
+                    <td>${formatField(submission.estado_civil) || 'N/A'}</td>
+                    <td>${submission.email || 'N/A'}</td>
+                    <td>${submission.created_at ? new Date(submission.created_at).toLocaleString('es-EC') : 'N/A'}</td>
+                    <td class="text-center">${totalFiles}</td>
+                    <td>
+                        <button class="btn btn-secondary text-sm py-1 px-3" data-id="${submission.id}">
+                            Ver Detalles
+                        </button>
+                    </td>
+                `;
+                
+                tr.querySelector('button').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showModal(submission.id);
+                });
+
+                tr.addEventListener('click', () => {
+                    showModal(submission.id);
+                });
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ✅ FUNCIÓN ACTUALIZADA PARA LA NUEVA API
+        async function fetchSubmissions() {
+            loadingRow.style.display = 'table-row';
+            tbody.innerHTML = '';
+            tbody.appendChild(loadingRow);
+            showMessage('Cargando datos del servidor...', false);
+
+            try {
+                const response = await fetch('/api/get-submissions');
+                
+                if (!response.ok) {
+                    throw new Error(`Error del servidor: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    allSubmissions = result.submissions || [];
+                    renderTable(allSubmissions);
+                    showMessage(`Datos cargados. ${allSubmissions.length} envíos encontrados.`, false);
+                } else {
+                    throw new Error(result.message || 'Error en la respuesta del servidor');
+                }
+
+            } catch (error) {
+                console.error('Error al cargar los datos:', error);
+                showMessage(`Error al cargar datos: ${error.message}`, true);
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-red-400">Error al cargar datos.</td></tr>`;
+            } finally {
+                loadingRow.style.display = 'none';
+            }
+        }
+
+        // Búsqueda
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            if (!searchTerm) {
+                renderTable(allSubmissions);
+                return;
+            }
+
+            const filteredData = allSubmissions.filter(submission => {
+                const nombre = (submission.nombre_completo || '').toLowerCase();
+                const email = (submission.email || '').toLowerCase();
+                return nombre.includes(searchTerm) || email.includes(searchTerm);
+            });
+
+            renderTable(filteredData);
+        });
+
+        // ✅ FUNCIONES AUXILIARES ACTUALIZADAS
+        function formatField(key) {
+            if (!key) return '';
+            return (key.charAt(0).toUpperCase() + key.slice(1)).replace(/_/g, ' ');
+        }
+
+        function formatValue(value) {
+            if (value === null || value === undefined || value === '') return 'N/A';
+            if (typeof value === 'boolean') return value ? 'Sí' : 'No';
+            if (Array.isArray(value)) return value.length > 0 ? value.join(', ') : 'Ninguno';
+            return value;
+        }
+
+        // ✅ FUNCIÓN ACTUALIZADA PARA MOSTRAR MODAL CON NUEVA ESTRUCTURA
+        function showModal(submissionId) {
+            const submission = allSubmissions.find(s => s.id === submissionId);
+            if (!submission) return;
+
+            modalBody.innerHTML = '';
+
+            // Información Personal
+            modalBody.innerHTML += renderSection('👤 Información Personal', submission, [
+                'nombre_completo', 'ssn_itin', 'fecha_nacimiento', 'estado_civil', 
+                'telefono', 'email'
+            ]);
+
+            // Dirección
+            if (submission.direccion_calle || submission.direccion_ciudad) {
+                modalBody.innerHTML += renderSection('🏠 Dirección', submission, [
+                    'direccion_calle', 'direccion_apto', 'direccion_ciudad', 
+                    'direccion_estado', 'direccion_zip'
+                ]);
+            }
+
+            // Datos del Cónyuge (si aplica)
+            if (submission.conyuge_nombre) {
+                modalBody.innerHTML += renderSection('💑 Datos del Cónyuge', submission, [
+                    'conyuge_nombre', 'conyuge_fecha_nac', 'conyuge_ssn'
+                ]);
+            }
+
+            // Tipo de Presentación e Ingresos
+            modalBody.innerHTML += renderSection('💰 Información de Ingresos', submission, [
+                'tipo_presentacion', 'ocupacion', 'nombre_comercial', 'ingreso_total'
+            ]);
+
+            // Información específica de W-2
+            if (submission.w2_recibido === 'si') {
+                modalBody.innerHTML += renderSection('📄 Formulario W-2', submission, [
+                    'num_w2'
+                ]);
+            }
+
+            // Tipos de Ingreso (checkboxes)
+            if (submission.tipo_ingreso && submission.tipo_ingreso.length > 0) {
+                modalBody.innerHTML += `
+                    <div class="mb-6">
+                        <strong>Tipos de Ingreso:</strong> 
+                        <span class="text-white">${formatValue(submission.tipo_ingreso)}</span>
+                    </div>
+                `;
+            }
+
+            // Gastos Deducibles
+            const gastosCheckbox = submission.gastos_checkbox;
+            if (gastosCheckbox && gastosCheckbox.length > 0) {
+                let gastosHtml = '<h3 class="detail-section-title">💳 Gastos Deducibles</h3>';
+                
+                gastosCheckbox.forEach(gasto => {
+                    const montoKey = `monto_${gasto}`;
+                    const monto = submission[montoKey];
+                    if (monto) {
+                        gastosHtml += `
+                            <div class="detail-field">
+                                <strong>${formatField(gasto)}:</strong>
+                                <span>$${monto}</span>
+                            </div>
+                        `;
+                    }
+                });
+
+                // Otros gastos con descripción
+                if (submission.descripcion_otros_gastos) {
+                    gastosHtml += `
+                        <div class="detail-field">
+                            <strong>Descripción otros gastos:</strong>
+                            <span>${submission.descripcion_otros_gastos}</span>
+                        </div>
+                    `;
+                }
+
+                modalBody.innerHTML += gastosHtml;
+            }
+
+            // Créditos y Deducciones
+            const creditos = [];
+            if (submission.credito_hipoteca === 'si') creditos.push('Hipoteca');
+            if (submission.credito_estudios === 'si') creditos.push('Estudios');
+            if (submission.credito_seguro_salud === 'si') creditos.push('Seguro Salud');
+            if (submission.recibio_1099r === 'si') creditos.push('1099-R');
+            if (submission.otro_credito_checkbox === 'si' && submission.descripcion_otro_credito) {
+                creditos.push(`Otro: ${submission.descripcion_otro_credito}`);
+            }
+
+            if (creditos.length > 0) {
+                modalBody.innerHTML += `
+                    <div class="mb-6">
+                        <strong>Créditos/Deducciones:</strong> 
+                        <span class="text-white">${creditos.join(', ')}</span>
+                    </div>
+                `;
+            }
+
+            // Cuenta Bancaria
+            if (submission.banco_nombre) {
+                modalBody.innerHTML += renderSection('🏦 Cuenta Bancaria', submission, [
+                    'banco_nombre', 'banco_routing', 'banco_cuenta'
+                ]);
+            }
+
+            // Comentarios Adicionales
+            if (submission.comentarios_adicionales) {
+                modalBody.innerHTML += `
+                    <h3 class="detail-section-title">💬 Comentarios Adicionales</h3>
+                    <div class="bg-slate-700 p-4 rounded-lg">
+                        <p class="text-white">${submission.comentarios_adicionales}</p>
+                    </div>
+                `;
+            }
+
+            // ✅ ARCHIVOS ORGANIZADOS POR CATEGORÍA
+            const files = submission.files || [];
+            if (files.length > 0) {
+                let filesHtml = '<h3 class="detail-section-title">📎 Archivos Adjuntos</h3>';
+                
+                // Agrupar archivos por categoría
+                const filesByCategory = {};
+                files.forEach(file => {
+                    if (!filesByCategory[file.category]) {
+                        filesByCategory[file.category] = [];
+                    }
+                    filesByCategory[file.category].push(file);
+                });
+
+                // Mostrar por categoría
+                Object.entries(filesByCategory).forEach(([category, categoryFiles]) => {
+                    filesHtml += `
+                        <div class="file-category">
+                            <h4>${formatField(category)} (${categoryFiles.length})</h4>
+                            <ul class="list-disc pl-5">
+                                ${categoryFiles.map(file => `
+                                    <li class="mb-1">
+                                        <a href="${file.url}" target="_blank" 
+                                           class="text-blue-400 hover:text-blue-300 underline">
+                                            ${file.originalName || file.filename}
+                                        </a>
+                                        <span class="text-xs text-slate-400 ml-2">
+                                            (${(file.size / 1024 / 1024).toFixed(2)} MB)
+                                        </span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    `;
+                });
+
+                modalBody.innerHTML += filesHtml;
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        // ✅ FUNCIÓN RENDER SECTION MEJORADA
+        function renderSection(title, submission, keys) {
+            let fieldsHtml = '';
+            let hasData = false;
+            
+            keys.forEach(key => {
+                const value = submission[key];
+                if (value !== null && value !== undefined && value !== '') {
+                    hasData = true;
+                    fieldsHtml += `
+                        <div class="detail-field">
+                            <strong>${formatField(key)}:</strong>
+                            <span>${formatValue(value)}</span>
+                        </div>
+                    `;
+                }
+            });
+            
+            if (!hasData) return '';
+
+            return `
+                <h3 class="detail-section-title">${title}</h3>
+                <div class="detail-grid">${fieldsHtml}</div>
+            `;
+        }
+
+        // Eventos del Modal (mantener igual)
+        closeModalBtn.addEventListener('click', () => {
+            modal.classList.add('hidden');
+        });
+        
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+
+        printBtn.addEventListener('click', () => {
+            const printWindow = window.open('', '', 'width=800,height=600');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Detalles del Envío</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
+                        h3 { color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 5px; margin-top: 20px; }
+                        .detail-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+                        .detail-field { padding: 5px 0; }
+                        .detail-field strong { display: block; color: #666; font-size: 0.9em; }
+                        .detail-field span { font-size: 1em; }
+                        .file-category { background: #f3f4f6; padding: 15px; margin: 10px 0; border-radius: 5px; }
+                        ul { list-style-type: disc; padding-left: 20px; }
+                        a { color: #2563eb; text-decoration: none; }
+                        @media print { body { padding: 10px; } }
+                    </style>
+                </head>
+                <body>
+                    ${modalBody.innerHTML}
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.focus();
+            
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 250);
+        });
+    </script>
+</body>
+</html>
