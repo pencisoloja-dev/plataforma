@@ -647,10 +647,10 @@
                 radio.addEventListener('change', function() {
                     if (this.value === 'si') {
                         dependientesContainer.classList.remove('hidden');
-                        document.getElementById('files_dependientes').setAttribute('required', 'required');
+                        
                     } else {
                         dependientesContainer.classList.add('hidden');
-                        document.getElementById('files_dependientes').removeAttribute('required');
+                        
                         // Limpiar archivos de dependientes si se selecciona "No"
                         accumulatedFiles['files_dependientes'] = [];
                         updateFileList('files_dependientes', document.getElementById('filesDependientesUl'), document.getElementById('filesDependientesList'));
